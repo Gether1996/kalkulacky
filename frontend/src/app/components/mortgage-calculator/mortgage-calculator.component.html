@@ -1,0 +1,294 @@
+<div class="calculator-container">
+  <!-- Header -->
+  <header class="calculator-header">
+    <a routerLink="/" class="back-button">← Späť</a>
+    <h1 class="calculator-title">
+      🏠 Kalkulačka hypotéky
+    </h1>
+    <p class="calculator-subtitle">
+      Vypočítajte si mesačnú splátku hypotéky, celkové náklady a amortizačnú tabuľku.
+    </p>
+  </header>
+
+  <!-- Calculator Body -->
+  <div class="calculator-body">
+    <!-- Input Section -->
+    <section class="input-section">
+      <h2 class="section-title">Zadajte parametre hypotéky</h2>
+      
+      <!-- Loan Amount -->
+      <div class="input-group">
+        <label for="loan-amount" class="input-label">Výška úveru (€)</label>
+        <div class="input-wrapper">
+          <input
+            type="number"
+            id="loan-amount"
+            [(ngModel)]="loanAmount"
+            (ngModelChange)="calculate()"
+            class="input-field"
+            placeholder="150000"
+            min="1000"
+            step="1000"
+          />
+          <span class="currency-symbol">€</span>
+        </div>
+        <input
+          type="range"
+          [(ngModel)]="loanAmount"
+          (ngModelChange)="calculate()"
+          min="10000"
+          max="500000"
+          step="5000"
+          class="slider"
+        />
+        <div class="slider-labels">
+          <span>10 000 €</span>
+          <span>500 000 €</span>
+        </div>
+      </div>
+
+      <!-- Interest Rate -->
+      <div class="input-group">
+        <label for="interest-rate" class="input-label">Úroková sadzba (%)</label>
+        <div class="input-wrapper">
+          <input
+            type="number"
+            id="interest-rate"
+            [(ngModel)]="interestRate"
+            (ngModelChange)="calculate()"
+            class="input-field"
+            placeholder="3.5"
+            min="0"
+            max="10"
+            step="0.1"
+          />
+          <span class="currency-symbol">%</span>
+        </div>
+        <input
+          type="range"
+          [(ngModel)]="interestRate"
+          (ngModelChange)="calculate()"
+          min="0.5"
+          max="8"
+          step="0.1"
+          class="slider"
+        />
+        <div class="slider-labels">
+          <span>0.5%</span>
+          <span>8%</span>
+        </div>
+      </div>
+
+      <!-- Loan Term -->
+      <div class="input-group">
+        <label for="loan-term" class="input-label">Dĺžka splácania (roky)</label>
+        <div class="input-wrapper">
+          <input
+            type="number"
+            id="loan-term"
+            [(ngModel)]="loanTerm"
+            (ngModelChange)="calculate()"
+            class="input-field"
+            placeholder="25"
+            min="1"
+            max="40"
+            step="1"
+          />
+          <span class="currency-symbol">rokov</span>
+        </div>
+        <input
+          type="range"
+          [(ngModel)]="loanTerm"
+          (ngModelChange)="calculate()"
+          min="5"
+          max="40"
+          step="1"
+          class="slider"
+        />
+        <div class="slider-labels">
+          <span>5 rokov</span>
+          <span>40 rokov</span>
+        </div>
+      </div>
+
+      <!-- Quick Scenarios -->
+      <div class="benchmarks">
+        <p class="benchmarks-label">Alebo vyberte scenár:</p>
+        <div class="benchmarks-grid">
+          <button
+            *ngFor="let scenario of scenarios"
+            (click)="setScenario(scenario)"
+            class="benchmark-button"
+          >
+            {{ scenario.label }}<br/>
+            <strong>{{ scenario.amount.toLocaleString() }} €</strong><br/>
+            <small>{{ scenario.rate }}% • {{ scenario.years }}r</small>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="results-section" *ngIf="result && !loading">
+      <!-- Big Result Card -->
+      <div class="big-result-card">
+        <div class="result-label">Mesačná splátka</div>
+        <div class="result-value">{{ formatCurrency(result.monthly_payment) }}</div>
+        <div class="result-comparison">
+          počas {{ result.loan_term_years }} rokov
+        </div>
+      </div>
+
+      <!-- Breakdown Cards -->
+      <div class="breakdown-grid">
+        <div class="breakdown-card">
+          <div class="breakdown-icon">💰</div>
+          <div class="breakdown-label">Výška úveru</div>
+          <div class="breakdown-value">{{ formatCurrency(result.loan_amount) }}</div>
+          <div class="breakdown-hint">Hlavnica</div>
+        </div>
+
+        <div class="breakdown-card">
+          <div class="breakdown-icon">📈</div>
+          <div class="breakdown-label">Celkovo zaplatíte</div>
+          <div class="breakdown-value">{{ formatCurrency(result.total_paid) }}</div>
+          <div class="breakdown-hint">Hlavnica + úroky</div>
+        </div>
+
+        <div class="breakdown-card highlight">
+          <div class="breakdown-icon">💸</div>
+          <div class="breakdown-label">Celkové úroky</div>
+          <div class="breakdown-value">{{ formatCurrency(result.total_interest) }}</div>
+          <div class="breakdown-hint">{{ formatPercent(getInterestPercentage()) }} z úveru</div>
+        </div>
+
+        <div class="breakdown-card">
+          <div class="breakdown-icon">📊</div>
+          <div class="breakdown-label">Úroková sadzba</div>
+          <div class="breakdown-value">{{ formatPercent(result.annual_interest_rate) }}</div>
+          <div class="breakdown-hint">Ročne</div>
+        </div>
+      </div>
+
+      <!-- Summary Table -->
+      <div class="details-table">
+        <h3 class="details-title">Prehľad splácania</h3>
+        <table>
+          <tr>
+            <td>💰 Výška úveru</td>
+            <td class="text-right"><strong>{{ formatCurrency(result.loan_amount) }}</strong></td>
+          </tr>
+          <tr>
+            <td>📈 Úroková sadzba</td>
+            <td class="text-right">{{ formatPercent(result.annual_interest_rate) }}</td>
+          </tr>
+          <tr>
+            <td>⏱️ Dĺžka splácania</td>
+            <td class="text-right">{{ result.loan_term_years }} rokov ({{ result.loan_term_years * 12 }} mesiacov)</td>
+          </tr>
+          <tr class="divider">
+            <td colspan="2"></td>
+          </tr>
+          <tr>
+            <td>📅 Mesačná splátka</td>
+            <td class="text-right"><strong class="text-blue">{{ formatCurrency(result.monthly_payment) }}</strong></td>
+          </tr>
+          <tr>
+            <td>💸 Celkové úroky</td>
+            <td class="text-right text-red">{{ formatCurrency(result.total_interest) }}</td>
+          </tr>
+          <tr class="divider">
+            <td colspan="2"></td>
+          </tr>
+          <tr class="total-row">
+            <td><strong>💳 Celkovo zaplatíte</strong></td>
+            <td class="text-right"><strong>{{ formatCurrency(result.total_paid) }}</strong></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- First Year Details -->
+      <div class="details-table" *ngIf="result.first_year">
+        <h3 class="details-title">Prvý rok splácania</h3>
+        <table>
+          <tr>
+            <td>Zaplatíte celkom</td>
+            <td class="text-right"><strong>{{ formatCurrency(result.first_year.total_payment) }}</strong></td>
+          </tr>
+          <tr>
+            <td>Z toho hlavnica</td>
+            <td class="text-right text-green">{{ formatCurrency(result.first_year.principal) }}</td>
+          </tr>
+          <tr>
+            <td>Z toho úroky</td>
+            <td class="text-right text-red">{{ formatCurrency(result.first_year.interest) }}</td>
+          </tr>
+          <tr class="divider">
+            <td colspan="2"></td>
+          </tr>
+          <tr>
+            <td><strong>Zostávajúci dlh po 1. roku</strong></td>
+            <td class="text-right"><strong>{{ formatCurrency(result.first_year.remaining_balance) }}</strong></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Amortization Schedule Toggle -->
+      <div class="amortization-toggle" *ngIf="result.amortization_schedule && result.amortization_schedule.length > 0">
+        <button (click)="toggleAmortization()" class="toggle-button">
+          {{ showAmortization ? '▼ Skryť' : '▶ Zobraziť' }} amortizačnú tabuľku
+        </button>
+      </div>
+
+      <!-- Amortization Schedule -->
+      <div class="amortization-table" *ngIf="showAmortization && result.amortization_schedule">
+        <h3 class="details-title">Amortizačná tabuľka (ročný prehľad)</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Rok</th>
+                <th class="text-right">Hlavnica</th>
+                <th class="text-right">Úroky</th>
+                <th class="text-right">Celkom</th>
+                <th class="text-right">Zostatok</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let entry of result.amortization_schedule">
+                <td><strong>{{ entry.year }}</strong></td>
+                <td class="text-right text-green">{{ formatCurrency(entry.principal_paid) }}</td>
+                <td class="text-right text-red">{{ formatCurrency(entry.interest_paid) }}</td>
+                <td class="text-right">{{ formatCurrency(entry.total_paid) }}</td>
+                <td class="text-right">{{ formatCurrency(entry.remaining_balance) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <p>Počítam...</p>
+    </div>
+
+    <!-- Error State -->
+    <div class="error-state" *ngIf="error">
+      <p>{{ error }}</p>
+    </div>
+  </div>
+
+  <!-- Info Section -->
+  <section class="info-section">
+    <h3>ℹ️ Ako funguje hypotéka?</h3>
+    <ul>
+      <li><strong>Hlavnica:</strong> Pôvodná výška úveru, ktorú ste si požičali.</li>
+      <li><strong>Úroková sadzba:</strong> Ročný percentuálny poplatok za požičané peniaze.</li>
+      <li><strong>Mesačná splátka:</strong> Kombinuje splátku hlavnice + úroky, po celú dobu úveru rovnaká.</li>
+      <li><strong>Amortizácia:</strong> Na začiatku platíte viac úrokov, na konci viac hlavnice.</li>
+      <li><strong>Tip:</strong> Skrátením doby splácania výrazne ušetríte na úrokoch!</li>
+    </ul>
+  </section>
+</div>

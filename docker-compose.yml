@@ -1,0 +1,39 @@
+services:
+  # Django Backend
+  backend:
+    build:
+      context: ./django_calculators
+      dockerfile: Dockerfile
+    container_name: calculators_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./django_calculators:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DEBUG=True
+    networks:
+      - calculators-network
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+
+  # Angular Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: calculators_frontend
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules  # Prevent overwriting node_modules
+    environment:
+      - NODE_ENV=development
+    networks:
+      - calculators-network
+    depends_on:
+      - backend
+
+networks:
+  calculators-network:
+    driver: bridge

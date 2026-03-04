@@ -1,0 +1,26 @@
+from calculators.services.salary_calculator import SalaryCalculator
+
+calc = SalaryCalculator()
+result = calc.calculate(2000, 0, 0)
+
+print("=" * 60)
+print("SALARY CALCULATOR TEST - 2000 EUR")
+print("=" * 60)
+print(f"Hrubá mzda:              {result['gross_salary']:.2f} €")
+print(f"Sociálne poistenie:      {result['social_insurance']:.2f} € (13.4%)")
+print(f"Zdravotné poistenie:     {result['health_insurance']:.2f} € (6.5%)")
+print(f"= Daňový základ:         {result['tax_base']:.2f} €")
+print(f"- NČZD:                  {result['non_taxable_amount']:.2f} €")
+print(f"= Zdaniteľný základ:     {result['taxable_base']:.2f} €")
+print(f"Daň z príjmu:            {result['income_tax']:.2f} € (19%)")
+print(f"Daňový bonus:            {result['child_tax_bonus']:.2f} €")
+print(f"= Finálna daň:           {result['final_tax']:.2f} €")
+print(f"")
+print(f"ČISTÁ MZDA:              {result['net_salary']:.2f} €")
+print(f"Efektívna sadzba:        {result['effective_tax_rate']:.2f} %")
+print("=" * 60)
+print()
+print("OVERENIE VÝPOČTU:")
+print(f"{result['gross_salary']:.2f} - {result['social_insurance']:.2f} - {result['health_insurance']:.2f} - {result['final_tax']:.2f} = {result['net_salary']:.2f}")
+verification = result['gross_salary'] - result['social_insurance'] - result['health_insurance'] - result['final_tax']
+print(f"Overenie: {verification:.2f} € (should match net_salary)")

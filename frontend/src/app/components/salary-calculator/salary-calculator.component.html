@@ -1,0 +1,282 @@
+<div class="calculator-container">
+  <!-- Header -->
+  <header class="calculator-header">
+    <a routerLink="/" class="back-button">← Späť</a>
+    <h1 class="calculator-title">
+      💰 Kalkulačka čistej mzdy 2026
+    </h1>
+    <p class="calculator-subtitle">
+      Vypočítajte si čistú mzdu zo svojej hrubej mzdy. Zohľadňuje všetky odvody a daňový bonus 2026.
+    </p>
+  </header>
+
+  <!-- Two Column Layout -->
+  <div class="calculator-grid">
+    <!-- LEFT COLUMN: Inputs -->
+    <div class="inputs-column">
+      <div class="card">
+        <h2 class="card-title">Zadajte údaje</h2>
+        
+        <!-- Main Input -->
+        <div class="input-group">
+          <label for="gross-salary" class="input-label">Hrubá mzda (€)</label>
+          <div class="input-wrapper">
+            <input
+              type="number"
+              id="gross-salary"
+              [(ngModel)]="grossSalary"
+              (ngModelChange)="calculate()"
+              class="input-field"
+              placeholder="1500"
+              min="0"
+              step="50"
+            />
+            <span class="currency-symbol">€</span>
+          </div>
+        </div>
+
+        <!-- Range Slider -->
+        <div class="slider-group">
+          <input
+            type="range"
+            [(ngModel)]="grossSalary"
+            (ngModelChange)="calculate()"
+            min="500"
+            max="10000"
+            step="50"
+            class="slider"
+          />
+          <div class="slider-labels">
+            <span>500 €</span>
+            <span>10 000 €</span>
+          </div>
+        </div>
+
+        <!-- Quick Benchmarks -->
+        <div class="benchmarks">
+          <p class="benchmarks-label">Rýchly výber:</p>
+          <div class="benchmarks-grid">
+            <button
+              *ngFor="let benchmark of benchmarks"
+              (click)="setBenchmark(benchmark.value)"
+              class="benchmark-button"
+              [class.active]="grossSalary === benchmark.value"
+            >
+              <span class="benchmark-label-text">{{ benchmark.label }}</span>
+              <strong class="benchmark-value">{{ benchmark.value }} €</strong>
+            </button>
+          </div>
+        </div>
+
+        <!-- Non-taxable Amount Checkbox -->
+        <div class="checkbox-group">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              [(ngModel)]="applyNontaxableAmount"
+              (ngModelChange)="calculate()"
+              class="checkbox-input"
+            />
+            <span class="checkbox-text">
+              <strong>Uplatňujem si nezdaniteľnú časť (NČZD)</strong>
+              <small class="checkbox-hint">497,23 € mesačne - štandardne áno</small>
+            </span>
+          </label>
+        </div>
+        <!-- Disability Checkbox (ZŤP) -->
+        <div class="checkbox-group" style="margin-top: 15px;">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              [(ngModel)]="hasDisability"
+              (ngModelChange)="calculate()"
+              class="checkbox-input"
+            />
+            <span class="checkbox-text">
+              <strong>Osoba so zdravotným postihnutím (ZŤP)</strong>
+              <small class="checkbox-hint">Zlavené zdravotné poistenie 2,5% (namiesto 5%) - spolu 11,9%</small>
+            </span>
+          </label>
+        </div>
+        <!-- Number of Children Inputs -->
+        <div class="children-inputs">
+          <h3 class="subsection-title">👶 Vyživované deti</h3>
+          
+          <div class="children-grid">
+            <div class="input-group-compact">
+              <label for="children-under-15" class="input-label-compact">Do 15 rokov</label>
+              <div class="input-wrapper-compact">
+                <input
+                  type="number"
+                  id="children-under-15"
+                  [(ngModel)]="childrenUnder15"
+                  (ngModelChange)="calculate()"
+                  class="input-field-compact"
+                  placeholder="0"
+                  min="0"
+                  max="10"
+                  step="1"
+                />
+                <span class="input-hint-compact">100 €/mes.</span>
+              </div>
+            </div>
+
+            <div class="input-group-compact">
+              <label for="children-15-18" class="input-label-compact">15-18 rokov</label>
+              <div class="input-wrapper-compact">
+                <input
+                  type="number"
+                  id="children-15-18"
+                  [(ngModel)]="children15To18"
+                  (ngModelChange)="calculate()"
+                  class="input-field-compact"
+                  placeholder="0"
+                  min="0"
+                  max="10"
+                  step="1"
+                />
+                <span class="input-hint-compact">50 €/mes.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="info-box">
+          <h4 class="info-title">ℹ️ Odvody a dane 2026</h4>
+          <ul class="info-list">
+            <li><strong>Sociálne:</strong> 9.4% | <strong>Zdravotné:</strong> {{ hasDisability ? '2.5% (ZŤP)' : '5%' }}</li>
+            <li><strong>Daň:</strong> 19% / 25% / 30% / 35% (progresívna)</li>
+            <li><strong>Bonus na dieťa:</strong> 100€ (do 15r.) / 50€ (15-18r.)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: Results (Sticky) -->
+    <div class="results-column">
+      <div class="results-sticky" style="position: relative;">
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" [class.active]="loading">
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Počítam...</p>
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <div class="error-state" *ngIf="error && !loading">
+          <p>{{ error }}</p>
+        </div>
+
+        <!-- Results (Always in DOM for smooth transitions) -->
+        <div [style.opacity]="result && !loading ? '1' : '0.3'" style="transition: opacity 0.3s ease;">
+          <div *ngIf="result">
+          <!-- Big Result Card -->
+          <div class="big-result-card">
+            <div class="result-label">💰 Čistá mzda</div>
+            <div class="result-value">{{ formatCurrency(result.net_salary) }}</div>
+            <div class="result-comparison">
+              z {{ formatCurrency(result.gross_salary) }} hrubej
+              <span class="percentage-badge">
+                {{ formatPercentage((result.net_salary / result.gross_salary) * 100) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Breakdown Cards -->
+          <div class="breakdown-grid">
+            <div class="breakdown-card">
+              <div class="breakdown-icon">👨‍👩‍👧</div>
+              <div class="breakdown-label">Sociálne</div>
+              <div class="breakdown-value">{{ formatCurrency(result.social_insurance) }}</div>
+              <div class="breakdown-hint">9.4%</div>
+            </div>
+
+            <div class="breakdown-card">
+              <div class="breakdown-icon">🏥</div>
+              <div class="breakdown-label">Zdravotné</div>
+              <div class="breakdown-value">{{ formatCurrency(result.health_insurance) }}</div>
+              <div class="breakdown-hint">{{ hasDisability ? '2.5% (ZŤP)' : '5%' }}</div>
+            </div>
+
+            <div class="breakdown-card">
+              <div class="breakdown-icon">📊</div>
+              <div class="breakdown-label">Daň</div>
+              <div class="breakdown-value">{{ formatCurrency(result.final_tax) }}</div>
+              <div class="breakdown-hint">Po bonuse</div>
+            </div>
+
+            <div class="breakdown-card highlight">
+              <div class="breakdown-icon">💸</div>
+              <div class="breakdown-label">Efektívna</div>
+              <div class="breakdown-value">{{ formatPercentage(result.effective_tax_rate) }}</div>
+              <div class="breakdown-hint">Celkom</div>
+            </div>
+          </div>
+
+          <!-- Detailed Table -->
+          <div class="details-card">
+            <h3 class="details-title">📋 Detailný výpočet</h3>
+            <div class="details-table">
+              <div class="detail-row header-row">
+                <span>Hrubá mzda</span>
+                <strong>{{ formatCurrency(result.gross_salary) }}</strong>
+              </div>
+              <div class="detail-row">
+                <span>👨‍👩‍👧 Sociálne (9.4%)</span>
+                <span class="negative">- {{ formatCurrency(result.social_insurance) }}</span>
+              </div>
+              <div class="detail-row">
+                <span>🏥 Zdravotné ({{ hasDisability ? '2.5% ZŤP' : '5%' }})</span>
+                <span class="negative">- {{ formatCurrency(result.health_insurance) }}</span>
+              </div>
+              <div class="detail-row subtotal">
+                <span>Daňový základ</span>
+                <span>{{ formatCurrency(result.tax_base) }}</span>
+              </div>
+              <div class="detail-row" *ngIf="result.apply_nontaxable_amount">
+                <span>📋 NČZD</span>
+                <span class="positive">- {{ formatCurrency(result.non_taxable_amount) }}</span>
+              </div>
+              <div class="detail-row subtotal">
+                <span>Zdaniteľný základ</span>
+                <span>{{ formatCurrency(result.taxable_base) }}</span>
+              </div>
+              <div class="detail-row">
+                <span>📊 Daň (progresívna)</span>
+                <span class="negative">- {{ formatCurrency(result.income_tax) }}</span>
+              </div>
+              <div class="detail-row" *ngIf="result.total_children > 0">
+                <span>👶 Bonus za deti</span>
+                <span class="positive">+ {{ formatCurrency(result.child_tax_bonus) }}</span>
+              </div>
+              <div class="detail-row total-row">
+                <strong>💰 Čistá mzda</strong>
+                <strong class="positive">{{ formatCurrency(result.net_salary) }}</strong>
+              </div>
+              
+              <!-- Employer costs separator -->
+              <div class="detail-row" style="border-top: 2px dashed #e2e8f0; margin-top: 15px; padding-top: 15px; opacity: 0.7;">
+                <span style="font-size: 0.85rem; color: #718096;"><strong>🏭 Náklady zamestnávateľa</strong></span>
+                <span></span>
+              </div>
+              <div class="detail-row">
+                <span>Hrubá mzda zamestnanca</span>
+                <span>{{ formatCurrency(result.gross_salary) }}</span>
+              </div>
+              <div class="detail-row">
+                <span>� Odvody zamestnávateľa (36.2%)</span>
+                <span class="negative">+ {{ formatCurrency(result.total_employer_contributions) }}</span>
+              </div>
+              <div class="detail-row total-row">
+                <strong>💸 Superhrubá mzda</strong>
+                <strong style="color: #dc2626;">{{ formatCurrency(result.super_gross_salary) }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

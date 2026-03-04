@@ -1,0 +1,102 @@
+<div class="home-container">
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1 class="hero-title">
+        Praktické kalkulačky <br/>
+        <span class="gradient-text">pre Slovensko</span>
+      </h1>
+      <p class="hero-subtitle">
+        Presné výpočty pre mzdy, hypotéky, DPH a ďalšie. 
+      </p>
+      <div class="hero-badges">
+        <span class="badge">🚀 Rýchle</span>
+        <span class="badge">✅ Presné</span>
+        <span class="badge">💯 Zadarmo</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Calculators Grid -->
+  <section class="calculators-section">
+    <h2 class="section-title">Dostupné kalkulačky</h2>
+    <div class="calculators-grid">
+      <a 
+        *ngFor="let calc of calculators" 
+        [routerLink]="calc.route"
+        class="calculator-card"
+        [attr.data-color]="calc.id"
+      >
+        <div class="card-header" [ngClass]="'bg-gradient-to-br ' + calc.color">
+          <span class="card-icon">{{ calc.icon }}</span>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">{{ calc.title }}</h3>
+          <p class="card-description">{{ calc.description }}</p>
+          <div class="card-footer">
+            <span class="cta-arrow">→</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- Blog Section -->
+  <section class="blog-section">
+    <div class="section-header">
+      <h2 class="section-title">📰 Blog & Aktuality</h2>
+      <a routerLink="/blog" class="view-all-link">Zobraziť všetko →</a>
+    </div>
+    <p class="section-subtitle">
+      Najnovšie informácie o daniach, zmenách v zákonoch a praktické tipy pre vaše financie
+    </p>
+    <div class="blog-preview-grid">
+      <!-- Blog cards will be loaded here dynamically -->
+      <div class="blog-preview-card coming-soon">
+        <div class="blog-card-icon">📊</div>
+        <h3>Zmeny v daniach 2026</h3>
+        <p>Progresívne zdanenie, nové sadzby a čo to znamená pre vašu mzdu</p>
+        <span class="blog-cta">Čítať článok →</span>
+      </div>
+      <div class="blog-preview-card coming-soon">
+        <div class="blog-card-icon">💰</div>
+        <h3>Ako ušetriť na daniach</h3>
+        <p>Praktické tipy pre zníženie daňovej záťaže legálnymi metódami</p>
+        <span class="blog-cta">Čítať článok →</span>
+      </div>
+      <div class="blog-preview-card coming-soon">
+        <div class="blog-card-icon">🏠</div>
+        <h3>Hypotéky v roku 2026</h3>
+        <p>Trendy úrokových sadzieb a ako vybrať najvýhodnejší úver</p>
+        <span class="blog-cta">Čítať článok →</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Trust Us Section -->
+  <section class="trust-section">
+    <h2 class="section-title">Prečo Kalkulačky.sk?</h2>
+    <div class="features-grid">
+      <div class="feature">
+        <div class="feature-icon">⚡</div>
+        <h3>Okamžité výsledky</h3>
+        <p>Bez čakania, bez registrácie. Vypočítajte za sekundy.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🎯</div>
+        <h3>Presné pre Slovensko</h3>
+        <p>Aktuálne sadzby daní, odvodov a DPH pre rok 2026.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📱</div>
+        <h3>Funguje všade</h3>
+        <p>Responzívny dizajn. Perfektné na mobile, tablete aj PC.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔒</div>
+        <h3>Súkromie</h3>
+        <p>Vaše dáta zostávajú vo vašom prehliadači. Nič neukladáme.</p>
+      </div>
+    </div>
+  </section>
+</div>

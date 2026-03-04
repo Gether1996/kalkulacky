@@ -1,0 +1,241 @@
+<div class="calculator-container">
+  <!-- Header -->
+  <div class="calculator-header">
+    <a routerLink="/" class="back-button">← Späť na hlavnú stránku</a>
+    <h1 class="calculator-title">🧾 DPH Kalkulačka</h1>
+    <p class="calculator-subtitle">
+      Jednoducho pripočítajte alebo odpočítajte DPH z akejkoľvek sumy. Štandardná sazba DPH na Slovensku je od 1.1.2026 <strong>23%</strong>.
+    </p>
+  </div>
+
+  <!-- Calculator Body -->
+  <div class="calculator-body">
+    <!-- Input Section -->
+    <div class="input-section">
+      <h2 class="section-title">Zadajte údaje</h2>
+
+      <!-- Amount Input -->
+      <div class="input-group">
+        <label class="input-label">Čiastka</label>
+        <div class="input-wrapper">
+          <input
+            type="number"
+            [(ngModel)]="amount"
+            (ngModelChange)="calculate()"
+            class="input-field"
+            min="0"
+            step="0.01"
+          />
+          <span class="currency-symbol">€</span>
+        </div>
+      </div>
+
+      <!-- VAT Rate Input -->
+      <div class="input-group">
+        <label class="input-label">Sazba DPH (%)</label>
+        <div class="vat-rate-group">
+          <input
+            type="number"
+            [(ngModel)]="vatRate"
+            (ngModelChange)="calculate()"
+            class="vat-rate-input"
+            min="0"
+            max="100"
+            step="0.1"
+          />
+          <div class="vat-rate-presets">
+            <button
+              type="button"
+              class="preset-btn"
+              [class.active]="vatRate === 23"
+              (click)="vatRate = 23; calculate()"
+            >
+              23% (Základná)
+            </button>
+            <button
+              type="button"
+              class="preset-btn"
+              [class.active]="vatRate === 19"
+              (click)="vatRate = 19; calculate()"
+            >
+              19% (Znížená 1)
+            </button>
+            <button
+              type="button"
+              class="preset-btn"
+              [class.active]="vatRate === 5"
+              (click)="vatRate = 5; calculate()"
+            >
+              5% (Znížená 2)
+            </button>
+            <button
+              type="button"
+              class="preset-btn"
+              [class.active]="vatRate === 0"
+              (click)="vatRate = 0; calculate()"
+            >
+              0% (Oslobodené)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Operation Toggle -->
+      <div class="input-group">
+        <label class="input-label">Operácia</label>
+        <div class="operation-toggle">
+          <button
+            type="button"
+            class="operation-btn"
+            [class.active]="calculation_type === 'add_vat'"
+            (click)="calculation_type = 'add_vat'; calculate()"
+          >
+            ➕ Pridať DPH
+          </button>
+          <button
+            type="button"
+            class="operation-btn"
+            [class.active]="calculation_type === 'remove_vat'"
+            (click)="calculation_type = 'remove_vat'; calculate()"
+          >
+            ➖ Odstrániť DPH
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Scenarios -->
+      <div class="benchmarks">
+        <div class="benchmarks-label">⚡ Rýchle scenáre</div>
+        <div class="benchmarks-grid">
+          <button
+            *ngFor="let scenario of scenarios"
+            type="button"
+            class="benchmark-button"
+            (click)="applyScenario(scenario.amount)"
+          >
+            <span class="scenario-icon">{{ scenario.icon }}</span>
+            <strong>{{ scenario.amount | number:'1.0-0' }}€</strong>
+            <small>{{ scenario.label }}</small>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Počítam...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !isLoading" class="error-state">
+      {{ error }}
+    </div>
+
+    <!-- Results Section -->
+    <div *ngIf="result && !isLoading && !error" class="results-section">
+      <h2 class="section-title">Výsledky</h2>
+
+      <!-- Big Result Card -->
+      <div class="big-result-card">
+        <div class="result-label">
+          {{ calculation_type === 'add_vat' ? 'CELKOVÁ SUMA S DPH' : 'SUMA BEZ DPH' }}
+        </div>
+        <div class="result-value">
+          {{ formatCurrency(calculation_type === 'add_vat' ? result.amount_with_vat : result.amount_without_vat) }} €
+        </div>
+        <div class="result-comparison">
+          {{ calculation_type === 'add_vat' ? 'Včetně DPH' : 'Bez DPH' }} {{ vatRate }}%
+        </div>
+      </div>
+
+      <!-- Breakdown Grid -->
+      <div class="breakdown-grid">
+        <div class="breakdown-card">
+          <div class="breakdown-icon">💰</div>
+          <div class="breakdown-label">Suma bez DPH</div>
+          <div class="breakdown-value">{{ formatCurrency(result.amount_without_vat) }} €</div>
+        </div>
+
+        <div class="breakdown-card highlight">
+          <div class="breakdown-icon">🧾</div>
+          <div class="breakdown-label">Výška DPH ({{ vatRate }}%)</div>
+          <div class="breakdown-value">{{ formatCurrency(result.vat_amount) }} €</div>
+          <div class="breakdown-hint">Daň z pridanej hodnoty</div>
+        </div>
+
+        <div class="breakdown-card">
+          <div class="breakdown-icon">📊</div>
+          <div class="breakdown-label">Suma s DPH</div>
+          <div class="breakdown-value">{{ formatCurrency(result.amount_with_vat) }} €</div>
+        </div>
+      </div>
+
+      <!-- Details Table -->
+      <div class="details-table">
+        <h3 class="details-title">📋 Detailný rozpis</h3>
+        <table>
+          <tbody>
+            <tr>
+              <td><strong>Pôvodná čiastka:</strong></td>
+              <td class="text-right">{{ formatCurrency(amount) }} €</td>
+            </tr>
+            <tr>
+              <td><strong>Operácia:</strong></td>
+              <td class="text-right">{{ calculation_type === 'add_vat' ? 'Pridať DPH' : 'Odstrániť DPH' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Sazba DPH:</strong></td>
+              <td class="text-right">{{ vatRate }}%</td>
+            </tr>
+            <tr class="divider">
+              <td colspan="2"></td>
+            </tr>
+            <tr>
+              <td><strong>Suma bez DPH:</strong></td>
+              <td class="text-right text-blue">{{ formatCurrency(result.amount_without_vat) }} €</td>
+            </tr>
+            <tr>
+              <td><strong>Výška DPH:</strong></td>
+              <td class="text-right text-red">{{ formatCurrency(result.vat_amount) }} €</td>
+            </tr>
+            <tr class="total-row">
+              <td><strong>Suma s DPH:</strong></td>
+              <td class="text-right"><strong>{{ formatCurrency(result.amount_with_vat) }} €</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Formula Explanation -->
+      <div class="formula-section">
+        <h3 class="formula-title">🧮 Vzorec pre výpočet</h3>
+        <div class="formula-box" *ngIf="calculation_type === 'add_vat'">
+          <div class="formula">Suma s DPH = Suma bez DPH × (1 + {{ vatRate / 100 }})</div>
+          <div class="formula-example">
+            {{ formatCurrency(result.amount_without_vat) }} € × {{ 1 + vatRate / 100 }} = <strong>{{ formatCurrency(result.amount_with_vat) }} €</strong>
+          </div>
+        </div>
+        <div class="formula-box" *ngIf="calculation_type === 'remove_vat'">
+          <div class="formula">Suma bez DPH = Suma s DPH ÷ (1 + {{ vatRate / 100 }})</div>
+          <div class="formula-example">
+            {{ formatCurrency(result.amount_with_vat) }} € ÷ {{ 1 + vatRate / 100 }} = <strong>{{ formatCurrency(result.amount_without_vat) }} €</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Section -->
+  <div class="info-section">
+    <h3>📚 Informácie o DPH na Slovensku (2026)</h3>
+    <ul>
+      <li><strong>Štandardná sazba:</strong> 23% - platí pre väčšinu tovarov a služieb (zmena od 1.1.2026)</li>
+      <li><strong>Znížená sazba 1:</strong> 19% - lieky, knihy, zdravotnícke pomôcky, väčšina potravín</li>
+      <li><strong>Znížená sazba 2:</strong> 5% - vybrané potraviny (bez zvyšeného obsahu cukru/soli), zdravotnícke pomôcky</li>
+      <li><strong>Nulová sazba:</strong> 0% - export do krajín mimo EÚ, niektoré finančné služby</li>
+      <li><strong>Limit pre registráciu:</strong> Podnikateľ je povinný registrovať sa ako platiteľ DPH, ak jeho obrat presiahol 49 790 € za predchádzajúcich 12 po sebe nasledujúcich mesiacov</li>
+      <li><strong>Evidencia DPH:</strong> Platitelia DPH musia viesť evidenciu prijatých a vydaných faktúr a pravidelne podávať daňové priznania</li>
+    </ul>
+  </div>
+</div>

@@ -1,0 +1,95 @@
+<div class="blog-container">
+  <!-- Header -->
+  <header class="blog-header">
+    <a routerLink="/" class="back-button">← Späť</a>
+    <h1 class="blog-title">📰 Blog</h1>
+    <p class="blog-subtitle">
+      Praktické tipy, návody a aktuality o slovenských daniach, kalkulačkách a financiách
+    </p>
+  </header>
+
+  <!-- Category Filter -->
+  <section class="category-filter" *ngIf="categories.length > 0">
+    <button 
+      (click)="filterByCategory(null)"
+      class="category-chip"
+      [class.active]="selectedCategory === null"
+    >
+      Všetko
+    </button>
+    <button 
+      *ngFor="let category of categories"
+      (click)="filterByCategory(category.slug)"
+      class="category-chip"
+      [class.active]="selectedCategory === category.slug"
+      [style.background-color]="selectedCategory === category.slug ? category.color : 'transparent'"
+      [style.border-color]="category.color"
+      [style.color]="selectedCategory === category.slug ? '#fff' : category.color"
+    >
+      {{ category.icon }} {{ category.name }} ({{ category.post_count }})
+    </button>
+  </section>
+
+  <!-- Blog Posts Grid -->
+  <section class="blog-grid" *ngIf="!loading && posts.length > 0">
+    <article 
+      *ngFor="let post of filteredPosts" 
+      class="blog-card"
+      [routerLink]="getPostUrl(post.slug)"
+    >
+      <!-- Featured Image -->
+      <div 
+        class="blog-card-image" 
+        *ngIf="post.featured_image_url"
+        [style.background-image]="'url(' + post.featured_image_url + ')'"
+      ></div>
+      
+      <!-- Content -->
+      <div class="blog-card-content">
+        <!-- Category Badge -->
+        <span 
+          class="category-badge"
+          [style.background-color]="post.category_color"
+        >
+          {{ post.category_name }}
+        </span>
+        
+        <!-- Title -->
+        <h2 class="blog-card-title">{{ post.title }}</h2>
+        
+        <!-- Excerpt -->
+        <p class="blog-card-excerpt">{{ post.excerpt }}</p>
+        
+        <!-- Meta -->
+        <div class="blog-card-meta">
+          <span class="meta-item">📅 {{ formatDate(post.published_at) }}</span>
+          <span class="meta-item">👁️ {{ post.view_count }} zobrazení</span>
+          <span class="meta-item">⏱️ {{ post.read_time }}</span>
+        </div>
+        
+        <!-- Tags -->
+        <div class="blog-card-tags" *ngIf="post.tags_list.length > 0">
+          <span *ngFor="let tag of post.tags_list" class="tag-chip">
+            #{{ tag }}
+          </span>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Načítavam blogy...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && posts.length === 0">
+    <p>📭 Zatiaľ žiadne blogové príspevky</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state" *ngIf="error">
+    <p>❌ {{ error }}</p>
+  </div>
+</div>

@@ -1,0 +1,361 @@
+.blog-detail-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Header */
+.blog-detail-header {
+  margin-bottom: 3rem;
+}
+
+.back-button {
+  display: inline-block;
+  color: #6B7280;
+  text-decoration: none;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.back-button:hover {
+  color: #3B82F6;
+}
+
+.category-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 1.5rem;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+
+.blog-detail-title {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #1F2937;
+  line-height: 1.2;
+  margin: 0 0 1.5rem 0;
+}
+
+.blog-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid #E5E7EB;
+}
+
+.meta-item {
+  font-size: 1rem;
+  color: #6B7280;
+}
+
+.blog-detail-featured-image {
+  width: 100%;
+  height: 400px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 1rem;
+  margin-bottom: 3rem;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Content */
+.blog-detail-content {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: #374151;
+}
+
+.blog-excerpt {
+  font-size: 1.25rem;
+  color: #6B7280;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #F9FAFB;
+  border-left: 4px solid #3B82F6;
+  border-radius: 0.5rem;
+}
+
+.blog-html-content {
+  margin-bottom: 3rem;
+}
+
+/* Style for HTML content */
+.blog-html-content h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 2.5rem 0 1rem 0;
+}
+
+.blog-html-content h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 2rem 0 0.75rem 0;
+}
+
+.blog-html-content p {
+  margin: 1rem 0;
+}
+
+.blog-html-content ul,
+.blog-html-content ol {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+.blog-html-content li {
+  margin: 0.5rem 0;
+}
+
+.blog-html-content a {
+  color: #3B82F6;
+  text-decoration: underline;
+}
+
+.blog-html-content a:hover {
+  color: #2563EB;
+}
+
+.blog-html-content code {
+  background: #F3F4F6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.95em;
+}
+
+.blog-html-content pre {
+  background: #1F2937;
+  color: #F9FAFB;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.blog-html-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+.blog-html-content th,
+.blog-html-content td {
+  border: 1px solid #E5E7EB;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.blog-html-content th {
+  background: #F3F4F6;
+  font-weight: 600;
+}
+
+.blog-html-content blockquote {
+  border-left: 4px solid #3B82F6;
+  padding-left: 1.5rem;
+  margin: 1.5rem 0;
+  color: #6B7280;
+  font-style: italic;
+}
+
+/* Tags */
+.blog-tags {
+  margin: 3rem 0;
+  padding-top: 2rem;
+  border-top: 2px solid #E5E7EB;
+}
+
+.blog-tags h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1F2937;
+  margin-bottom: 1rem;
+}
+
+.tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag-chip {
+  padding: 0.5rem 1rem;
+  background: #EEF2FF;
+  color: #6366F1;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Related Calculator CTA */
+.related-calculator-cta {
+  margin: 3rem 0;
+}
+
+.cta-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 3rem;
+  border-radius: 1rem;
+  text-align: center;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.cta-card h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 1rem 0;
+}
+
+.cta-card p {
+  font-size: 1.125rem;
+  margin: 0 0 2rem 0;
+  opacity: 0.9;
+}
+
+.cta-button {
+  display: inline-block;
+  padding: 1rem 2rem;
+  background: white;
+  color: #667eea;
+  font-weight: 700;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  transition: transform 0.2s;
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+}
+
+/* Related Posts */
+.related-posts {
+  margin: 4rem 0;
+}
+
+.section-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1F2937;
+  margin-bottom: 2rem;
+}
+
+.related-posts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.related-post-card {
+  background: white;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.related-post-card:hover {
+  transform: translateY(-4px);
+}
+
+.related-post-image {
+  width: 100%;
+  height: 150px;
+  background-size: cover;
+  background-position: center;
+  background-color: #F3F4F6;
+}
+
+.related-post-content {
+  padding: 1.5rem;
+}
+
+.related-post-content h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0 0 0.5rem 0;
+}
+
+.related-post-content p {
+  font-size: 0.875rem;
+  color: #6B7280;
+  margin: 0 0 1rem 0;
+  line-height: 1.4;
+}
+
+.read-more {
+  color: #3B82F6;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+/* Loading/Error States */
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #6B7280;
+}
+
+.spinner {
+  border: 4px solid #E5E7EB;
+  border-top: 4px solid #3B82F6;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: 1rem;
+  color: #3B82F6;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .blog-detail-container {
+    padding: 1rem;
+  }
+  
+  .blog-detail-title {
+    font-size: 2rem;
+  }
+  
+  .blog-detail-featured-image {
+    height: 250px;
+  }
+  
+  .related-posts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .cta-card {
+    padding: 2rem 1.5rem;
+  }
+}

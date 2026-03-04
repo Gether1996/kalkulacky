@@ -1,0 +1,71 @@
+🎯 Programmatic SEO Ideas (No Scraping Required)
+#1: "Kalkulačky.sk" - Calculator Hub (NAJĽAHŠIE)
+Prečo je toto ideálne:
+
+✅ Zero external data - všetko je logika/vzorce
+✅ Build once, works forever - kalkulačky sa nemenia
+✅ High search volume - Slováci milujú kalkulačky
+✅ Fast to build - 1 calculator = 2-4 hodiny
+Calculators to Launch With (Top 20):
+
+Kalkulačka hypotéky - mortgage calculator
+
+SEO: "kalkulačka hypotéky" - 8,000+ searches/month 🔥
+Input: loan amount, interest rate, years
+Output: monthly payment, total interest, amortization table
+Kalkulačka DPH - VAT calculator
+
+SEO: "kalkulačka dph" - 5,000+/month
+Input: amount with/without VAT
+Output: VAT amount, base, total
+Čistá mzda kalkulačka - net salary
+
+SEO: "čistá mzda kalkulačka" - 12,000+/month 🔥🔥
+Input: gross salary
+Output: net salary (SK taxes 2026)
+Kalkulačka úveru - loan calculator
+
+SEO: "kalkulačka úveru" - 6,000+/month
+Kalkulačka spotreby auta - fuel cost
+
+SEO: "spotreba auta kalkulačka" - 3,000+/month
+Input: distance, fuel consumption, fuel price
+Kalkulačka BMI - body mass index
+
+SEO: "bmi kalkulačka" - 10,000+/month 🔥
+Kalkulačka dôchodku - pension calculator
+
+Input: current age, salary, years worked
+Kalkulačka dovolenky - vacation days
+
+SEO: "dovolenka kalkulačka" - 2,000+/month
+Kalkulačka SZČO daní - freelancer taxes
+
+SEO: "dane szčo kalkulačka" - 1,500+/month
+Kalkulačka renovácie - renovation cost estimator
+
+Input: square meters, renovation type
+Output: estimated cost
+Kalkulačka inflácie - inflation calculator
+
+Kalkulačka ROI - investment return
+
+Kalkulačka energie - electricity cost
+
+Kalkulačka tehotenstva - pregnancy calculator
+
+Kalkulačka BMR - basal metabolic rate
+
+Kalkulačka splátky - payment calculator
+
+Kalkulačka percent - percentage calculator
+
+Kalkulačka cestovných nákladov - travel cost
+
+Kalkulačka poplatkov - fees calculator (real estate, notary)
+
+Kalkulačka odpracovaných hodín - hours worked
+
+je toto dobry napad na vytvorenie maleho pasivneho prijmu? ak sa nam podari spravit dokladne vsetky tieto kalkulacky, ako potom zariadim aby pri googleni odporucalo nas web
+
+Problém je v Angulare - dáta sa načítajú, ale template sa neaktualizuje! To je pravdepodobne kvôli change detection. Skúsim pridať ChangeDetectorRef:

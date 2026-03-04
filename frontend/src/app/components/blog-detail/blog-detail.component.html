@@ -1,0 +1,98 @@
+<div class="blog-detail-container" *ngIf="!loading && post">
+  <!-- Header -->
+  <header class="blog-detail-header">
+    <a routerLink="/blog" class="back-button">← Späť na blog</a>
+    
+    <!-- Category Badge -->
+    <span class="category-badge" [style.background-color]="post.category.color">
+      {{ post.category.icon }} {{ post.category.name }}
+    </span>
+    
+    <!-- Title -->
+    <h1 class="blog-detail-title">{{ post.title }}</h1>
+    
+    <!-- Meta Information -->
+    <div class="blog-detail-meta">
+      <span class="meta-item">📅 {{ formatDate(post.published_at) }}</span>
+      <span class="meta-item">👁️ {{ post.view_count }} zobrazení</span>
+      <span class="meta-item">⏱️ {{ post.read_time }}</span>
+    </div>
+    
+    <!-- Featured Image -->
+    <div 
+      class="blog-detail-featured-image" 
+      *ngIf="post.featured_image_url"
+      [style.background-image]="'url(' + post.featured_image_url + ')'"
+    ></div>
+  </header>
+
+  <!-- Content -->
+  <article class="blog-detail-content">
+    <!-- Excerpt -->
+    <div class="blog-excerpt">
+      <strong>{{ post.excerpt }}</strong>
+    </div>
+    
+    <!-- Main Content (HTML) -->
+    <div class="blog-html-content" [innerHTML]="safeHtmlContent"></div>
+    
+    <!-- Tags -->
+    <div class="blog-tags" *ngIf="post.tags_list.length > 0">
+      <h3>Štítky:</h3>
+      <div class="tags-list">
+        <span *ngFor="let tag of post.tags_list" class="tag-chip">
+          #{{ tag }}
+        </span>
+      </div>
+    </div>
+  </article>
+
+  <!-- Related Calculator CTA -->
+  <section class="related-calculator-cta" *ngIf="post.related_calculator">
+    <div class="cta-card">
+      <h2>🧮 Vyskúšajte si kalkulačku</h2>
+      <p>Prepočítajte si svoje údaje naživo pomocou našej interaktívnej kalkulačky</p>
+      <a 
+        [routerLink]="getCalculatorRoute(post.related_calculator)" 
+        class="cta-button"
+      >
+        Otvoriť kalkulačku →
+      </a>
+    </div>
+  </section>
+
+  <!-- Related Posts -->
+  <section class="related-posts" *ngIf="post.related_posts.length > 0">
+    <h2 class="section-title">📚 Podobné články</h2>
+    <div class="related-posts-grid">
+      <article 
+        *ngFor="let relatedPost of post.related_posts" 
+        class="related-post-card"
+        [routerLink]="'/blog/' + relatedPost.slug"
+      >
+        <div 
+          class="related-post-image" 
+          *ngIf="relatedPost.featured_image_url"
+          [style.background-image]="'url(' + relatedPost.featured_image_url + ')'"
+        ></div>
+        <div class="related-post-content">
+          <h3>{{ relatedPost.title }}</h3>
+          <p>{{ relatedPost.excerpt }}</p>
+          <span class="read-more">Čítať viac →</span>
+        </div>
+      </article>
+    </div>
+  </section>
+</div>
+
+<!-- Loading State -->
+<div class="loading-state" *ngIf="loading">
+  <div class="spinner"></div>
+  <p>Načítavam článok...</p>
+</div>
+
+<!-- Error State -->
+<div class="error-state" *ngIf="error">
+  <p>❌ {{ error }}</p>
+  <a routerLink="/blog" class="back-link">← Späť na blog</a>
+</div>
