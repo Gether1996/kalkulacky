@@ -1,0 +1,198 @@
+<div class="calculator-page">
+  <div class="calculator-header">
+    <h1>🧮 Základná kalkulačka</h1>
+    <p class="subtitle">Klasická vedecká kalkulačka s pokročilými funkciami</p>
+  </div>
+
+  <div class="calculator-wrapper">
+    <div class="calculator">
+      <!-- Display Section -->
+      <div class="calculator-display-section">
+        <div class="calculator-memory" [class.active]="memory !== 0">
+          <span *ngIf="memory !== 0">M</span>
+        </div>
+        <div class="calculator-operation" *ngIf="currentOperation && previousValue !== 0">
+          {{ previousValue }} {{ currentOperation }}
+        </div>
+        <div class="calculator-display" [class.error]="error">
+          {{ getFormattedDisplay() }}
+        </div>
+      </div>
+
+      <!-- History Toggle -->
+      <button class="history-toggle" (click)="toggleHistory()" [class.active]="showHistory">
+        📜 História
+      </button>
+
+      <!-- Calculator Buttons -->
+      <div class="calculator-buttons">
+        <!-- Row 1: Memory & Advanced Functions -->
+        <button class="btn btn-memory" (click)="memoryClear()" title="Memory Clear">MC</button>
+        <button class="btn btn-memory" (click)="memoryRecall()" title="Memory Recall">MR</button>
+        <button class="btn btn-memory" (click)="memoryAdd()" title="Memory Add">M+</button>
+        <button class="btn btn-memory" (click)="memorySubtract()" title="Memory Subtract">M-</button>
+
+        <!-- Row 2: Scientific Functions -->
+        <button class="btn btn-function" (click)="percentage()" title="Percentage">%</button>
+        <button class="btn btn-function" (click)="squareRoot()" title="Square Root">√</button>
+        <button class="btn btn-function" (click)="square()" title="Square">x²</button>
+        <button class="btn btn-function" (click)="reciprocal()" title="Reciprocal">1/x</button>
+
+        <!-- Row 3: Clear Functions -->
+        <button class="btn btn-clear" (click)="clear()" title="Clear All">C</button>
+        <button class="btn btn-clear" (click)="clearEntry()" title="Clear Entry">CE</button>
+        <button class="btn btn-clear" (click)="backspace()" title="Backspace">⌫</button>
+        <button class="btn btn-operation" (click)="performOperation('÷')" title="Divide">÷</button>
+
+        <!-- Row 4: Numbers 7-9 -->
+        <button class="btn btn-number" (click)="inputNumber('7')">7</button>
+        <button class="btn btn-number" (click)="inputNumber('8')">8</button>
+        <button class="btn btn-number" (click)="inputNumber('9')">9</button>
+        <button class="btn btn-operation" (click)="performOperation('×')" title="Multiply">×</button>
+
+        <!-- Row 5: Numbers 4-6 -->
+        <button class="btn btn-number" (click)="inputNumber('4')">4</button>
+        <button class="btn btn-number" (click)="inputNumber('5')">5</button>
+        <button class="btn btn-number" (click)="inputNumber('6')">6</button>
+        <button class="btn btn-operation" (click)="performOperation('-')" title="Subtract">-</button>
+
+        <!-- Row 6: Numbers 1-3 -->
+        <button class="btn btn-number" (click)="inputNumber('1')">1</button>
+        <button class="btn btn-number" (click)="inputNumber('2')">2</button>
+        <button class="btn btn-number" (click)="inputNumber('3')">3</button>
+        <button class="btn btn-operation" (click)="performOperation('+')" title="Add">+</button>
+
+        <!-- Row 7: Zero & Decimal -->
+        <button class="btn btn-number" (click)="toggleSign()" title="Plus/Minus">±</button>
+        <button class="btn btn-number" (click)="inputNumber('0')">0</button>
+        <button class="btn btn-number" (click)="inputDecimal()" title="Decimal">.</button>
+        <button class="btn btn-equals" (click)="equals()" title="Equals">=</button>
+      </div>
+    </div>
+
+    <!-- History Panel -->
+    <div class="history-panel" [class.visible]="showHistory">
+      <div class="history-header">
+        <h3>📜 História výpočtov</h3>
+        <button class="btn-clear-history" (click)="clearHistory()" *ngIf="history.length > 0">
+          Vymazať
+        </button>
+      </div>
+
+      <div class="history-list" *ngIf="history.length > 0">
+        <div 
+          *ngFor="let item of history" 
+          class="history-item"
+          (click)="useHistoryValue(item.result)"
+        >
+          <div class="history-expression">{{ item.expression }}</div>
+          <div class="history-result">= {{ item.result }}</div>
+        </div>
+      </div>
+
+      <div class="history-empty" *ngIf="history.length === 0">
+        <p>Zatiaľ žiadna história výpočtov</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instructions -->
+  <div class="calculator-instructions">
+    <h2>🎯 Ako používať kalkulačku</h2>
+    
+    <div class="instructions-grid">
+      <div class="instruction-card">
+        <h3>⌨️ Klávesnica</h3>
+        <ul>
+          <li><strong>0-9</strong> - Čísla</li>
+          <li><strong>+ - * /</strong> - Operácie</li>
+          <li><strong>Enter/=</strong> - Výsledok</li>
+          <li><strong>Escape</strong> - Vymazať</li>
+          <li><strong>Backspace</strong> - Späť</li>
+          <li><strong>%</strong> - Percento</li>
+        </ul>
+      </div>
+
+      <div class="instruction-card">
+        <h3>🔧 Pokročilé funkcie</h3>
+        <ul>
+          <li><strong>√</strong> - Druhá odmocnina</li>
+          <li><strong>x²</strong> - Druhá mocnina</li>
+          <li><strong>1/x</strong> - Prevrátená hodnota</li>
+          <li><strong>%</strong> - Percento z hodnoty</li>
+          <li><strong>±</strong> - Zmena znamienka</li>
+        </ul>
+      </div>
+
+      <div class="instruction-card">
+        <h3>💾 Pamäť (Memory)</h3>
+        <ul>
+          <li><strong>MC</strong> - Vymazať pamäť</li>
+          <li><strong>MR</strong> - Načítať z pamäte</li>
+          <li><strong>M+</strong> - Pridať do pamäte</li>
+          <li><strong>M-</strong> - Odčítať z pamäte</li>
+        </ul>
+      </div>
+
+      <div class="instruction-card">
+        <h3>📝 Príklady použitia</h3>
+        <ul>
+          <li><strong>Zľava 20%:</strong> 100 × 20 % = 20</li>
+          <li><strong>Druhá mocnina:</strong> 5 × x² = 25</li>
+          <li><strong>Odmocnina:</strong> 16 √ = 4</li>
+          <li><strong>Prevrátená:</strong> 4 1/x = 0.25</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEO Content -->
+  <div class="seo-content">
+    <h2>🧮 Online kalkulačka zadarmo</h2>
+    <p>
+      Naša základná kalkulačka je perfektný nástroj pre každodenné výpočty. Ponúka všetky funkcie 
+      klasickej vedeckej kalkulačky vrátane pamäte, pokročilých matematických funkcií a histórie výpočtov.
+    </p>
+
+    <div class="features-grid">
+      <div class="feature-item">
+        <span class="feature-icon">⚡</span>
+        <h3>Rýchla a presná</h3>
+        <p>Okamžité výpočty bez oneskorenia</p>
+      </div>
+
+      <div class="feature-item">
+        <span class="feature-icon">⌨️</span>
+        <h3>Podpora klávesnice</h3>
+        <p>Zadávajte výpočty priamo z klávesnice</p>
+      </div>
+
+      <div class="feature-item">
+        <span class="feature-icon">📜</span>
+        <h3>História výpočtov</h3>
+        <p>Uchovávame vaše posledné výpočty</p>
+      </div>
+
+      <div class="feature-item">
+        <span class="feature-icon">💾</span>
+        <h3>Pamäť (Memory)</h3>
+        <p>Ukladajte medzivýsledky</p>
+      </div>
+    </div>
+
+    <div class="keywords-section">
+      <h3>📊 Funkcie kalkulačky</h3>
+      <div class="keyword-tags">
+        <span class="keyword-tag">základné operácie</span>
+        <span class="keyword-tag">percentá</span>
+        <span class="keyword-tag">druhá mocnina</span>
+        <span class="keyword-tag">odmocnina</span>
+        <span class="keyword-tag">prevrátená hodnota</span>
+        <span class="keyword-tag">pamäť</span>
+        <span class="keyword-tag">história výpočtov</span>
+        <span class="keyword-tag">online kalkulačka</span>
+        <span class="keyword-tag">vedecká kalkulačka</span>
+      </div>
+    </div>
+  </div>
+</div>

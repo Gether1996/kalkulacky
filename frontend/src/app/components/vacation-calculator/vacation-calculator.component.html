@@ -1,0 +1,329 @@
+<div class="calculator-container">
+  <!-- Header -->
+  <div class="calculator-header">
+    <h1>🏖️ Kalkulačka dovolenky</h1>
+    <p class="subtitle">Vypočítajte nárok na dovolenku podľa slovenského zákonníka práce</p>
+    <div class="seo-keywords">
+      <span class="keyword">Dovolenka</span>
+      <span class="keyword">Nárok na dovolenku</span>
+      <span class="keyword">Pracovné voľno</span>
+    </div>
+  </div>
+
+  <!-- Calculator Grid -->
+  <div class="calculator-grid">
+    <!-- Input Card -->
+    <div class="card">
+      <h2>Vaše údaje</h2>
+      
+      <!-- Age Input -->
+      <div class="input-group">
+        <label for="age">
+          Váš vek
+          <span class="tooltip" title="Vek ovplyvňuje nárok na dovolenku">ⓘ</span>
+        </label>
+        <input 
+          type="number" 
+          id="age"
+          [(ngModel)]="age"
+          min="15"
+          max="100"
+          class="input-field"
+          (change)="calculate()"
+        />
+      </div>
+
+      <!-- Employment Start Date -->
+      <div class="input-group">
+        <label for="employmentStartDate">
+          Dátum nástupu do zamestnania
+          <span class="tooltip" title="Kedy ste nastúpili do súčasného zamestnania">ⓘ</span>
+        </label>
+        <input 
+          type="date" 
+          id="employmentStartDate"
+          [(ngModel)]="employmentStartDate"
+          [max]="today"
+          class="input-field"
+          (change)="calculate()"
+        />
+      </div>
+
+      <!-- Current Date -->
+      <div class="input-group">
+        <label for="currentDate">
+          Aktuálny dátum
+          <span class="tooltip" title="Dátum výpočtu (predvolene dnes)">ⓘ</span>
+        </label>
+        <input 
+          type="date" 
+          id="currentDate"
+          [(ngModel)]="currentDate"
+          [max]="today"
+          class="input-field"
+          (change)="calculate()"
+        />
+      </div>
+
+      <!-- Vacation Days Used -->
+      <div class="input-group">
+        <label for="vacationDaysUsed">
+          Čerpané dni dovolenky (tento rok)
+          <span class="tooltip" title="Koľko dní dovolenky ste už čerpali tento rok">ⓘ</span>
+        </label>
+        <input 
+          type="number" 
+          id="vacationDaysUsed"
+          [(ngModel)]="vacationDaysUsed"
+          min="0"
+          step="0.5"
+          class="input-field"
+          (change)="calculate()"
+        />
+      </div>
+
+      <!-- Days Carried Over -->
+      <div class="input-group">
+        <label for="daysCarriedOver">
+          Prenesené dni z minulého roka
+          <span class="tooltip" title="Nevyčerpaná dovolenka z predchádzajúceho roka">ⓘ</span>
+        </label>
+        <input 
+          type="number" 
+          id="daysCarriedOver"
+          [(ngModel)]="daysCarriedOver"
+          min="0"
+          step="0.5"
+          class="input-field"
+          (change)="calculate()"
+        />
+      </div>
+
+      <!-- Planned Vacation Days -->
+      <div class="input-group">
+        <label for="plannedVacationDays">
+          Plánované dni dovolenky
+          <span class="tooltip" title="Koľko dní plánujete čerpať">ⓘ</span>
+        </label>
+        <input 
+          type="number" 
+          id="plannedVacationDays"
+          [(ngModel)]="plannedVacationDays"
+          min="0"
+          step="0.5"
+          class="input-field"
+          (change)="calculate()"
+        />
+      </div>
+
+      <!-- Info Box -->
+      <div class="info-box">
+        <h3>ℹ️ Slovenský zákonník práce</h3>
+        <p>
+          <strong>Základný nárok:</strong> 4 týždne (20 pracovných dní) ročne
+        </p>
+        <p>
+          <strong>Od 33 rokov:</strong> +1 týždeň (5 dní) navyše
+        </p>
+      </div>
+    </div>
+
+    <!-- Results Card -->
+    <div class="card">
+      <h2>Nárok na dovolenku</h2>
+      
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Počítam...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="error && !loading" class="error-message">
+        {{ error }}
+      </div>
+
+      <!-- Results -->
+      <div *ngIf="result && !loading && !error" class="results">
+        <!-- Remaining Days Highlight -->
+        <div class="result-highlight">
+          <div class="result-label">Zostávajúca dovolenka</div>
+          <div class="result-value">{{ formatNumber(result.current_year.remaining_days) }} dní</div>
+          <div class="result-sublabel">
+            {{ formatNumber(result.current_year.weeks_available) }} týždňov
+          </div>
+        </div>
+
+        <!-- Entitlement Card -->
+        <div class="entitlement-card">
+          <h3>Ročný nárok</h3>
+          <div class="entitlement-value">
+            {{ result.entitlement.annual_entitlement }} dní
+            <span class="badge" *ngIf="result.entitlement.has_age_bonus">
+              +{{ result.entitlement.age_bonus }} (vek {{ result.entitlement.age_threshold }}+)
+            </span>
+          </div>
+          <div class="entitlement-breakdown">
+            <div class="breakdown-item">
+              <span class="breakdown-label">Základný nárok:</span>
+              <span class="breakdown-value">{{ result.entitlement.base_days }} dní</span>
+            </div>
+            <div class="breakdown-item" *ngIf="result.entitlement.has_age_bonus">
+              <span class="breakdown-label">Bonus za vek:</span>
+              <span class="breakdown-value">{{ result.entitlement.age_bonus }} dní</span>
+            </div>
+          </div>
+          <p class="first-year-note" *ngIf="result.is_first_year">
+            ⚠️ Prvý rok zamestnania - nárok sa počíta pomerne
+          </p>
+        </div>
+
+        <!-- Current Year Status -->
+        <div class="current-year-card">
+          <h3>Stav dovolenky ({{ currentYear }})</h3>
+          <div class="year-stats">
+            <div class="stat-item">
+              <span class="stat-icon">📈</span>
+              <span class="stat-value">{{ formatNumber(result.current_year.days_accrued) }}</span>
+              <span class="stat-label">Nazbierané</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-icon">📦</span>
+              <span class="stat-value">{{ formatNumber(result.current_year.days_carried_over) }}</span>
+              <span class="stat-label">Prenesené</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-icon">✅</span>
+              <span class="stat-value">{{ formatNumber(result.current_year.total_available) }}</span>
+              <span class="stat-label">Celkom dostupné</span>
+            </div>
+            <div class="stat-item used">
+              <span class="stat-icon">✈️</span>
+              <span class="stat-value">{{ formatNumber(result.current_year.days_used) }}</span>
+              <span class="stat-label">Čerpané</span>
+            </div>
+          </div>
+
+          <!-- Usage Bar -->
+          <div class="usage-bar-container">
+            <div class="usage-bar">
+              <div class="usage-fill" 
+                   [style.width.%]="result.status.usage_percentage"
+                   [ngClass]="getUsageStatusColor(result.status.usage_percentage)">
+              </div>
+            </div>
+            <div class="usage-label">
+              {{ formatNumber(result.status.usage_percentage) }}% využité
+              <span class="usage-badge" [ngClass]="getUsageStatusColor(result.status.usage_percentage)">
+                {{ getUsageStatusLabel(result.status.usage_percentage) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Planning Card -->
+        <div class="planning-card" *ngIf="result.planning.planned_vacation_days > 0">
+          <h3>Plánovanie dovolenky</h3>
+          <div class="planning-item">
+            <span class="planning-label">Plánované dni:</span>
+            <span class="planning-value">{{ formatNumber(result.planning.planned_vacation_days) }} dní</span>
+          </div>
+          <div class="planning-item highlight">
+            <span class="planning-label">Zostane po plánovanej dovolenke:</span>
+            <span class="planning-value">{{ formatNumber(result.planning.days_after_planned) }} dní</span>
+          </div>
+          <div class="planning-status" 
+               [ngClass]="result.planning.can_take_planned ? 'success' : 'warning'">
+            <span *ngIf="result.planning.can_take_planned">
+              ✅ Môžete si vziať plánovanú dovolenku
+            </span>
+            <span *ngIf="!result.planning.can_take_planned">
+              ⚠️ Nedostatok dní na plánovanú dovolenku
+            </span>
+          </div>
+        </div>
+
+        <!-- Accrual Info -->
+        <div class="accrual-card">
+          <h3>Nazbieranie dovolenky</h3>
+          <div class="accrual-item">
+            <span class="accrual-label">Nazbieraté za mesiac:</span>
+            <span class="accrual-value">{{ formatNumber(result.accrual.accrual_per_month) }} dní</span>
+          </div>
+          <div class="accrual-item">
+            <span class="accrual-label">Mesiacov do konca roka:</span>
+            <span class="accrual-value">{{ result.accrual.months_until_year_end }}</span>
+          </div>
+          <div class="accrual-item highlight">
+            <span class="accrual-label">Projekcia do konca roka:</span>
+            <span class="accrual-value">{{ formatNumber(result.accrual.projected_accrual_by_year_end) }} dní</span>
+          </div>
+        </div>
+
+        <!-- Weeks Display -->
+        <div class="weeks-card">
+          <h3>Prehľad v týždňoch</h3>
+          <div class="weeks-grid">
+            <div class="week-box">
+              <span class="week-label">Zostáva</span>
+              <span class="week-value">{{ formatNumber(result.current_year.weeks_available) }}</span>
+              <span class="week-unit">týždňov</span>
+            </div>
+            <div class="week-box used">
+              <span class="week-label">Čerpané</span>
+              <span class="week-value">{{ formatNumber(result.current_year.weeks_used) }}</span>
+              <span class="week-unit">týždňov</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEO Content -->
+  <div class="seo-content">
+    <h2>O kalkulačke dovolenky</h2>
+    
+    <h3>Nárok na dovolenku na Slovensku</h3>
+    <p>
+      Podľa slovenského zákonníka práce (zákon č. 311/2001 Z. z.) má každý zamestnanec  
+      nárok na <strong>4 týždne dovolenky</strong> (20 pracovných dní) ročne. Od veku  
+      <strong>33 rokov</strong> sa tento nárok zvyšuje o <strong>1 týždeň</strong> (5 pracovných dní).
+    </p>
+
+    <h3>Ako sa počíta dovolenka?</h3>
+    <ul>
+      <li><strong>Základný nárok:</strong> 4 týždne = 20 pracovných dní</li>
+      <li><strong>Od 33 rokov:</strong> 5 týždňov = 25 pracovných dní</li>
+      <li><strong>Prvý rok:</strong> Nárok sa počíta pomerne podľa odpracovaných mesiacov</li>
+      <li><strong>Prenesenie:</strong> Nevyčerpaná dovolenka sa môže preniesť do nasledujúceho roka</li>
+    </ul>
+
+    <h3>Čerpanie dovolenky</h3>
+    <p>
+      Zamestnávateľ je povinný poskytnúť najmenej <strong>2 týždne neprerušenej dovolenky</strong>  
+      v kalendárnom roku. Zvyšnú časť dovolenky možno poskytnúť aj po častiach. Dovolenku  
+      určuje zamestnávateľ po dohode so zamestnancom.
+    </p>
+
+    <h3>Premlčanie nároku</h3>
+    <p>
+      Nárok na dovolenku zaniká, ak ju zamestnanec nevyčerpá do <strong>31. decembra  
+      nasledujúceho kalendárneho roka</strong>. Výnimkou sú prípady, keď zamestnanec nemohol  
+      čerpať dovolenku z vážnych dôvodov (choroba, rodičovská dovolenka).
+    </p>
+
+    <h3>Dodatočná dovolenka</h3>
+    <p>
+      Niektoré kategórie zamestnancov majú nárok na dodatočnú dovolenku (napr. učitelia,  
+      pracovníci v rizikových profesiách). Táto kalkulačka počíta základný nárok podľa  
+      zákonníka práce.
+    </p>
+  </div>
+
+  <!-- Navigation -->
+  <div class="navigation-links">
+
+    <a routerLink="/calculator/salary" class="nav-link">Čistá mzda kalkulačka →</a>
+  </div>
+</div>

@@ -1,0 +1,254 @@
+<div class="calculator-container">
+  <!-- Header -->
+  <div class="calculator-header">
+    <h1>🤰 Kalkulačka tehotenstva</h1>
+    <p class="subtitle">Vypočítajte termín pôrodu, týždeň tehotenstva a trimester</p>
+    <div class="seo-keywords">
+      <span class="keyword">Termín pôrodu</span>
+      <span class="keyword">Týždne tehotenstva</span>
+      <span class="keyword">Trimestre</span>
+    </div>
+  </div>
+
+  <!-- Calculator Grid -->
+  <div class="calculator-grid">
+    <!-- Input Card -->
+    <div class="card">
+      <h2>Výpočet termínu pôrodu</h2>
+      
+      <!-- Calculation Method Selection -->
+      <div class="method-selector">
+        <button 
+          class="method-btn" 
+          [class.active]="calculationMethod === 'lmp'"
+          (click)="calculationMethod = 'lmp'; onMethodChange()">
+          <span class="method-icon">📅</span>
+          <span class="method-label">Z poslednej menštruácie</span>
+          <span class="method-desc">Najčastejšia metóda</span>
+        </button>
+        
+        <button 
+          class="method-btn" 
+          [class.active]="calculationMethod === 'conception'"
+          (click)="calculationMethod = 'conception'; onMethodChange()">
+          <span class="method-icon">🎯</span>
+          <span class="method-label">Z dátumu počatia</span>
+          <span class="method-desc">Ak poznáte presný dátum</span>
+        </button>
+      </div>
+
+      <!-- Input Fields -->
+      <div class="inputs-container">
+        <!-- LMP Date Input -->
+        <div class="input-group" *ngIf="calculationMethod === 'lmp'">
+          <label for="lmpDate">
+            Prvý deň poslednej menštruácie
+            <span class="tooltip" title="Prvý deň vašej poslednej menštruácie">ⓘ</span>
+          </label>
+          <input 
+            type="date" 
+            id="lmpDate"
+            [(ngModel)]="lmpDate"
+            [max]="today"
+            class="input-field"
+            (change)="calculate()"
+          />
+        </div>
+
+        <!-- Conception Date Input -->
+        <div class="input-group" *ngIf="calculationMethod === 'conception'">
+          <label for="conceptionDate">
+            Dátum počatia (ovulácie)
+            <span class="tooltip" title="Približný dátum počatia alebo ovulácie">ⓘ</span>
+          </label>
+          <input 
+            type="date" 
+            id="conceptionDate"
+            [(ngModel)]="conceptionDate"
+            [max]="today"
+            class="input-field"
+            (change)="calculate()"
+          />
+        </div>
+
+        <!-- Current Date (optional override) -->
+        <div class="input-group">
+          <label for="currentDate">
+            Aktuálny dátum
+            <span class="tooltip" title="Dátum, ku ktorému počítame (predvolene dnes)">ⓘ</span>
+          </label>
+          <input 
+            type="date" 
+            id="currentDate"
+            [(ngModel)]="currentDate"
+            [max]="today"
+            class="input-field"
+            (change)="calculate()"
+          />
+        </div>
+      </div>
+
+      <!-- Calculate Button -->
+      <button class="calculate-btn" (click)="calculate()">
+        Vypočítať
+      </button>
+
+      <!-- Quick Info -->
+      <div class="info-box">
+        <h3>💡 Ako to funguje?</h3>
+        <p *ngIf="calculationMethod === 'lmp'">
+          Termín pôrodu sa počíta podľa <strong>Naegelovho pravidla</strong>: 
+          prvý deň poslednej menštruácie + 280 dní (40 týždňov).
+        </p>
+        <p *ngIf="calculationMethod === 'conception'">
+          Termín pôrodu je 266 dní (38 týždňov) od dátumu počatia.
+          Počatie zvyčajne nastáva 14 dní po začiatku poslednej menštruácie.
+        </p>
+      </div>
+    </div>
+
+    <!-- Results Card -->
+    <div class="card">
+      <h2>Výsledky</h2>
+      
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Počítam...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="error && !loading" class="error-message">
+        {{ error }}
+      </div>
+
+      <!-- Results -->
+      <div *ngIf="result && !loading && !error" class="results">
+        <!-- Due Date Highlight -->
+        <div class="result-highlight">
+          <div class="result-label">Predpokladaný termín pôrodu</div>
+          <div class="result-value">{{ formatDate(result.due_date) }}</div>
+          <div class="result-sublabel" *ngIf="result.is_past_due">⚠️ Po termíne</div>
+        </div>
+
+        <!-- Current Progress -->
+        <div class="progress-card">
+          <h3>Aktuálny stav tehotenstva</h3>
+          
+          <div class="week-display">
+            <span class="week-number">{{ result.current_week }}</span>
+            <span class="week-label">týždňov</span>
+            <span class="day-number">+ {{ result.current_day }}</span>
+            <span class="day-label">dní</span>
+          </div>
+
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="result.pregnancy_progress"></div>
+          </div>
+          <p class="progress-text">{{ result.pregnancy_progress }}% tehotenstva dokončené</p>
+
+          <div class="detail-grid">
+            <div class="detail-box">
+              <span class="detail-icon">📆</span>
+              <span class="detail-value">{{ result.days_remaining }}</span>
+              <span class="detail-label">dní do pôrodu</span>
+            </div>
+            <div class="detail-box">
+              <span class="detail-icon">⏰</span>
+              <span class="detail-value">{{ result.total_days_pregnant }}</span>
+              <span class="detail-label">dní v tehotenstve</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trimester Info -->
+        <div class="trimester-card">
+          <h3>{{ getTrimesterName(result.trimester) }}</h3>
+          <p class="trimester-weeks">{{ getTrimesterWeeks(result.trimester) }}</p>
+          
+          <div class="trimester-progress">
+            <div class="trimester-segments">
+              <div class="segment" [class.active]="result.trimester >= 1" [class.current]="result.trimester === 1">
+                <span class="segment-number">1</span>
+              </div>
+              <div class="segment" [class.active]="result.trimester >= 2" [class.current]="result.trimester === 2">
+                <span class="segment-number">2</span>
+              </div>
+              <div class="segment" [class.active]="result.trimester >= 3" [class.current]="result.trimester === 3">
+                <span class="segment-number">3</span>
+              </div>
+            </div>
+          </div>
+
+          <p class="trimester-description">
+            {{ getTrimesterDescription(result.trimester) }}
+          </p>
+
+          <div class="trimester-detail">
+            <span class="detail-label">Pokrok v trimestrze:</span>
+            <span class="detail-value">{{ result.trimester_progress }}%</span>
+          </div>
+        </div>
+
+        <!-- Important Dates -->
+        <div class="dates-card">
+          <h3>Dôležité dátumy</h3>
+          <div class="date-item">
+            <span class="date-label">Posledná menštruácia:</span>
+            <span class="date-value">{{ formatDate(result.lmp_date) }}</span>
+          </div>
+          <div class="date-item">
+            <span class="date-label">Približné počatie:</span>
+            <span class="date-value">{{ formatDate(result.conception_date) }}</span>
+          </div>
+          <div class="date-item highlight">
+            <span class="date-label">Termín pôrodu:</span>
+            <span class="date-value">{{ formatDate(result.due_date) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEO Content -->
+  <div class="seo-content">
+    <h2>O kalkulačke tehotenstva</h2>
+    
+    <h3>Ako vypočítať termín pôrodu?</h3>
+    <p>
+      Najpresnejšou metódou výpočtu termínu pôrodu je <strong>Naegelovo pravidlo</strong>, ktoré 
+      používajú lekári na celom svete. Tento výpočet pridá 280 dní (40 týždňov) k prvému dňu 
+      vašej poslednej menštruácie. Hoci iba 5% žien porodí presne v termíne, väčšina žien 
+      porodí v rozmedzí 2 týždňov pred alebo po tomto dátume.
+    </p>
+
+    <h3>Trimestre tehotenstva</h3>
+    <p>
+      Tehotenstvo je rozdelené na tri trimestre, každý s vlastnými míľnikmi:
+    </p>
+    <ul>
+      <li><strong>Prvý trimester (1-12 týždňov):</strong> Embryo sa vyvíja, tvoria sa základné orgány a systémy</li>
+      <li><strong>Druhý trimester (13-26 týždňov):</strong> Plod rastie, začínajú sa pohyby a vyvíjajú sa zmysly</li>
+      <li><strong>Tretí trimester (27-40 týždňov):</strong> Plod dozrieva a pripravuje sa na narodenie</li>
+    </ul>
+
+    <h3>Presnosť výpočtu</h3>
+    <p>
+      Je dôležité si uvedomiť, že termín pôrodu je <strong>len odhad</strong>. Mnoho faktorov môže 
+      ovplyvniť skutočný dátum pôrodu, vrátane dĺžky vášho menštruačného cyklu, času ovulácie, 
+      a individuálnych charakteristík tehotenstva. Ultrazvuk v prvom trimestri môže poskytnúť 
+      presnejší odhad termínu pôrodu.
+    </p>
+
+    <h3>Kedy kontaktovať lekára?</h3>
+    <p>
+      Hneď ako zistíte, že ste tehotná, mali by ste sa objednať na prvú prenatálnu prehliadku. 
+      Pravidelné lekárske kontroly sú kľúčové pre zdravie vás aj vášho dieťaťa.
+    </p>
+  </div>
+
+  <!-- Navigation -->
+  <div class="navigation-links">
+    <a routerLink="/calculator/bmi" class="nav-link">BMI kalkulačka →</a>
+  </div>
+</div>

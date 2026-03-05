@@ -1,0 +1,218 @@
+<div class="calculator-container">
+  <div class="calculator-header">
+    <h1>📊 ROI Kalkulačka</h1>
+    <p class="calculator-description">
+      Vypočítajte návratnosť investície (Return on Investment) a výkonnosť vašich investícií.
+    </p>
+  </div>
+
+  <div class="calculator-content">
+    <div class="input-section">
+      <h2>💰 Vstupné údaje</h2>
+
+      <div class="input-group">
+        <label for="initialInvestment">Počiatočná investícia</label>
+        <div class="input-with-unit">
+          <input
+            type="number"
+            id="initialInvestment"
+            [(ngModel)]="initialInvestment"
+            (ngModelChange)="calculate()"
+            min="0.01"
+            step="100"
+          />
+          <span class="unit">€</span>
+        </div>
+        <small>Suma, ktorú ste investovali na začiatku</small>
+      </div>
+
+      <div class="input-group">
+        <label for="finalValue">Konečná hodnota</label>
+        <div class="input-with-unit">
+          <input
+            type="number"
+            id="finalValue"
+            [(ngModel)]="finalValue"
+            (ngModelChange)="calculate()"
+            min="0"
+            step="100"
+          />
+          <span class="unit">€</span>
+        </div>
+        <small>Súčasná alebo konečná hodnota investície</small>
+      </div>
+
+      <div class="input-group">
+        <label for="additionalCosts">Dodatočné náklady</label>
+        <div class="input-with-unit">
+          <input
+            type="number"
+            id="additionalCosts"
+            [(ngModel)]="additionalCosts"
+            (ngModelChange)="calculate()"
+            min="0"
+            step="10"
+          />
+          <span class="unit">€</span>
+        </div>
+        <small>Poplatky, dane a ďalšie náklady (voliteľné)</small>
+      </div>
+
+      <div class="input-group">
+        <label for="investmentPeriodMonths">Obdobie investície</label>
+        <div class="input-with-unit">
+          <input
+            type="number"
+            id="investmentPeriodMonths"
+            [(ngModel)]="investmentPeriodMonths"
+            (ngModelChange)="calculate()"
+            min="1"
+            max="1200"
+            step="1"
+          />
+          <span class="unit">mesiacov</span>
+        </div>
+        <small>Doba trvania investície (voliteľné, pre ročný ROI)</small>
+      </div>
+
+      <div class="error-message" *ngIf="error">
+        ⚠️ {{ error }}
+      </div>
+    </div>
+
+    <div class="results-section" *ngIf="result">
+      <h2>📈 Výsledky</h2>
+
+      <!-- ROI Highlight -->
+      <div class="result-card highlight-card" [style.background]="'linear-gradient(135deg, ' + getROIColor(result.returns.roi_percentage) + ', ' + getROIColor(result.returns.roi_percentage) + 'dd)'">
+        <div class="card-icon">{{ result.returns.roi_percentage >= 0 ? '📈' : '📉' }}</div>
+        <div class="card-content">
+          <div class="card-label">ROI (Return on Investment)</div>
+          <div class="card-value">{{ formatPercent(result.returns.roi_percentage) }}</div>
+          <div class="card-details">
+            <span>{{ result.returns.status }}: {{ formatCurrency(result.returns.net_profit) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="summary-icon">💵</div>
+          <div class="summary-label">Celková investícia</div>
+          <div class="summary-value">{{ formatCurrency(result.investment.total_investment) }}</div>
+          <div class="summary-note" *ngIf="result.investment.additional_costs > 0">
+            + {{ formatCurrency(result.investment.additional_costs) }} náklady
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon">💰</div>
+          <div class="summary-label">Konečná hodnota</div>
+          <div class="summary-value">{{ formatCurrency(result.investment.final_value) }}</div>
+        </div>
+        <div class="summary-card" [class.profit]="result.returns.net_profit > 0" [class.loss]="result.returns.net_profit < 0">
+          <div class="summary-icon">{{ result.returns.net_profit >= 0 ? '✅' : '❌' }}</div>
+          <div class="summary-label">Čistý {{ result.returns.status }}</div>
+          <div class="summary-value" [style.color]="getROIColor(result.returns.roi_percentage)">
+            {{ formatCurrency(result.returns.net_profit) }}
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon">🎯</div>
+          <div class="summary-label">Výkonnosť</div>
+          <div class="summary-value">{{ result.performance.category }}</div>
+          <div class="summary-note">{{ result.performance.description }}</div>
+        </div>
+      </div>
+
+      <!-- Performance Details -->
+      <div class="detail-card" *ngIf="result.performance.annualized_roi">
+        <div class="detail-header">
+          <h3>📊 Ročný ROI</h3>
+        </div>
+        <div class="detail-body">
+          <div class="detail-row">
+            <span class="detail-label">Obdobie investície:</span>
+            <span class="detail-value">
+              {{ result.performance.investment_period_months }} mesiacov 
+              ({{ formatNumber(result.performance.investment_years, 1) }} rokov)
+            </span>
+          </div>
+          <div class="detail-row highlight">
+            <span class="detail-label">Ročný ROI:</span>
+            <span class="detail-value strong">{{ formatPercent(result.performance.annualized_roi) }}</span>
+          </div>
+          <div class="detail-row" *ngIf="result.performance.payback_period_months">
+            <span class="detail-label">Doba návratnosti:</span>
+            <span class="detail-value">
+              {{ formatNumber(result.performance.payback_period_months, 1) }} mesiacov
+              ({{ formatNumber(result.performance.payback_period_years, 1) }} rokov)
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analysis -->
+      <div class="detail-card">
+        <div class="detail-header">
+          <h3>🔍 Analýza</h3>
+        </div>
+        <div class="detail-body">
+          <div class="detail-row">
+            <span class="detail-label">Násobok investície:</span>
+            <span class="detail-value">{{ formatNumber(result.analysis.return_multiple, 2) }}×</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Zisk na 1 € investície:</span>
+            <span class="detail-value">{{ formatCurrency(result.analysis.profit_per_invested) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Marža:</span>
+            <span class="detail-value">{{ formatPercent(result.returns.margin) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Benchmarks Comparison -->
+      <div class="detail-card">
+        <div class="detail-header">
+          <h3>⚖️ Porovnanie s benchmarkmi</h3>
+        </div>
+        <div class="detail-body">
+          <div class="benchmark-list">
+            <div 
+              class="benchmark-item" 
+              *ngFor="let comp of result.analysis.comparisons"
+              [class.better]="comp.better"
+              [class.worse]="!comp.better"
+            >
+              <div class="benchmark-name">
+                <span class="benchmark-icon">{{ comp.better ? '✅' : '❌' }}</span>
+                {{ comp.benchmark }}
+              </div>
+              <div class="benchmark-values">
+                <span class="benchmark-roi">{{ formatPercent(comp.benchmark_roi) }}</span>
+                <span class="benchmark-diff" [class.positive]="comp.better" [class.negative]="!comp.better">
+                  {{ comp.difference > 0 ? '+' : '' }}{{ formatPercent(comp.difference) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Card -->
+      <div class="info-card">
+        <h3>ℹ️ Dôležité informácie</h3>
+        <ul>
+          <li>ROI = (Konečná hodnota - Celková investícia) / Celková investícia × 100%</li>
+          <li>Ročný ROI zohľadňuje čas a umožňuje porovnávať investície rôznej dĺžky.</li>
+          <li>Nezabudnite zahrnúť všetky náklady (poplatky, dane, provízie).</li>
+          <li>Výkonnost príemernéakciového trhu je historicky ~10% ročne.</li>
+          <li>Minulá výkonnosť nezaručuje budúce výnosy.</li>
+          <li>Zvážte aj riziko investície, nie len ROI.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

@@ -13,55 +13,302 @@ from .serializers import (
     SalaryCalculatorSerializer,
     MortgageCalculatorSerializer,
     VATCalculatorSerializer,
+    LoanCalculatorSerializer,
+    FuelCostCalculatorSerializer,
+    BMICalculatorSerializer,
+    PercentageCalculatorSerializer,
+    PregnancyCalculatorSerializer,
+    PensionCalculatorSerializer,
+    VacationCalculatorSerializer,
+    EnergyCalculatorSerializer,
+    BMRCalculatorSerializer,
+    PaymentCalculatorSerializer,
+    FreelancerTaxCalculatorSerializer,
+    InflationCalculatorSerializer,
+    ROICalculatorSerializer,
+    HoursWorkedCalculatorSerializer,
     CalculatorListSerializer,
+    UnitConverterSerializer,
+    SickLeaveCalculatorSerializer,
+    CarLeasingCalculatorSerializer,
+    AreaVolumeCalculatorSerializer,
+    SplitBillCalculatorSerializer,
 )
 from .services import (
     SalaryCalculator,
     MortgageCalculator,
     VATCalculator,
+    LoanCalculator,
+    FuelCostCalculator,
+    BMICalculator,
+    PercentageCalculator,
+    PregnancyCalculator,
+    PensionCalculator,
+    VacationCalculator,
+    EnergyCalculator,
+    BMRCalculator,
+    PaymentCalculator,
+    FreelancerTaxCalculator,
+    InflationCalculator,
+    ROICalculator,
+    HoursWorkedCalculator,
+    UnitConverterService,
+    SickLeaveCalculator,
+    CarLeasingCalculator,
+    AreaVolumeCalculator,
+    SplitBillCalculator,
 )
 
 
 class CalculatorListView(APIView):
     """
-    List all available calculators with metadata.
+    List all available calculators with metadata and categories.
     
     GET /api/calculators/
     """
     
     def get(self, request):
-        """Return list of all available calculators"""
-        calculators = [
-            {
-                'name': 'Čistá mzda',
-                'slug': 'salary',
-                'description': 'Výpočet čistej mzdy z hrubej mzdy (Slovak net salary calculator)',
-                'search_volume': 12000,
-                'endpoint': '/api/calculators/salary/',
-                'keywords': ['čistá mzda', 'kalkulačka mzdy', 'výpočet platu'],
+        """Return list of all available calculators organized by category"""
+        categories = {
+            'financial': {
+                'name': 'Finančné kalkulačky',
+                'slug': 'financial',
+                'description': 'Kalkulačky pre úvery, hypotéky, investície a finančné výpočty',
+                'calculators': [
+                    {
+                        'name': 'Hypotéka',
+                        'slug': 'mortgage',
+                        'description': 'Výpočet mesačnej splátky hypotéky',
+                        'search_volume': 8000,
+                        'endpoint': '/api/calculators/mortgage/',
+                        'keywords': ['kalkulačka hypotéky', 'splátka hypotéky', 'hypotéka výpočet'],
+                        'category': 'financial',
+                        'implemented': True
+                    },
+                    {
+                        'name': 'Úver',
+                        'slug': 'loan',
+                        'description': 'Výpočet splátky úveru',
+                        'search_volume': 6000,
+                        'endpoint': '/api/calculators/loan/',
+                        'keywords': ['kalkulačka úveru', 'splátka úveru', 'úver výpočet'],
+                        'category': 'financial',
+                        'implemented': True
+                    },
+                    {
+                        'name': 'Splátka',
+                        'slug': 'payment',
+                        'description': 'All kalkulačka splátok pre rôzne typy úverov',
+                        'search_volume': 2000,
+                        'endpoint': '/api/calculators/payment/',
+                        'keywords': ['kalkulačka splátky', 'výpočet splátky'],
+                        'category': 'financial',
+                        'implemented': False
+                    },
+                    {
+                        'name': 'ROI',
+                        'slug': 'roi',
+                        'description': 'Výpočet návratnosti investície',
+                        'search_volume': 1000,
+                        'endpoint': '/api/calculators/roi/',
+                        'keywords': ['kalkulačka roi', 'návratnosť investície'],
+                        'category': 'financial',
+                        'implemented': False
+                    },
+                    {
+                        'name': 'Inflácia',
+                        'slug': 'inflation',
+                        'description': 'Výpočet vplyvu inflácie na hodnotu peňazí',
+                        'search_volume': 1500,
+                        'endpoint': '/api/calculators/inflation/',
+                        'keywords': ['kalkulačka inflácie', 'inflácia výpočet'],
+                        'category': 'financial',
+                        'implemented': False
+                    },
+                    {
+                        'name': 'Poplatky',
+                        'slug': 'fees',
+                        'description': 'Výpočet poplatkov pri kúpe nehnuteľnosti',
+                        'search_volume': 1000,
+                        'endpoint': '/api/calculators/fees/',
+                        'keywords': ['kalkulačka poplatkov', 'poplatky nehnuteľnosť'],
+                        'category': 'financial',
+                        'implemented': False
+                    },
+                ]
             },
-            {
-                'name': 'Hypotéka',
-                'slug': 'mortgage',
-                'description': 'Výpočet mesačnej splátky hypotéky (Mortgage payment calculator)',
-                'search_volume': 8000,
-                'endpoint': '/api/calculators/mortgage/',
-                'keywords': ['kalkulačka hypotéky', 'splátka hypotéky', 'hypotéka výpočet'],
+            'taxes_salary': {
+                'name': 'Dane a mzdy',
+                'slug': 'taxes-salary',
+                'description': 'Kalkulačky pre výpočet miezd, daní a odvodov',
+                'calculators': [
+                    {
+                        'name': 'Čistá mzda',
+                        'slug': 'salary',
+                        'description': 'Výpočet čistej mzdy z hrubej mzdy',
+                        'search_volume': 12000,
+                        'endpoint': '/api/calculators/salary/',
+                        'keywords': ['čistá mzda', 'kalkulačka mzdy', 'výpočet platu'],
+                        'category': 'taxes_salary',
+                        'implemented': True
+                    },
+                    {
+                        'name': 'SZČO dane',
+                        'slug': 'freelancer-tax',
+                        'description': 'Výpočet daní pre SZČO',
+                        'search_volume': 1500,
+                        'endpoint': '/api/calculators/freelancer-tax/',
+                        'keywords': ['dane szčo', 'kalkulačka szčo', 'živnostník dane'],
+                        'category': 'taxes_salary',
+                        'implemented': False
+                    },
+                    {
+                        'name': 'Dovolenka',
+                        'slug': 'vacation',
+                        'description': 'Výpočet dovolenkových dní',
+                        'search_volume': 2000,
+                        'endpoint': '/api/calculators/vacation/',
+                        'keywords': ['dovolenka kalkulačka', 'výpočet dovolenky'],
+                        'category': 'taxes_salary',
+                        'implemented': False
+                    },
+                    {
+                        'name': 'DPH',
+                        'slug': 'vat',
+                        'description': 'Výpočet DPH',
+                        'search_volume': 5000,
+                        'endpoint': '/api/calculators/vat/',
+                        'keywords': ['kalkulačka dph', 'výpočet dph', 'dph kalkulačka'],
+                        'category': 'taxes_salary',
+                        'implemented': True
+                    },
+                ]
             },
-            {
-                'name': 'DPH',
-                'slug': 'vat',
-                'description': 'Výpočet DPH (Slovak VAT calculator)',
-                'search_volume': 5000,
-                'endpoint': '/api/calculators/vat/',
-                'keywords': ['kalkulačka dph', 'výpočet dph', 'dph kalkulačka'],
+            'lifestyle': {
+                'name': 'Životný štýl',
+                'slug': 'lifestyle',
+                'description': 'Kalkulačky pre každodenný život a cestovanie',
+                'calculators': [
+                    {
+                        'name': 'Spotreba auta',
+                        'slug': 'fuel-cost',
+                        'description': 'Výpočet nákladov na palivo',
+                        'search_volume': 3000,
+                        'endpoint': '/api/calculators/fuel-cost/',
+                        'keywords': ['spotreba auta kalkulačka', 'náklady na palivo'],
+                        'category': 'lifestyle',
+                        'implemented': True
+                    },
+                    {
+                        'name': 'Renovácia',
+                        'slug': 'renovation',
+                        'description': 'Odhad nákladov na renováciu',
+                        'search_volume': 1200,
+                        'endpoint': '/api/calculators/renovation/',
+                        'keywords': ['kalkulačka renovácie', 'náklady renovácia'],
+                        'category': 'lifestyle',
+                        'implemented': False
+                    },
+                    {
+                        'name': 'Energia',
+                        'slug': 'energy',
+                        'description': 'Výpočet nákladov na elektrinu',
+                        'search_volume': 2000,
+                        'endpoint': '/api/calculators/energy/',
+                        'keywords': ['kalkulačka energie', 'náklady elektrina'],
+                        'category': 'lifestyle',
+                        'implemented': False
+                    },
+                    {
+                        'name': 'Cestovné náklady',
+                        'slug': 'travel-cost',
+                        'description': 'Výpočet nákladov na cestu',
+                        'search_volume': 1000,
+                        'endpoint': '/api/calculators/travel-cost/',
+                        'keywords': ['cestovné náklady kalkulačka', 'náklady cesta'],
+                        'category': 'lifestyle',
+                        'implemented': False
+                    },
+                    {
+                        'name': 'Odpracované hodiny',
+                        'slug': 'hours-worked',
+                        'description': 'Výpočet odpracovaných hodín a mzdy',
+                        'search_volume': 800,
+                        'endpoint': '/api/calculators/hours-worked/',
+                        'keywords': ['odpracované hodiny kalkulačka', 'výpočet hodín'],
+                        'category': 'lifestyle',
+                        'implemented': False
+                    },
+                    {
+                        'name': 'Percentá',
+                        'slug': 'percentage',
+                        'description': 'Výpočet percent a percent rozdielov',
+                        'search_volume': 4000,
+                        'endpoint': '/api/calculators/percentage/',
+                        'keywords': ['kalkulačka percent', 'výpočet percent'],
+                        'category': 'lifestyle',
+                        'implemented': True
+                    },
+                ]
             },
-        ]
+            'health_personal': {
+                'name': 'Zdravie a osobné',
+                'slug': 'health-personal',
+                'description': 'Kalkulačky pre zdravie, fitness a osobný život',
+                'calculators': [
+                    {
+                        'name': 'BMI',
+                        'slug': 'bmi',
+                        'description': 'Výpočet indexu telesnej hmotnosti',
+                        'search_volume': 10000,
+                        'endpoint': '/api/calculators/bmi/',
+                        'keywords': ['bmi kalkulačka', 'index telesnej hmotnosti'],
+                        'category': 'health_personal',
+                        'implemented': True
+                    },
+                    {
+                        'name': 'BMR',
+                        'slug': 'bmr',
+                        'description': 'Výpočet bazálneho metabolizmu',
+                        'search_volume': 2000,
+                        'endpoint': '/api/calculators/bmr/',
+                        'keywords': ['bmr kalkulačka', 'bazálny metabolizmus'],
+                        'category': 'health_personal',
+                        'implemented': False
+                    },
+                    {
+                        'name': 'Tehotenstvo',
+                        'slug': 'pregnancy',
+                        'description': 'Výpočet termínu pôrodu',
+                        'search_volume': 5000,
+                        'endpoint': '/api/calculators/pregnancy/',
+                        'keywords': ['kalkulačka tehotenstva', 'termín pôrodu'],
+                        'category': 'health_personal',
+                        'implemented': False
+                    },
+                    {
+                        'name': 'Dôchodok',
+                        'slug': 'pension',
+                        'description': 'Odhad dôchodku',
+                        'search_volume': 3000,
+                        'endpoint': '/api/calculators/pension/',
+                        'keywords': ['kalkulačka dôchodku', 'výpočet dôchodku'],
+                        'category': 'health_personal',
+                        'implemented': False
+                    },
+                ]
+            }
+        }
         
-        serializer = CalculatorListSerializer(calculators, many=True)
+        # Flatten all calculators for backward compatibility
+        all_calculators = []
+        for category_data in categories.values():
+            all_calculators.extend(category_data['calculators'])
+        
         return Response({
-            'count': len(calculators),
-            'calculators': serializer.data
+            'count': len(all_calculators),
+            'categories': categories,
+            'calculators': all_calculators  # Flat list for backward compatibility
         })
 
 
@@ -189,6 +436,610 @@ class VATCalculatorView(APIView):
             )
 
 
+class LoanCalculatorView(APIView):
+    """
+    Calculate loan payments and amortization schedule.
+    
+    POST /api/calculators/loan/
+    
+    Body:
+        {
+            "loan_amount": 50000.00,
+            "interest_rate": 5.5,
+            "loan_years": 10,
+            "include_schedule": false
+        }
+    """
+    
+    def post(self, request):
+        """Calculate loan payments"""
+        serializer = LoanCalculatorSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            calculator = LoanCalculator()
+            result = calculator.calculate(**serializer.validated_data)
+            
+            return Response({
+                'success': True,
+                'data': result,
+                'calculator': 'loan',
+                'version': '2026'
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class FuelCostCalculatorView(APIView):
+    """
+    Calculate fuel cost based on distance, consumption, and price.
+    
+    POST /api/calculators/fuel-cost/
+    
+    Body:
+        {
+            "distance": 350,
+            "consumption": 6.5,
+            "fuel_price": 1.65
+        }
+    """
+    
+    def post(self, request):
+        """Calculate fuel cost"""
+        serializer = FuelCostCalculatorSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            calculator = FuelCostCalculator()
+            result = calculator.calculate(**serializer.validated_data)
+            
+            return Response({
+                'success': True,
+                'data': result,
+                'calculator': 'fuel-cost',
+                'version': '2026'
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class BMICalculatorView(APIView):
+    """
+    Calculate BMI (Body Mass Index) and health category.
+    
+    POST /api/calculators/bmi/
+    
+    Body:
+        {
+            "weight": 75,
+            "height": 180
+        }
+    """
+    
+    def post(self, request):
+        """Calculate BMI"""
+        serializer = BMICalculatorSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            calculator = BMICalculator()
+            result = calculator.calculate(**serializer.validated_data)
+            
+            return Response({
+                'success': True,
+                'data': result,
+                'calculator': 'bmi',
+                'version': '2026'
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class PercentageCalculatorView(APIView):
+    """
+    Calculate percentages (various operations).
+    
+    POST /api/calculators/percentage/
+    
+    Body:
+        {
+            "calculation_type": "percent_of",
+            "percent": 20,
+            "value2": 150
+        }
+    """
+    
+    def post(self, request):
+        """Calculate percentage"""
+        serializer = PercentageCalculatorSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            calculator = PercentageCalculator()
+            result = calculator.calculate(**serializer.validated_data)
+            
+            return Response({
+                'success': True,
+                'data': result,
+                'calculator': 'percentage',
+                'version': '2026'
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class PregnancyCalculatorView(APIView):
+    """
+    Calculate pregnancy due date, weeks, and trimester information.
+    
+    POST /api/calculators/pregnancy/
+    
+    Body (from LMP):
+        {
+            "calculation_method": "lmp",
+            "lmp_date": "2024-01-01"
+        }
+    
+    Body (from conception):
+        {
+            "calculation_method": "conception",
+            "conception_date": "2024-01-15"
+        }
+    """
+    
+    def post(self, request):
+        """Calculate pregnancy dates and information"""
+        serializer = PregnancyCalculatorSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            calculator = PregnancyCalculator()
+            result = calculator.calculate(**serializer.validated_data)
+            
+            return Response({
+                'success': True,
+                'data': result,
+                'calculator': 'pregnancy',
+                'version': '2026'
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class PensionCalculatorView(APIView):
+    """
+    Calculate pension estimates and contributions.
+    
+    POST /api/calculators/pension/
+    
+    Body:
+        {
+            "current_age": 35,
+            "gross_salary": 1500,
+            "years_worked": 12,
+            "gender": "male",
+            "include_second_pillar": true
+        }
+    """
+    
+    def post(self, request):
+        """Calculate pension estimates"""
+        serializer = PensionCalculatorSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            calculator = PensionCalculator()
+            result = calculator.calculate(**serializer.validated_data)
+            
+            return Response({
+                'success': True,
+                'data': result,
+                'calculator': 'pension',
+                'version': '2026'
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class VacationCalculatorView(APIView):
+    """
+    Calculate vacation days entitlement based on Slovak labor law.
+    
+    POST /api/calculators/vacation/
+    
+    Body:
+        {
+            "age": 35,
+            "employment_start_date": "2020-05-01",
+            "vacation_days_used": 8,
+            "days_carried_over": 3
+        }
+    """
+    
+    def post(self, request):
+        """Calculate vacation days"""
+        serializer = VacationCalculatorSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            calculator = VacationCalculator()
+            result = calculator.calculate(**serializer.validated_data)
+            
+            return Response({
+                'success': True,
+                'data': result,
+                'calculator': 'vacation',
+                'version': '2026'
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class EnergyCalculatorView(APIView):
+    """
+    Energy Cost Calculator - Calculate electricity and gas costs
+    
+    POST /api/calculators/energy/
+    
+    Body:
+        {
+            "electricity_consumption": 300,
+            "gas_consumption": 600,
+            "household_size": 3,
+            "has_dual_tariff": true
+        }
+    """
+    
+    def post(self, request):
+        """Calculate energy costs"""
+        serializer = EnergyCalculatorSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            calculator = EnergyCalculator()
+            result = calculator.calculate(**serializer.validated_data)
+            
+            return Response({
+                'success': True,
+                'data': result,
+                'calculator': 'energy',
+                'version': '2026'
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class BMRCalculatorView(APIView):
+    """
+    BMR (Basal Metabolic Rate) Calculator - Calculate daily caloric needs
+    
+    POST /api/calculators/bmr/
+    
+    Body:
+        {
+            "weight": 75,
+            "height": 175,
+            "age": 30,
+            "gender": "male",
+            "activity_level": "moderate",
+            "weight_goal": "lose_moderate"
+        }
+    """
+    
+    def post(self, request):
+        """Calculate BMR and caloric needs"""
+        serializer = BMRCalculatorSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            calculator = BMRCalculator()
+            result = calculator.calculate(**serializer.validated_data)
+            
+            return Response({
+                'success': True,
+                'data': result,
+                'calculator': 'bmr',
+                'version': '2026'
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class PaymentCalculatorView(APIView):
+    """
+    Payment Calculator - Calculate loan installment payments
+    
+    POST /api/calculators/payment/
+    
+    Body:
+        {
+            "loan_amount": 50000,
+            "annual_interest_rate": 5.5,
+            "loan_term_years": 10,
+            "payment_frequency": "monthly"
+        }
+    """
+    
+    def post(self, request):
+        """Calculate loan payments"""
+        serializer = PaymentCalculatorSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            calculator = PaymentCalculator()
+            result = calculator.calculate(**serializer.validated_data)
+            
+            return Response({
+                'success': True,
+                'data': result,
+                'calculator': 'payment',
+                'version': '2026'
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class FreelancerTaxCalculatorView(APIView):
+    """
+    Freelancer Tax Calculator - Calculate taxes and contributions for self-employed (SZČO)
+    
+    POST /api/calculators/freelancer-tax/
+    
+    Body:
+        {
+            "annual_revenue": 30000,
+            "use_flat_expenses": true,
+            "include_sickness": true,
+            "months_active": 12
+        }
+    """
+    
+    def post(self, request):
+        """Calculate freelancer taxes and contributions"""
+        serializer = FreelancerTaxCalculatorSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            calculator = FreelancerTaxCalculator()
+            result = calculator.calculate(**serializer.validated_data)
+            
+            return Response({
+                'success': True,
+                'data': result,
+                'calculator': 'freelancer_tax',
+                'version': '2026'
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class InflationCalculatorView(APIView):
+    """
+    Inflation Calculator - Calculate real value of money over time
+    
+    POST /api/calculators/inflation/
+    
+    Body:
+        {
+            "present_value": 10000,
+            "years": 10,
+            "inflation_rate": 3.0,
+            "calculate_reverse": false
+        }
+    """
+    
+    def post(self, request):
+        """Calculate inflation impact"""
+        serializer = InflationCalculatorSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            calculator = InflationCalculator()
+            result = calculator.calculate(**serializer.validated_data)
+            
+            return Response({
+                'success': True,
+                'data': result,
+                'calculator': 'inflation',
+                'version': '2026'
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class ROICalculatorView(APIView):
+    """
+    ROI Calculator - Calculate return on investment
+    
+    POST /api/calculators/roi/
+    
+    Body:
+        {
+            "initial_investment": 10000,
+            "final_value": 15000,
+            "additional_costs": 500,
+            "investment_period_months": 24
+        }
+    """
+    
+    def post(self, request):
+        """Calculate ROI"""
+        serializer = ROICalculatorSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            calculator = ROICalculator()
+            result = calculator.calculate(**serializer.validated_data)
+            
+            return Response({
+                'success': True,
+                'data': result,
+                'calculator': 'roi',
+                'version': '2026'
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class HoursWorkedCalculatorView(APIView):
+    """
+    Hours Worked Calculator - Calculate work hours and overtime
+    
+    POST /api/calculators/hours-worked/
+    
+    Body:
+        {
+            "hours_worked": 48,
+            "hourly_rate": 12.50,
+            "period_type": "weekly"
+        }
+    """
+    
+    def post(self, request):
+        """Calculate hours worked and earnings"""
+        serializer = HoursWorkedCalculatorSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            calculator = HoursWorkedCalculator()
+            result = calculator.calculate(**serializer.validated_data)
+            
+            return Response({
+                'success': True,
+                'data': result,
+                'calculator': 'hours_worked',
+                'version': '2026'
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
 class HealthCheckView(APIView):
     """
     Health check endpoint to verify API is running.
@@ -202,7 +1053,7 @@ class HealthCheckView(APIView):
             'status': 'healthy',
             'api_version': '1.0',
             'year': 2026,
-            'calculators_available': 3
+            'calculators_available': 7
         })
 
 
@@ -304,4 +1155,372 @@ class FeaturedBlogPostsView(generics.ListAPIView):
             status='published',
             published_at__lte=timezone.now()
         ).order_by('-published_at')[:5]
+
+
+class UnitConverterView(APIView):
+    """
+    Unit Converter API - Konvertor jednotiek
+    
+    POST /api/calculators/unit-converter/
+    Body: {
+        "value": 100,
+        "from_unit": "meter",
+        "to_unit": "kilometer",
+        "category": "length"
+    }
+    """
+    
+    def post(self, request):
+        serializer = UnitConverterSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'success': False, 'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            result = UnitConverterService.convert(
+                value=serializer.validated_data['value'],
+                from_unit=serializer.validated_data['from_unit'],
+                to_unit=serializer.validated_data['to_unit'],
+                category=serializer.validated_data['category']
+            )
+            
+            return Response({
+                'success': True,
+                'data': result
+            })
+        
+        except ValueError as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': f'Chyba pri výpočte: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class UnitConverterCategoriesView(APIView):
+    """
+    Get available categories for unit converter
+    
+    GET /api/calculators/unit-converter/categories/
+    """
+    
+    def get(self, request):
+        return Response({
+            'success': True,
+            'data': UnitConverterService.get_categories()
+        })
+
+
+class UnitConverterUnitsView(APIView):
+    """
+    Get available units for a specific category
+    
+    GET /api/calculators/unit-converter/units/?category=length
+    """
+    
+    def get(self, request):
+        category = request.query_params.get('category', None)
+        
+        if not category:
+            return Response(
+                {'success': False, 'error': 'Parameter "category" je povinný'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        units = UnitConverterService.get_available_units(category)
+        
+        if not units:
+            return Response(
+                {'success': False, 'error': f'Neplatná kategória: {category}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        return Response({
+            'success': True,
+            'data': units
+        })
+
+
+class SickLeaveCalculatorView(APIView):
+    """
+    Sick Leave Calculator API - Kalkulačka nemocenskej
+    
+    POST /api/calculators/sick-leave/
+    Body: {
+        "gross_salary": 1500,
+        "days_sick": 10,
+        "leave_type": "illness"
+    }
+    """
+    
+    def post(self, request):
+        serializer = SickLeaveCalculatorSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'success': False, 'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            from decimal import Decimal
+            
+            result = SickLeaveCalculator.calculate_sick_leave(
+                gross_salary=Decimal(str(serializer.validated_data['gross_salary'])),
+                days_sick=serializer.validated_data['days_sick'],
+                leave_type=serializer.validated_data.get('leave_type', 'illness')
+            )
+            
+            return Response({
+                'success': True,
+                'data': result
+            })
+        
+        except ValueError as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': f'Chyba pri výpočte nemocenskej: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class CarLeasingCalculatorView(APIView):
+    """
+    Car Leasing Calculator API - Porovnanie kúpy, úveru a lízingu
+    
+    POST /api/calculators/car-leasing/
+    Body: {
+        "car_price": 25000,
+        "down_payment": 5000,
+        "term_months": 60,
+        "leasing_rate": 5.0,
+        "loan_rate": 6.0,
+        "residual_value_percent": 30,
+        "include_vat": true
+    }
+    """
+    
+    def post(self, request):
+        serializer = CarLeasingCalculatorSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'success': False, 'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            from decimal import Decimal
+            
+            car_price = Decimal(str(serializer.validated_data['car_price']))
+            down_payment = Decimal(str(serializer.validated_data['down_payment']))
+            term_months = serializer.validated_data['term_months']
+            
+            leasing_rate = serializer.validated_data.get('leasing_rate')
+            if leasing_rate:
+                leasing_rate = Decimal(str(leasing_rate)) / 100
+            
+            loan_rate = serializer.validated_data.get('loan_rate')
+            if loan_rate:
+                loan_rate = Decimal(str(loan_rate)) / 100
+            
+            residual_value_percent = Decimal(str(serializer.validated_data.get('residual_value_percent', 30))) / 100
+            include_vat = serializer.validated_data.get('include_vat', True)
+            
+            result = CarLeasingCalculator.compare_all_options(
+                car_price=car_price,
+                down_payment=down_payment,
+                term_months=term_months,
+                leasing_rate=leasing_rate,
+                loan_rate=loan_rate,
+                residual_value_percent=residual_value_percent,
+                include_vat=include_vat
+            )
+            
+            return Response({
+                'success': True,
+                'data': result
+            })
+        
+        except ValueError as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': f'Chyba pri výpočte lízingu: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class AreaVolumeCalculatorView(APIView):
+    """
+    Area & Volume Calculator API - Výpočet plochy a objemu
+    
+    POST /api/calculators/area-volume/
+    Body: {
+        "shape": "rectangle",
+        "dimensions": {"length": 5, "width": 3}
+    }
+    """
+    
+    def post(self, request):
+        serializer = AreaVolumeCalculatorSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'success': False, 'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            result = AreaVolumeCalculator.calculate(
+                shape=serializer.validated_data['shape'],
+                dimensions=serializer.validated_data['dimensions']
+            )
+            
+            return Response({
+                'success': True,
+                'data': result
+            })
+        
+        except ValueError as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': f'Chyba pri výpočte: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class AreaVolumeShapesView(APIView):
+    """
+    Get available shapes for area/volume calculator
+    
+    GET /api/calculators/area-volume/shapes/
+    """
+    
+    def get(self, request):
+        return Response({
+            'success': True,
+            'data': AreaVolumeCalculator.get_available_shapes()
+        })
+
+
+class SplitBillCalculatorView(APIView):
+    """
+    Split Bill Calculator API - Rozdelenie účtu
+    
+    POST /api/calculators/split-bill/
+    Body: {
+        "split_type": "equal",
+        "total_amount": 100,
+        "num_people": 4,
+        "tip_percent": 15
+    }
+    """
+    
+    def post(self, request):
+        serializer = SplitBillCalculatorSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'success': False, 'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            from decimal import Decimal
+            
+            split_type = serializer.validated_data['split_type']
+            total_amount = Decimal(str(serializer.validated_data['total_amount']))
+            tip_percent = Decimal(str(serializer.validated_data.get('tip_percent', 0)))
+            
+            if split_type == 'equal':
+                num_people = serializer.validated_data['num_people']
+                result = SplitBillCalculator.split_equally(
+                    total_amount=total_amount,
+                    num_people=num_people,
+                    tip_percent=tip_percent
+                )
+            
+            elif split_type == 'by_items':
+                items = serializer.validated_data['items']
+                result = SplitBillCalculator.split_by_items(
+                    items=items,
+                    tip_percent=tip_percent
+                )
+            
+            elif split_type == 'custom':
+                custom_amounts = serializer.validated_data['custom_amounts']
+                result = SplitBillCalculator.split_custom(
+                    total_amount=total_amount,
+                    custom_amounts=custom_amounts,
+                    tip_percent=tip_percent
+                )
+            
+            return Response({
+                'success': True,
+                'data': result
+            })
+        
+        except ValueError as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': f'Chyba pri výpočte: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class TipSuggestionsView(APIView):
+    """
+    Get tip suggestions for an amount
+    
+    GET /api/calculators/split-bill/tip-suggestions/?amount=100
+    """
+    
+    def get(self, request):
+        amount_str = request.query_params.get('amount', None)
+        
+        if not amount_str:
+            return Response(
+                {'success': False, 'error': 'Parameter "amount" je povinný'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            from decimal import Decimal
+            amount = Decimal(amount_str)
+            
+            result = SplitBillCalculator.get_tip_suggestions(amount)
+            
+            return Response({
+                'success': True,
+                'data': result
+            })
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': f'Neplatná suma: {str(e)}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 

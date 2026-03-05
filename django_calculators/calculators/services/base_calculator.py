@@ -54,6 +54,10 @@ class BaseCalculator(ABC):
         """Convert value to Decimal for precise calculations"""
         return Decimal(str(value))
     
+    def round_decimal(self, value: Decimal, places: int = 2) -> Decimal:
+        """Round Decimal to specified decimal places"""
+        return round(value, places)
+    
     def round_money(self, amount: Decimal, places: int = 2) -> float:
         """Round money to specified decimal places"""
         return float(round(amount, places))

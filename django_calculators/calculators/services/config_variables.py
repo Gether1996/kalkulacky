@@ -101,6 +101,128 @@ TYPICAL_LTV_RATIO = Decimal('0.80')  # 80% Loan-to-Value ratio
 
 
 # ===========================
+# CAR LEASING CALCULATOR
+# ===========================
+
+# Interest rates for leasing and loans (2026 estimates)
+LEASING_DEFAULT_INTEREST_RATE = Decimal('0.05')  # 5% - Typical leasing interest rate
+LEASING_DEFAULT_LOAN_RATE = Decimal('0.06')  # 6% - Typical car loan interest rate
+LEASING_DEFAULT_RESIDUAL_VALUE = Decimal('0.30')  # 30% - Default residual value for operational leasing
+
+
+# ===========================
+# INFLATION CALCULATOR
+# ===========================
+
+# Default inflation rate for calculations
+DEFAULT_INFLATION_RATE = Decimal('3.0')  # 3% - Average expected inflation rate
+
+
+# ===========================
+# ENERGY CALCULATOR
+# ===========================
+
+# Slovak electricity rates (2026 estimates)
+ELECTRICITY_RATE_LOW = Decimal('0.15')  # EUR/kWh - Low tariff (night rate)
+ELECTRICITY_RATE_HIGH = Decimal('0.20')  # EUR/kWh - High tariff (day rate)
+ELECTRICITY_FIXED_MONTHLY = Decimal('8.00')  # EUR/month - Fixed monthly charge
+
+# Slovak gas rates (2026 estimates)
+GAS_RATE = Decimal('0.06')  # EUR/kWh - Gas rate
+GAS_FIXED_MONTHLY = Decimal('6.00')  # EUR/month - Fixed monthly charge
+
+# Average consumption (Slovakia)
+AVG_ELECTRICITY_MONTHLY = Decimal('250')  # kWh/month - Average household electricity consumption
+AVG_GAS_MONTHLY = Decimal('500')  # kWh/month - Average household gas consumption
+
+
+# ===========================
+# PENSION CALCULATOR
+# ===========================
+
+# Slovak pension system parameters (2026)
+RETIREMENT_AGE_MALE = 64  # years - Retirement age for men
+RETIREMENT_AGE_FEMALE = 64  # years - Retirement age for women (unified)
+
+# Pension contribution rates (% of gross salary)
+PENSION_EMPLOYEE_CONTRIBUTION_RATE = Decimal('4.0')  # 4% - Employee pension contribution
+PENSION_EMPLOYER_CONTRIBUTION_RATE = Decimal('14.0')  # 14% - Employer pension contribution
+PENSION_TOTAL_CONTRIBUTION_RATE = PENSION_EMPLOYEE_CONTRIBUTION_RATE + PENSION_EMPLOYER_CONTRIBUTION_RATE  # 18%
+
+# Pension system values
+AVERAGE_PENSION_SK = Decimal('650.00')  # EUR - Average monthly pension in Slovakia (2026)
+PENSION_POINT_VALUE = Decimal('14.50')  # EUR - Value of one pension point
+MINIMUM_PENSION_SK = Decimal('370.00')  # EUR - Minimum monthly pension (30+ years of contributions)
+
+# Second pillar (private pension savings)
+SECOND_PILLAR_DEFAULT_RATE = Decimal('6.0')  # 6% - Default contribution rate to second pillar
+
+# Life expectancy
+LIFE_EXPECTANCY_AFTER_RETIREMENT = 20  # years - Average years in retirement
+
+
+# ===========================
+# SICK LEAVE CALCULATOR (NEMOCENSKÁ)
+# ===========================
+
+# Payment periods and rates
+SICK_LEAVE_EMPLOYER_PAYMENT_DAYS = 3  # First 3 days paid by employer
+SICK_LEAVE_EMPLOYER_RATE = Decimal('0.25')  # 25% of daily assessment base
+SICK_LEAVE_INSURANCE_RATE_ILLNESS = Decimal('0.55')  # 55% from day 4 onwards (illness)
+SICK_LEAVE_INSURANCE_RATE_CARE = Decimal('0.55')  # 55% for family member care
+
+# Assessment base limits for sick leave (2026)
+SICK_LEAVE_MAX_ASSESSMENT_BASE_YEARLY = Decimal('88200')  # €88,200/year
+SICK_LEAVE_MAX_ASSESSMENT_BASE_DAILY = SICK_LEAVE_MAX_ASSESSMENT_BASE_YEARLY / 365  # €241.64/day
+SICK_LEAVE_MIN_WAGE_MONTHLY = Decimal('750')  # €750/month (2026 estimate)
+SICK_LEAVE_MIN_WAGE_DAILY = SICK_LEAVE_MIN_WAGE_MONTHLY * 12 / 365  # Daily minimum
+
+
+# ===========================
+# FREELANCER TAX CALCULATOR (SZČO)
+# ===========================
+
+# Income tax rates for freelancers (same as employees)
+FREELANCER_TAX_RATE_LOW = Decimal('0.19')  # 19% - First bracket
+FREELANCER_TAX_RATE_HIGH = Decimal('0.25')  # 25% - Second bracket
+FREELANCER_TAX_THRESHOLD = Decimal('44863')  # €44,863/year - Threshold for higher rate
+
+# Health insurance for freelancers
+FREELANCER_HEALTH_INSURANCE_RATE = Decimal('0.14')  # 14% - Total health insurance rate for SZČO
+FREELANCER_MIN_HEALTH_BASE_MONTHLY = Decimal('570')  # €570/month - Minimum assessment base (2026)
+
+# Social insurance contributions for freelancers (SZČO)
+FREELANCER_SOCIAL_SICKNESS_RATE = Decimal('0.014')  # 1.4% - Voluntary sickness insurance
+FREELANCER_SOCIAL_PENSION_RATE = Decimal('0.18')  # 18% - Old-age pension insurance
+FREELANCER_SOCIAL_DISABILITY_RATE = Decimal('0.06')  # 6% - Disability insurance
+FREELANCER_SOCIAL_ACCIDENT_RATE = Decimal('0.008')  # 0.8% - Accident insurance
+FREELANCER_SOCIAL_GUARANTEE_RATE = Decimal('0.0025')  # 0.25% - Guarantee insurance
+FREELANCER_SOCIAL_RESERVE_RATE = Decimal('0.0475')  # 4.75% - Reserve fund
+FREELANCER_MIN_SOCIAL_BASE_MONTHLY = Decimal('570')  # €570/month - Minimum assessment base (2026)
+
+# Flat expense rate
+FREELANCER_FLAT_EXPENSE_RATE = Decimal('0.60')  # 60% - Paušálne výdavky (flat expense deduction)
+
+# Non-taxable amount for freelancers (same as employees)
+FREELANCER_NON_TAXABLE_AMOUNT_ANNUAL = Decimal('4579.26')  # €4,579.26/year (2026)
+FREELANCER_NON_TAXABLE_AMOUNT_MONTHLY = Decimal('381.61')  # €381.61/month
+
+
+# ===========================
+# FUEL COST CALCULATOR
+# ===========================
+
+# Typical fuel prices (reference only, user provides actual price)
+TYPICAL_FUEL_PRICE_PETROL = Decimal('1.65')  # EUR/liter - Average petrol price (2026 estimate)
+TYPICAL_FUEL_PRICE_DIESEL = Decimal('1.55')  # EUR/liter - Average diesel price (2026 estimate)
+
+# Average consumption ranges
+TYPICAL_CONSUMPTION_CITY = Decimal('8.0')  # liters/100km - City driving
+TYPICAL_CONSUMPTION_HIGHWAY = Decimal('6.0')  # liters/100km - Highway driving
+TYPICAL_CONSUMPTION_COMBINED = Decimal('7.0')  # liters/100km - Combined
+
+
+# ===========================
 # METADATA
 # ===========================
 

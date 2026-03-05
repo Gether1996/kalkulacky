@@ -62,18 +62,18 @@ class SalaryCalculator(BaseCalculator):
         gross_salary = kwargs.get('gross_salary')
         
         if not gross_salary:
-            raise ValueError("gross_salary is required")
+            raise ValueError("Hrubá mzda je povinná")
         
         try:
             gross = self.to_decimal(gross_salary)
         except (ValueError, TypeError):
-            raise ValueError("gross_salary must be a valid number")
+            raise ValueError("Hrubá mzda musí byť platné číslo")
         
         if gross <= 0:
-            raise ValueError("gross_salary must be greater than 0")
+            raise ValueError("Hrubá mzda musí byť väčšia ako 0")
         
         if gross > 50000:
-            raise ValueError("gross_salary seems unrealistically high (>€50,000/month)")
+            raise ValueError("Hrubá mzda sa zdá nereálne vysoká (>€50,000/mesiac)")
         
         return True
     

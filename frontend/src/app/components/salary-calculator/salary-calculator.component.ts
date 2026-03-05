@@ -1,14 +1,13 @@
 import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { SalaryCalculationResponse } from '../../models/calculator.models';
 
 @Component({
   selector: 'app-salary-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './salary-calculator.component.html',
   styleUrls: ['./salary-calculator.component.css']
 })
@@ -33,8 +32,10 @@ export class SalaryCalculatorComponent implements OnInit {
   constructor(private calculatorService: CalculatorService) {}
 
   ngOnInit(): void {
-    // Auto-calculate on component init for immediate results
-    this.calculate();
+    // Calculate on init only if running in browser
+    if (isPlatformBrowser(this.platformId)) {
+      this.calculate();
+    }
   }
 
   calculate(): void {

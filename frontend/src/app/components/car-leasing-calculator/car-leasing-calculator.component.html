@@ -1,0 +1,375 @@
+<div class="calculator-container">
+  <!-- Header -->
+  <header class="calculator-header">
+    <h1 class="calculator-title">
+      🚗 Kalkulačka lízingu auta
+    </h1>
+    <p class="calculator-subtitle">
+      Porovnanie finančného lízingu, operatívneho lízingu, úveru a nákupu na hotovosti. Nájdite najlepší spôsob financovania vášho auta.
+    </p>
+  </header>
+
+  <!-- Calculator Body -->
+  <div class="calculator-body">
+    <!-- Input Section -->
+    <div class="input-section">
+      <h2 class="section-title">Zadajte údaje</h2>
+      
+      <!-- Car Price -->
+      <div class="input-group">
+        <label for="car-price" class="input-label">Cena auta (€)</label>
+        <div class="input-wrapper">
+          <input
+            type="number"
+            id="car-price"
+            [(ngModel)]="carPrice"
+            (ngModelChange)="calculate()"
+            class="input-field"
+            placeholder="25000"
+            min="1000"
+            step="1000"
+          />
+          <span class="currency-symbol">€</span>
+        </div>
+      </div>
+
+      <!-- Range Slider -->
+      <div class="slider-group">
+        <input
+          type="range"
+          [(ngModel)]="carPrice"
+          (ngModelChange)="calculate()"
+          min="10000"
+          max="100000"
+          step="1000"
+          class="slider"
+        />
+        <div class="slider-labels">
+          <span>10 000 €</span>
+          <span>100 000 €</span>
+        </div>
+      </div>
+
+      <!-- Car Presets -->
+      <div class="benchmarks">
+        <p class="benchmarks-label">Rýchly výber:</p>
+        <div class="benchmarks-grid">
+          <button
+            *ngFor="let preset of carPresets"
+            (click)="setCarPreset(preset.value)"
+            class="benchmark-button"
+            [class.active]="carPrice === preset.value"
+          >
+            <span class="benchmark-label-text">{{ preset.label }}</span>
+            <strong class="benchmark-value">{{ formatCurrency(preset.value) }}</strong>
+          </button>
+        </div>
+      </div>
+
+      <!-- Down Payment -->
+      <div class="input-group">
+        <label for="down-payment" class="input-label">
+          Akontácia (€)
+          <small class="input-hint">{{ (downPayment / carPrice * 100).toFixed(0) }}% z ceny</small>
+        </label>
+        <div class="input-wrapper">
+          <input
+            type="number"
+            id="down-payment"
+            [(ngModel)]="downPayment"
+            (ngModelChange)="calculate()"
+            class="input-field"
+            placeholder="5000"
+            min="0"
+            [max]="carPrice * 0.9"
+            step="500"
+          />
+          <span class="currency-symbol">€</span>
+        </div>
+      </div>
+
+      <!-- Term Selection -->
+      <div class="input-group">
+        <label for="term-months" class="input-label">Doba splácania (mesiace)</label>
+        <div class="term-selector">
+          <button
+            *ngFor="let preset of termPresets"
+            (click)="setTermPreset(preset.value)"
+            class="term-button"
+            [class.active]="termMonths === preset.value"
+          >
+            {{ preset.label }}
+          </button>
+        </div>
+        <input
+          type="number"
+          id="term-months"
+          [(ngModel)]="termMonths"
+          (ngModelChange)="calculate()"
+          class="input-field"
+          placeholder="60"
+          min="12"
+          max="120"
+          step="6"
+        />
+      </div>
+
+      <!-- Advanced Settings -->
+      <details class="advanced-settings">
+        <summary class="advanced-summary">⚙️ Pokročilé nastavenia</summary>
+        
+        <div class="settings-grid">
+          <div class="input-group-compact">
+            <label for="leasing-rate" class="input-label-compact">Úrok lízing (%)</label>
+            <input
+              type="number"
+              id="leasing-rate"
+              [(ngModel)]="leasingRate"
+              (ngModelChange)="calculate()"
+              class="input-field-compact"
+              placeholder="5.5"
+              min="0"
+              max="20"
+              step="0.1"
+            />
+          </div>
+
+          <div class="input-group-compact">
+            <label for="loan-rate" class="input-label-compact">Úrok úver (%)</label>
+            <input
+              type="number"
+              id="loan-rate"
+              [(ngModel)]="loanRate"
+              (ngModelChange)="calculate()"
+              class="input-field-compact"
+              placeholder="6.0"
+              min="0"
+              max="20"
+              step="0.1"
+            />
+          </div>
+
+          <div class="input-group-compact">
+            <label for="residual-value" class="input-label-compact">Reziduálna hodnota (%)</label>
+            <input
+              type="number"
+              id="residual-value"
+              [(ngModel)]="residualValuePercent"
+              (ngModelChange)="calculate()"
+              class="input-field-compact"
+              placeholder="30"
+              min="0"
+              max="50"
+              step="5"
+            />
+          </div>
+        </div>
+
+        <div class="checkbox-group">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              [(ngModel)]="includeVat"
+              (ngModelChange)="calculate()"
+              class="checkbox-input"
+            />
+            <span class="checkbox-text">
+              <strong>Zahrnúť DPH (20%)</strong>
+              <small class="checkbox-hint">Pre podnikateľov s odpočtom DPH</small>
+            </span>
+          </label>
+        </div>
+      </details>
+
+      <!-- Info Box -->
+      <div class="info-box">
+        <h4 class="info-title">ℹ️ Typy financovania</h4>
+        <ul class="info-list">
+          <li><strong>Finančný lízing:</strong> Auto vlastníte na konci, nižšie splátky</li>
+          <li><strong>Operatívny lízing:</strong> Najnižšie splátky, vrátenie alebo odkúpenie</li>
+          <li><strong>Úver:</strong> Okamžité vlastníctvo, vyšší úrok</li>
+          <li><strong>Hotovosť:</strong> Najlacnejšie, ale vysoká počiatočná investícia</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="result-section" id="results" *ngIf="result">
+      <h2 class="section-title">Porovnanie možností</h2>
+
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Počítam...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="error" class="error-state">
+        <p class="error-message">{{ error }}</p>
+      </div>
+
+      <!-- Comparison Cards -->
+      <div class="comparison-grid" *ngIf="!loading && !error">
+        <!-- Financial Leasing -->
+        <div class="option-card" [class]="getOptionClass(result.options.financial_leasing)">
+          <div class="option-header">
+            <h3 class="option-title">💼 Finančný lízing</h3>
+            <span class="badge" *ngIf="getOptionBadge(result.options.financial_leasing)">
+              {{ getOptionBadge(result.options.financial_leasing) }}
+            </span>
+          </div>
+          <div class="option-body">
+            <div class="metric-primary">
+              <span class="metric-label">Mesačná splátka</span>
+              <span class="metric-value">{{ formatCurrency(result.options.financial_leasing.monthly_payment) }}</span>
+            </div>
+            <div class="metrics-grid">
+              <div class="metric">
+                <span class="metric-label">Akontácia</span>
+                <span class="metric-value">{{ formatCurrency(result.options.financial_leasing.initial_cost) }}</span>
+              </div>
+              <div class="metric">
+                <span class="metric-label">Celkovo</span>
+                <span class="metric-value">{{ formatCurrency(result.options.financial_leasing.total_cost) }}</span>
+              </div>
+            </div>
+            <p class="option-ownership">{{ result.options.financial_leasing.ownership }}</p>
+            <p class="option-explanation">{{ result.options.financial_leasing.explanation }}</p>
+          </div>
+        </div>
+
+        <!-- Operational Leasing -->
+        <div class="option-card" [class]="getOptionClass(result.options.operational_leasing)">
+          <div class="option-header">
+            <h3 class="option-title">🔑 Operatívny lízing</h3>
+            <span class="badge" *ngIf="getOptionBadge(result.options.operational_leasing)">
+              {{ getOptionBadge(result.options.operational_leasing) }}
+            </span>
+          </div>
+          <div class="option-body">
+            <div class="metric-primary">
+              <span class="metric-label">Mesačná splátka</span>
+              <span class="metric-value">{{ formatCurrency(result.options.operational_leasing.monthly_payment) }}</span>
+            </div>
+            <div class="metrics-grid">
+              <div class="metric">
+                <span class="metric-label">Akontácia</span>
+                <span class="metric-value">{{ formatCurrency(result.options.operational_leasing.initial_cost) }}</span>
+              </div>
+              <div class="metric">
+                <span class="metric-label">Reziduálna hodnota</span>
+                <span class="metric-value">{{ formatCurrency(result.options.operational_leasing.final_payment) }}</span>
+              </div>
+              <div class="metric">
+                <span class="metric-label">Celkovo</span>
+                <span class="metric-value">{{ formatCurrency(result.options.operational_leasing.total_cost) }}</span>
+              </div>
+            </div>
+            <p class="option-ownership">{{ result.options.operational_leasing.ownership }}</p>
+            <p class="option-explanation">{{ result.options.operational_leasing.explanation }}</p>
+          </div>
+        </div>
+
+        <!-- Loan -->
+        <div class="option-card" [class]="getOptionClass(result.options.loan)">
+          <div class="option-header">
+            <h3 class="option-title">🏦 Úver</h3>
+            <span class="badge" *ngIf="getOptionBadge(result.options.loan)">
+              {{ getOptionBadge(result.options.loan) }}
+            </span>
+          </div>
+          <div class="option-body">
+            <div class="metric-primary">
+              <span class="metric-label">Mesačná splátka</span>
+              <span class="metric-value">{{ formatCurrency(result.options.loan.monthly_payment) }}</span>
+            </div>
+            <div class="metrics-grid">
+              <div class="metric">
+                <span class="metric-label">Akontácia</span>
+                <span class="metric-value">{{ formatCurrency(result.options.loan.initial_cost) }}</span>
+              </div>
+              <div class="metric">
+                <span class="metric-label">Celkovo</span>
+                <span class="metric-value">{{ formatCurrency(result.options.loan.total_cost) }}</span>
+              </div>
+            </div>
+            <p class="option-ownership">{{ result.options.loan.ownership }}</p>
+            <p class="option-explanation">{{ result.options.loan.explanation }}</p>
+          </div>
+        </div>
+
+        <!-- Cash Purchase -->
+        <div class="option-card" [class]="getOptionClass(result.options.cash)">
+          <div class="option-header">
+            <h3 class="option-title">💰 Hotovosť</h3>
+            <span class="badge" *ngIf="getOptionBadge(result.options.cash)">
+              {{ getOptionBadge(result.options.cash) }}
+            </span>
+          </div>
+          <div class="option-body">
+            <div class="metric-primary">
+              <span class="metric-label">Okamžitá platba</span>
+              <span class="metric-value">{{ formatCurrency(result.options.cash.total_cost) }}</span>
+            </div>
+            <div class="metrics-grid">
+              <div class="metric">
+                <span class="metric-label">Mesačne</span>
+                <span class="metric-value">0 €</span>
+              </div>
+              <div class="metric">
+                <span class="metric-label">Úroky</span>
+                <span class="metric-value">0 €</span>
+              </div>
+            </div>
+            <p class="option-ownership">{{ result.options.cash.ownership }}</p>
+            <p class="option-explanation">{{ result.options.cash.explanation }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="summary-box" *ngIf="result.comparison">
+        <h3 class="summary-title">📊 Zhrnutie</h3>
+        <ul class="summary-list">
+          <li><strong>Najlacnejšie celkovo:</strong> {{ result.comparison.cheapest }}</li>
+          <li><strong>Najdrahšie:</strong> {{ result.comparison.most_expensive }}</li>
+          <li><strong>Najnižšia splátka:</strong> {{ result.comparison.cheapest_monthly }}</li>
+          <li><strong>Vlastníctvo:</strong> {{ result.comparison.ownership_options.join(', ') }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEO Content -->
+  <section class="seo-content">
+    <h2>Ako funguje lízing a financovanie auta?</h2>
+    <p>
+      Rozhodnutie medzi lízingom, úverom a hotovosťou závisí od vašej finančnej situácie, dane z príjmu 
+      a toho, či auto potrebujete vlastniť. Náš nástroj porovnáva všetky možnosti vrátane DPH a úrokov.
+    </p>
+    
+    <h3>Finančný lízing</h3>
+    <p>
+      Pri finančnom lízingu splácate auto počas obdobia 36-72 mesiacov s nízkou akontáciou. 
+      Na konci obdobia sa stávate vlastníkom auta. Vhodné pre živnostníkov a firmy s odpočtom DPH.
+    </p>
+    
+    <h3>Operatívny lízing</h3>
+    <p>
+      Operatívny lízing ponúka najnižšie mesačné splátky. Na konci obdobia vráti auto alebo ho 
+      odkúpite za reziduálnu hodnotu (zvyčajne 20-40% z pôvodnej ceny). Ideálne pre firmy.
+    </p>
+    
+    <h3>Autový úver</h3>
+    <p>
+      Klasický spotrebný úver s okamžitým vlastníctvom auta. Vyššie úroky (5-10% p.a.), 
+      ale auto je hneď vaše. Vhodné pre fyzické osoby, ktoré chcú mať auto vo vlastníctve.
+    </p>
+    
+    <h3>Nákup na hotovosti</h3>
+    <p>
+      Najlacnejší spôsob, nevytvárajú sa žiadne úroky. Vyžaduje však vysokú počiatočnú investíciu. 
+      Vhodné pre tých, ktorí majú dostatok úspor a nechcú platiť úroky banke.
+    </p>
+  </section>
+</div>

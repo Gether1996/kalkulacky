@@ -1,0 +1,276 @@
+<div class="calculator-container">
+  <div class="calculator-header">
+    <h1>🔢 Kalkulačka percent a matematiky</h1>
+    <p class="subtitle">Univerzálna kalkulačka pre percentá a základné výpočty</p>
+    <div class="seo-keywords">
+      <span class="keyword">kalkulačka percent</span>
+      <span class="keyword">výpočet percent</span>
+      <span class="keyword">percentuálna zmena</span>
+    </div>
+  </div>
+
+  <div class="calculator-grid">
+    <!-- Input Section -->
+    <div class="input-section card">
+      <h2>📝 Zadajte hodnoty</h2>
+
+      <!-- Input Fields -->
+      <div class="inputs-container">
+        <!-- Percent Input -->
+        <div *ngIf="needsPercent()" class="input-group">
+          <label for="percent">
+            Percento (%)
+            <span class="tooltip" title="Percentuálna hodnota">ℹ️</span>
+          </label>
+          <input 
+            type="number" 
+            id="percent"
+            [(ngModel)]="percent"
+            (ngModelChange)="calculate()"
+            step="0.01"
+            class="input-field"
+          />
+        </div>
+
+        <!-- Value 1 Input -->
+        <div *ngIf="needsValue1()" class="input-group">
+          <label for="value1">
+            {{ getInputLabel1() }}
+          </label>
+          <input 
+            type="number" 
+            id="value1"
+            [(ngModel)]="value1"
+            (ngModelChange)="calculate()"
+            step="0.01"
+            class="input-field"
+          />
+        </div>
+
+        <!-- Value 2 Input -->
+        <div *ngIf="needsValue2()" class="input-group">
+          <label for="value2">
+            {{ getInputLabel2() }}
+          </label>
+          <input 
+            type="number" 
+            id="value2"
+            [(ngModel)]="value2"
+            (ngModelChange)="calculate()"
+            step="0.01"
+            class="input-field"
+          />
+        </div>
+      </div>
+
+      <h2 style="margin-top: 2rem;">🎯 Typ výpočtu</h2>
+
+      <!-- Calculation Type Selection -->
+      <div class="calc-type-grid">
+        <button 
+          *ngFor="let type of calculationTypes"
+          (click)="selectType(type.id)"
+          [class.active]="selectedType === type.id"
+          class="calc-type-btn">
+          <span class="type-icon">{{ type.icon }}</span>
+          <span class="type-label">{{ type.label }}</span>
+          <span class="type-desc">{{ type.description }}</span>
+        </button>
+      </div>
+
+      <!-- Quick Examples -->
+      <div class="examples">
+        <h3>💡 Časté použitia</h3>
+        <div class="example-list">
+          <div class="example-item">
+            <strong>Zľava 20%:</strong> Odčítať 20% z ceny
+          </div>
+          <div class="example-item">
+            <strong>DPH 20%:</strong> Pridať 20% k cene
+          </div>
+          <div class="example-item">
+            <strong>Percentuálny nárast:</strong> Porovnať staré a nové hodnoty
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="results-section card">
+      <h2>📈 Výsledok</h2>
+
+      <div *ngIf="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Počítam...</p>
+      </div>
+
+      <div *ngIf="error" class="error-message">
+        ❌ {{ error }}
+      </div>
+
+      <div *ngIf="result && !loading" class="results">
+        <!-- Main Result -->
+        <div class="result-highlight">
+          <div class="result-label">Výsledok</div>
+          <div class="result-value">{{ formatNumber(result.result) }}</div>
+          <div *ngIf="result.formula" class="result-formula">{{ result.formula }}</div>
+        </div>
+
+        <!-- Detailed Results Based on Type -->
+        <div class="details-card">
+          <h3>Detail výpočtu</h3>
+
+          <!-- percent_of -->
+          <div *ngIf="result.calculation_type === 'percent_of'">
+            <div class="detail-item">
+              <span class="detail-label">Percento:</span>
+              <span class="detail-value">{{ formatNumber(result.input_values.percent) }}%</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Zo základnej hodnoty:</span>
+              <span class="detail-value">{{ formatNumber(result.input_values.of_value) }}</span>
+            </div>
+            <div class="detail-item highlight">
+              <span class="detail-label">Výsledok:</span>
+              <span class="detail-value primary">{{ formatNumber(result.result) }}</span>
+            </div>
+          </div>
+
+          <!-- is_what_percent -->
+          <div *ngIf="result.calculation_type === 'is_what_percent'">
+            <div class="detail-item">
+              <span class="detail-label">Hodnota:</span>
+              <span class="detail-value">{{ formatNumber(result.input_values.value) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Z celkovej hodnoty:</span>
+              <span class="detail-value">{{ formatNumber(result.input_values.of_value) }}</span>
+            </div>
+            <div class="detail-item highlight">
+              <span class="detail-label">Je to:</span>
+              <span class="detail-value primary">{{ formatNumber(result.result) }}%</span>
+            </div>
+          </div>
+
+          <!-- percentage_change -->
+          <div *ngIf="result.calculation_type === 'percentage_change'">
+            <div class="detail-item">
+              <span class="detail-label">Pôvodná hodnota:</span>
+              <span class="detail-value">{{ formatNumber(result.input_values.original_value) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Nová hodnota:</span>
+              <span class="detail-value">{{ formatNumber(result.input_values.new_value) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Absolútna zmena:</span>
+              <span class="detail-value" [class.positive]="result.is_increase" [class.negative]="!result.is_increase">
+                {{ result.is_increase ? '+' : '' }}{{ formatNumber(result.absolute_change!) }}
+              </span>
+            </div>
+            <div class="detail-item highlight">
+              <span class="detail-label">Percentuálna zmena:</span>
+              <span class="detail-value primary" [class.positive]="result.is_increase" [class.negative]="!result.is_increase">
+                {{ result.is_increase ? '+' : '' }}{{ formatNumber(result.result) }}%
+              </span>
+            </div>
+            <div class="change-badge" [class.increase]="result.is_increase" [class.decrease]="!result.is_increase">
+              {{ result.is_increase ? '📈 Nárast' : '📉 Pokles' }}
+            </div>
+          </div>
+
+          <!-- add_percent -->
+          <div *ngIf="result.calculation_type === 'add_percent'">
+            <div class="detail-item">
+              <span class="detail-label">Základná hodnota:</span>
+              <span class="detail-value">{{ formatNumber(result.input_values.base_value) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Pridať:</span>
+              <span class="detail-value">{{ formatNumber(result.input_values.percent) }}%</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Čo je:</span>
+              <span class="detail-value">+ {{ formatNumber(result.increase_amount!) }}</span>
+            </div>
+            <div class="detail-item highlight">
+              <span class="detail-label">Nová hodnota:</span>
+              <span class="detail-value primary">{{ formatNumber(result.result) }}</span>
+            </div>
+          </div>
+
+          <!-- subtract_percent -->
+          <div *ngIf="result.calculation_type === 'subtract_percent'">
+            <div class="detail-item">
+              <span class="detail-label">Základná hodnota:</span>
+              <span class="detail-value">{{ formatNumber(result.input_values.base_value) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Odčítať:</span>
+              <span class="detail-value">{{ formatNumber(result.input_values.percent) }}%</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Čo je:</span>
+              <span class="detail-value">- {{ formatNumber(result.decrease_amount!) }}</span>
+            </div>
+            <div class="detail-item highlight">
+              <span class="detail-label">Nová hodnota:</span>
+              <span class="detail-value primary">{{ formatNumber(result.result) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Visual Representation for percentage_change -->
+        <div *ngIf="result.calculation_type === 'percentage_change'" class="visual-change">
+          <div class="change-bar">
+            <div class="old-value">{{ formatNumber(result.input_values.original_value) }}</div>
+            <div class="arrow" [class.up]="result.is_increase" [class.down]="!result.is_increase">
+              {{ result.is_increase ? '→' : '→' }}
+            </div>
+            <div class="new-value">{{ formatNumber(result.input_values.new_value) }}</div>
+          </div>
+          <div class="change-label">
+            {{ result.is_increase ? 'Zvýšenie' : 'Zníženie' }} o {{ formatNumber(abs(result.result)) }}%
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEO Content -->
+  <div class="seo-content card">
+    <h2>Ako počítať percentá?</h2>
+    <p>
+      Naša kalkulačka percent vám pomôže rýchlo vypočítať rôzne percentuálne operácie.
+      Od základných výpočtov ako "koľko je 20% zo 100" až po zložitejšie operácie ako percentuálne zmeny.
+    </p>
+    
+    <h3>Typy výpočtov</h3>
+    <ul>
+      <li><strong>Percento z hodnoty:</strong> Vypočíta konkrétnu percentuálnu časť (napr. 20% z 500 = 100)</li>
+      <li><strong>Aké percento:</strong> Zistí, akú časť jedno číslo predstavuje z druhého (napr. 50 z 200 = 25%)</li>
+      <li><strong>Percentuálna zmena:</strong> Vypočíta nárast/pokles medzi dvoma hodnotami v percentách</li>
+      <li><strong>Pridať/Odčítať %:</strong> Zvýši alebo zníži hodnotu o určité percento (DPH, zľavy)</li>
+    </ul>
+
+    <h3>Praktické príklady</h3>
+    <ul>
+      <li>Výpočet zľavy na produkty</li>
+      <li>Pridanie DPH k cene</li>
+      <li>Vyhodnotenie rastu predaja</li>
+      <li>Výpočet spropitného (tip)</li>
+      <li>Porovnanie cien pred a po zmene</li>
+    </ul>
+
+    <h3>Vzorce</h3>
+    <p><strong>X% z Y:</strong> (X / 100) × Y</p>
+    <p><strong>Percentuálna zmena:</strong> ((Nová - Stará) / Stará) × 100</p>
+    <p><strong>Pridať X%:</strong> Hodnota × (1 + X/100)</p>
+    <p><strong>Odčítať X%:</strong> Hodnota × (1 - X/100)</p>
+  </div>
+
+  <!-- Navigation -->
+  <div class="navigation-links">
+    <a routerLink="/calculator/bmi" class="nav-link">BMI →</a>
+  </div>
+</div>

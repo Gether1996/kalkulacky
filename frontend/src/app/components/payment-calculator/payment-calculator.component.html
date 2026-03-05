@@ -1,0 +1,330 @@
+<div class="calculator-container">
+  <div class="calculator-header">
+    <h1>💰 Kalkulačka splátok úveru</h1>
+    <p class="subtitle">Vypočítajte mesačnú splátku úveru a celkové náklady</p>
+    <div class="keywords">
+      <span class="keyword-badge">Splátka úveru</span>
+      <span class="keyword-badge">Kalkulačka splátok</span>
+
+    </div>
+  </div>
+
+  <div class="info-box">
+    <strong>ℹ️ Ako používať kalkulačku:</strong>
+    <p>Zadajte výšku úveru, úrokovú sadzbu a dobu splácania. Kalkulačka vypočíta výšku splátky, celkové náklady a rozdelenie na istinu a úrok.</p>
+  </div>
+
+  <form class="calculator-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="loanAmount">💵 Výška úveru (€):</label>
+        <input
+          type="number"
+          id="loanAmount"
+          [(ngModel)]="loanAmount"
+          (ngModelChange)="calculate()"
+          name="loanAmount"
+          min="1"
+          step="1000"
+          required
+        />
+        <small>Celková požičaná suma</small>
+      </div>
+
+      <div class="form-group">
+        <label for="annualInterestRate">📊 Ročná úroková sadzba (%):</label>
+        <input
+          type="number"
+          id="annualInterestRate"
+          [(ngModel)]="annualInterestRate"
+          (ngModelChange)="calculate()"
+          name="annualInterestRate"
+          min="0"
+          step="0.1"
+          required
+        />
+        <small>Úroková sadzba za rok (napríklad 5.5 pre 5.5%)</small>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="loanTermYears">⏱️ Doba splácania (roky):</label>
+        <input
+          type="number"
+          id="loanTermYears"
+          [(ngModel)]="loanTermYears"
+          (ngModelChange)="calculate()"
+          name="loanTermYears"
+          min="0.1"
+          step="0.5"
+          required
+        />
+        <small>Celková doba splácania úveru v rokoch</small>
+      </div>
+
+      <div class="form-group">
+        <label>📅 Frekvencia splátok:</label>
+        <div class="frequency-options">
+          <label *ngFor="let freq of frequencies" 
+                 class="frequency-option"
+                 [class.selected]="paymentFrequency === freq.value">
+            <input type="radio" [(ngModel)]="paymentFrequency" (ngModelChange)="calculate()" name="paymentFrequency" [value]="freq.value" />
+            <div class="frequency-card">
+              <div class="frequency-icon">{{ freq.icon }}</div>
+              <div class="frequency-label">{{ freq.label }}</div>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <div class="error-message" *ngIf="error">
+    {{ error }}
+  </div>
+
+  <div class="result-section" *ngIf="result">
+    <!-- Payment Amount -->
+    <div class="result-highlight payment-card">
+      <h3>💰 Výška splátky</h3>
+      <div class="payment-main">
+        <div class="payment-value">{{ formatCurrency(result.payment.amount) }}</div>
+        <div class="payment-frequency">{{ result.payment.frequency_label }}</div>
+      </div>
+      <div class="payment-details">
+        <div class="detail-item">
+          <span>Počet splátok:</span>
+          <strong>{{ result.payment.total_payments }}×</strong>
+        </div>
+        <div class="detail-item">
+          <span>Ročne:</span>
+          <strong>{{ formatCurrency(result.payment.yearly_amount) }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Totals -->
+    <div class="result-card totals-card">
+      <h3>📊 Celkové náklady</h3>
+      
+      <div class="totals-grid">
+        <div class="total-item principal">
+          <div class="total-icon">💵</div>
+          <div class="total-label">Istina (zapožičané)</div>
+          <div class="total-value">{{ formatCurrency(result.loan.principal) }}</div>
+          <div class="total-percentage">{{ formatNumber(result.totals.principal_percentage, 1) }}%</div>
+        </div>
+
+        <div class="total-item interest">
+          <div class="total-icon">📈</div>
+          <div class="total-label">Úroky</div>
+          <div class="total-value" [style.color]="getPercentageColor(result.totals.interest_percentage)">
+            {{ formatCurrency(result.totals.total_interest) }}
+          </div>
+          <div class="total-percentage" [style.color]="getPercentageColor(result.totals.interest_percentage)">
+            {{ formatNumber(result.totals.interest_percentage, 1) }}%
+          </div>
+        </div>
+
+        <div class="total-item total">
+          <div class="total-icon">💰</div>
+          <div class="total-label">Celkom zaplatíte</div>
+          <div class="total-value highlight">{{ formatCurrency(result.totals.total_paid) }}</div>
+        </div>
+      </div>
+
+      <div class="cost-breakdown">
+        <div class="breakdown-bar">
+          <div class="bar-segment principal-segment" 
+               [style.width.%]="result.totals.principal_percentage"
+               [title]="'Istina: ' + formatCurrency(result.loan.principal)">
+          </div>
+          <div class="bar-segment interest-segment" 
+               [style.width.%]="result.totals.interest_percentage"
+               [title]="'Úroky: ' + formatCurrency(result.totals.total_interest)">
+          </div>
+        </div>
+        <div class="breakdown-legend">
+          <div class="legend-item">
+            <span class="legend-color principal"></span>
+            <span>Istina</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color interest"></span>
+            <span>Úroky</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loan Details -->
+    <div class="result-card loan-card">
+      <h3>📋 Detaily úveru</h3>
+      
+      <div class="details-grid">
+        <div class="detail-row">
+          <span class="detail-label">💵 Výška úveru:</span>
+          <strong class="detail-value">{{ formatCurrency(result.loan.principal) }}</strong>
+        </div>
+
+        <div class="detail-row">
+          <span class="detail-label">📊 Ročná úroková sadzba:</span>
+          <strong class="detail-value">{{ formatNumber(result.loan.interest_rate, 2) }}%</strong>
+        </div>
+
+        <div class="detail-row">
+          <span class="detail-label">📅 Úroková sadzba za obdobie:</span>
+          <strong class="detail-value">{{ formatNumber(result.loan.period_interest_rate, 4) }}%</strong>
+        </div>
+
+        <div class="detail-row">
+          <span class="detail-label">⏱️ Doba splácania:</span>
+          <strong class="detail-value">{{ formatNumber(result.loan.term_years, 1) }} rokov</strong>
+        </div>
+
+        <div class="detail-row">
+          <span class="detail-label">📆 Frekvencia splátok:</span>
+          <strong class="detail-value">{{ result.payment.frequency_label }} ({{ result.payment.payments_per_year }}× ročne)</strong>
+        </div>
+
+        <div class="detail-row">
+          <span class="detail-label">🔢 Celkový počet splátok:</span>
+          <strong class="detail-value">{{ result.payment.total_payments }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- First Payment Breakdown -->
+    <div class="result-card breakdown-card">
+      <h3>🔍 Rozdelenie prvej splátky</h3>
+      
+      <div class="first-payment-viz">
+        <div class="payment-circle">
+          <div class="circle-value">{{ formatCurrency(result.breakdown.first_payment.payment) }}</div>
+          <div class="circle-label">Prvá splátka</div>
+        </div>
+
+        <div class="payment-composition">
+          <div class="composition-item principal">
+            <div class="composition-icon">💵</div>
+            <div class="composition-content">
+              <div class="composition-label">Istina</div>
+              <div class="composition-value">{{ formatCurrency(result.breakdown.first_payment.principal) }}</div>
+            </div>
+          </div>
+
+          <div class="composition-item interest">
+            <div class="composition-icon">📈</div>
+            <div class="composition-content">
+              <div class="composition-label">Úrok</div>
+              <div class="composition-value">{{ formatCurrency(result.breakdown.first_payment.interest) }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-note">
+        <strong>ℹ️ Poznámka:</strong> Na začiatku splácania ide väčšia časť splátky na úroky. 
+        Postupne sa pomer mení a viac ide na splácanie istiny.
+      </div>
+    </div>
+
+    <!-- Amortization Schedule (if included) -->
+    <div class="result-card schedule-card" *ngIf="result.schedule && result.schedule.length > 0">
+      <h3>📅 Amortizačný plán (prvých 12 splátok)</h3>
+      
+      <div class="schedule-table-wrapper">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Splátka</th>
+              <th>Istina</th>
+              <th>Úrok</th>
+              <th>Zostatok</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let payment of result.schedule.slice(0, 12)">
+              <td>{{ payment.payment_number }}</td>
+              <td>{{ formatCurrency(payment.payment) }}</td>
+              <td class="principal-cell">{{ formatCurrency(payment.principal) }}</td>
+              <td class="interest-cell">{{ formatCurrency(payment.interest) }}</td>
+              <td>{{ formatCurrency(payment.remaining_balance) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="schedule-note" *ngIf="result.schedule.length > 12">
+        Zobrazených prvých 12 splátok z celkových {{ result.schedule.length }}.
+      </div>
+    </div>
+  </div>
+
+  <div class="seo-content">
+    <h2>Kalkulačka splátok úveru - Vypočítajte mesačnú splátku</h2>
+    
+    <p>
+      Naša <strong>kalkulačka splátok úveru</strong> vám pomôže presne vypočítať výšku pravidelnej splátky,
+      celkové náklady na úver a pomer medzi istinou a úrokmi. Ideálna pre hypotéky, spotrebné úvery a autokredity.
+    </p>
+
+    <h3>Vzorec pre výpočet splátky</h3>
+    <p>
+      Pravidelná splátka sa vypočíta podľa finančného vzorca pre anuitu:
+    </p>
+    <p style="background: #f8f9fa; padding: 1rem; border-radius: 8px; font-family: monospace;">
+      Splátka = P × [r(1+r)ⁿ] / [(1+r)ⁿ - 1]
+    </p>
+    <p>Kde:</p>
+    <ul>
+      <li><strong>P</strong> = Výška úveru (istina)</li>
+      <li><strong>r</strong> = Úroková sadzba za obdobie (ročná / počet splátok za rok)</li>
+      <li><strong>n</strong> = Celkový počet splátok</li>
+    </ul>
+
+    <h3>Čo je amortizácia?</h3>
+    <p>
+      <strong>Amortizácia</strong> je postupné splácanie úveru pravidelnými platbami. 
+      Každá splátka sa skladá z dvoch častí:
+    </p>
+    <ul>
+      <li><strong>Istina:</strong> Časť, ktorá znižuje zostatok úveru</li>
+      <li><strong>Úrok:</strong> Poplatok za požičanie peňazí</li>
+    </ul>
+    <p>
+      Na začiatku splácania ide väčšina splátky na úroky, postupne sa pomer mení a viac ide na istinu.
+    </p>
+
+    <h3>Typy úverov</h3>
+    <ul>
+      <li><strong>Hypotéka:</strong> Dlhodobý úver na bývanie (10-30 rokov), úrokové sadzby 2-5%</li>
+      <li><strong>Spotrebný úver:</strong> Krátkodobý úver (1-7 rokov), sadzby 5-15%</li>
+      <li><strong>Autokredit:</strong> Úver na auto (3-7 rokov), sadzby 3-8%</li>
+      <li><strong>Kontokorent:</strong> Revolvinový úver, vyššie sadzby 10-20%</li>
+    </ul>
+
+    <h3>Ako znížiť náklady na úver?</h3>
+    <ul>
+      <li>Vyjednajte si nižšiu úrokovú sadzbu u viacerých bánk</li>
+      <li>Zvýšte počiatočnú zálohu (vlastné prostriedky)</li>
+      <li>Skráťte dobu splácania (vyššie splátky, nižšie celkové náklady)</li>
+      <li>Využite možnosť predčasného splatenia bez poplatku</li>
+      <li>Zvážte refinancovanie pri poklese úrokových sadzieb</li>
+    </ul>
+
+    <h3>RPMN - Ročná percentuálna miera nákladov</h3>
+    <p>
+      Pri porovnávaní úverov sledujte <strong>RPMN</strong>, ktorá zahŕňa nielen úrokovú sadzbu, 
+      ale aj všetky poplatky (správa úveru, poistenie, znalecký posudok). 
+      RPMN je skutočná cena úveru.
+    </p>
+
+    <div class="navigation-links">
+
+      <a href="/calculator/loan" class="related-link">Kalkulačka úveru →</a>
+    </div>
+  </div>
+</div>

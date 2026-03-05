@@ -1,0 +1,77 @@
+import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { CalculatorService } from '../../services/calculator.service';
+import { BMICalculationResponse } from '../../models/calculator.models';
+
+@Component({
+  selector: 'app-bmi-calculator',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterLink],
+  templateUrl: './bmi-calculator.component.html',
+  styleUrls: ['./bmi-calculator.component.css']
+})
+export class BmiCalculatorComponent implements OnInit {
+  private platformId = inject(PLATFORM_ID);
+  private cdr = inject(ChangeDetectorRef);
+  
+  weight: number = 75;
+  height: number = 175;
+  
+  result: BMICalculationResponse | null = null;
+  loading: boolean = false;
+  error: string | null = null;
+
+  constructor(private calculatorService: CalculatorService) {}
+
+  ngOnInit(): void {
+    // Auto-calculate on component init for immediate results
+    this.calculate();
+  }
+
+  calculate(): void {
+    this.loading = true;
+    this.error = null;
+
+    this.calculatorService.calculateBMI({
+      weight: this.weight,
+      height: this.height
+    }).subscribe({
+      next: (response) => {
+        console.log('BMI calculation response:', response);
+        this.result = response;
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('BMI calculation error:', err);
+        this.error = err.error?.error || 'Chyba pri výpočte BMI';
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  formatNumber(num: number): string {
+    return new Intl.NumberFormat('sk-SK', {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1
+    }).format(num);
+  }
+
+  getBMIColor(bmi: number): string {
+    if (bmi < 18.5) return '#3498db'; // Blue for underweight
+    if (bmi < 25) return '#27ae60'; // Green for normal
+    if (bmi < 30) return '#f39c12'; // Orange for overweight
+    return '#e74c3c'; // Red for obese
+  }
+
+  getBMIBarWidth(bmi: number): number {
+    // Scale BMI 15-40 to 0-100%
+    const min = 15;
+    const max = 40;
+    const percentage = ((bmi - min) / (max - min)) * 100;
+    return Math.max(0, Math.min(100, percentage));
+  }
+}

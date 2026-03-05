@@ -1,0 +1,247 @@
+<div class="calculator-container">
+  <div class="calculator-header">
+    <h1>⚖️ Kalkulačka BMI</h1>
+    <p class="subtitle">Výpočet indexu telesnej hmotnosti (Body Mass Index)</p>
+    <div class="seo-keywords">
+      <span class="keyword">bmi kalkulačka</span>
+      <span class="keyword">index telesnej hmotnosti</span>
+      <span class="keyword">bmi výpočet</span>
+
+    </div>
+  </div>
+
+  <div class="calculator-grid">
+    <!-- Input Section -->
+    <div class="input-section card">
+      <h2>📊 Vaše údaje</h2>
+
+      <!-- Weight -->
+      <div class="input-group">
+        <label for="weight">
+          Hmotnosť (kg)
+          <span class="tooltip" title="Vaša aktuálna hmotnosť v kilogramoch">ℹ️</span>
+        </label>
+        <input 
+          type="number" 
+          id="weight"
+          [(ngModel)]="weight"
+          (ngModelChange)="calculate()"
+          min="20"
+          max="300"
+          step="0.1"
+          class="input-field"
+        />
+        <input 
+          type="range"
+          [(ngModel)]="weight"
+          (ngModelChange)="calculate()"
+          min="40"
+          max="150"
+          step="0.5"
+          class="slider"
+        />
+        <div class="range-labels">
+          <span>40 kg</span>
+          <span>150 kg</span>
+        </div>
+      </div>
+
+      <!-- Height -->
+      <div class="input-group">
+        <label for="height">
+          Výška (cm)
+          <span class="tooltip" title="Vaša výška v centimetroch">ℹ️</span>
+        </label>
+        <input 
+          type="number" 
+          id="height"
+          [(ngModel)]="height"
+          (ngModelChange)="calculate()"
+          min="100"
+          max="250"
+          step="1"
+          class="input-field"
+        />
+        <input 
+          type="range"
+          [(ngModel)]="height"
+          (ngModelChange)="calculate()"
+          min="140"
+          max="210"
+          step="1"
+          class="slider"
+        />
+        <div class="range-labels">
+          <span>140 cm</span>
+          <span>210 cm</span>
+        </div>
+      </div>
+
+      <!-- BMI Info Card -->
+      <div class="info-card">
+        <h3>ℹ️ Čo je BMI?</h3>
+        <p>
+          BMI (Body Mass Index) je index telesnej hmotnosti, ktorý sa vypočíta ako pomer 
+          hmotnosti k druhej mocnine výšky. Používa sa na posúdenie, či máte zdravú hmotnosť.
+        </p>
+        <p class="formula">
+          <strong>Vzorec:</strong> BMI = hmotnosť (kg) / výška² (m)
+        </p>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="results-section card">
+      <h2>📈 Výsledky</h2>
+
+      <div *ngIf="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Počítam...</p>
+      </div>
+
+      <div *ngIf="error" class="error-message">
+        ❌ {{ error }}
+      </div>
+
+      <div *ngIf="result && !loading" class="results">
+        <!-- Main Result -->
+        <div class="result-highlight" [style.background]="'linear-gradient(135deg, ' + getBMIColor(result.bmi) + ' 0%, ' + getBMIColor(result.bmi) + 'dd 100%)'">
+          <div class="result-label">Váš BMI</div>
+          <div class="result-value primary">{{ formatNumber(result.bmi) }}</div>
+          <div class="result-category">{{ result.category_sk }}</div>
+        </div>
+
+        <!-- BMI Scale Visualization -->
+        <div class="bmi-scale">
+          <div class="scale-bar">
+            <div class="scale-segment underweight"></div>
+            <div class="scale-segment normal"></div>
+            <div class="scale-segment overweight"></div>
+            <div class="scale-segment obese"></div>
+          </div>
+          <div class="scale-indicator" [style.left.%]="getBMIBarWidth(result.bmi)">
+            <div class="indicator-arrow">▼</div>
+            <div class="indicator-value">{{ formatNumber(result.bmi) }}</div>
+          </div>
+          <div class="scale-labels">
+            <span>18.5</span>
+            <span>25</span>
+            <span>30</span>
+          </div>
+          <div class="scale-categories">
+            <span class="cat-label">Podvýživa</span>
+            <span class="cat-label">Normálna</span>
+            <span class="cat-label">Nadváha</span>
+            <span class="cat-label">Obezita</span>
+          </div>
+        </div>
+
+        <!-- Category Info -->
+        <div class="category-info" [ngClass]="result.category">
+          <div class="category-header">
+            <h3>{{ result.category_sk }}</h3>
+            <span class="health-badge" [ngClass]="{'healthy': result.is_healthy, 'warning': !result.is_healthy}">
+              {{ result.is_healthy ? '✓ Zdravé' : '⚠ Riziko' }}
+            </span>
+          </div>
+          <p class="category-desc">{{ result.category_description }}</p>
+          <p class="health-risk"><strong>Zdravotné riziko:</strong> {{ result.health_risk }}</p>
+        </div>
+
+        <!-- Ideal Weight -->
+        <div class="ideal-weight">
+          <h3>🎯 Ideálna hmotnosť</h3>
+          <div class="weight-range">
+            <div class="range-box">
+              <span class="range-label">Minimum</span>
+              <span class="range-value">{{ formatNumber(result.ideal_weight_range.min) }} kg</span>
+            </div>
+            <div class="range-separator">-</div>
+            <div class="range-box">
+              <span class="range-label">Maximum</span>
+              <span class="range-value">{{ formatNumber(result.ideal_weight_range.max) }} kg</span>
+            </div>
+          </div>
+
+          <div *ngIf="result.weight_to_change > 0.5" class="recommendation">
+            <p>
+              <strong>Odporúčanie:</strong> Pre dosiahnutie zdravej hmotnosti je vhodné 
+              <strong>{{ result.recommendation}}</strong> približne 
+              <strong class="weight-change">{{ formatNumber(result.weight_to_change) }} kg</strong>.
+            </p>
+          </div>
+          <div *ngIf="result.weight_to_change <= 0.5 && result.is_healthy" class="recommendation success">
+            <p>
+              ✅ <strong>Gratulujeme!</strong> Vaša hmotnosť je v zdravom rozmedzí. 
+              Snažte sa ju udržať správnou stravou a pohybom.
+            </p>
+          </div>
+        </div>
+
+        <!-- Breakdown -->
+        <div class="breakdown">
+          <h3>Detail výpočtu</h3>
+          <div class="breakdown-item">
+            <span class="breakdown-label">Hmotnosť:</span>
+            <span class="breakdown-value">{{ formatNumber(result.weight) }} kg</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-label">Výška:</span>
+            <span class="breakdown-value">{{ formatNumber(result.height) }} cm ({{ formatNumber(result.height_meters) }} m)</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-label">BMI:</span>
+            <span class="breakdown-value">{{ formatNumber(result.bmi) }}</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-label">Kategória:</span>
+            <span class="breakdown-value">{{ result.category_sk }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEO Content -->
+  <div class="seo-content card">
+    <h2>Čo znamená BMI?</h2>
+    <p>
+      BMI (Body Mass Index) alebo index telesnej hmotnosti je číslo vypočítané z vašej hmotnosti a výšky.
+      Je to spoľahlivý ukazovateľ telesného tuku u väčšiny ľudí a používa sa na skríning nadváhy a obezity.
+    </p>
+    
+    <h3>Kategórie BMI</h3>
+    <ul>
+      <li><strong>Podvýživa (BMI &lt; 18.5):</strong> Nízka hmotnosť môže znamenať nedostatočnú výživu</li>
+      <li><strong>Normálna hmotnosť (BMI 18.5-24.9):</strong> Zdravé rozpätie hmotnosti</li>
+      <li><strong>Nadváha (BMI 25-29.9):</strong> Mierne zvýšená hmotnosť</li>
+      <li><strong>Obezita (BMI ≥ 30):</strong> Výrazne zvýšená hmotnosť s vysokým zdravotným rizikom</li>
+    </ul>
+
+    <h3>Obmedzenia BMI</h3>
+    <p>
+      BMI nerozlišuje medzi svalovou hmotou a tukom, preto môže byť skreslené u:
+    </p>
+    <ul>
+      <li>Športovcov a ľudí s veľkou svalovou hmotou</li>
+      <li>Starších ľudí, ktorí môžu mať zníženú svalovú hmotu</li>
+      <li>Tehotných žien</li>
+      <li>Detí a mladistvých (používajú sa iné percentilové tabuľky)</li>
+    </ul>
+
+    <h3>Ako dosiahnuť zdravú hmotnosť?</h3>
+    <ul>
+      <li>Vyvážená strava s dostatok zeleniny a ovocia</li>
+      <li>Pravidelný pohyb (minimálne 150 minút týždenne)</li>
+      <li>Dostatok spánku (7-9 hodín denne)</li>
+      <li>Redukcia stresu</li>
+      <li>Pravidelné pitie vody</li>
+      <li>Konzultácia s lekárom alebo nutričným špecialistom</li>
+    </ul>
+  </div>
+
+  <!-- Navigation -->
+  <div class="navigation-links">
+    <a routerLink="/calculator/fuel-cost" class="nav-link">Spotreba auta →</a>
+  </div>
+</div>

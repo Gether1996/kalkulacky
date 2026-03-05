@@ -1,0 +1,379 @@
+<div class="calculator-container">
+  <div class="calculator-header">
+    <h1>⚡ Kalkulačka nákladov na energiu</h1>
+    <p class="subtitle">Vypočítajte mesačné a ročné náklady na elektrinu a plyn</p>
+    <div class="keywords">
+      <span class="keyword-badge">Náklady na energiu</span>
+      <span class="keyword-badge">Výpočet spotreby</span>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <strong>ℹ️ Ako používať kalkulačku:</strong>
+    <p>Zadajte mesačnú spotrebu elektriny a plynu v kWh, veľkosť domácnosti a prípadne upravte tarify. Kalkulačka vypočíta vaše mesačné a ročné náklady, porovná ich s priemerom a ukáže vám efektivitu spotreby.</p>
+  </div>
+
+  <form class="calculator-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="electricityConsumption">⚡ Mesačná spotreba elektriny (kWh):</label>
+        <input
+          type="number"
+          id="electricityConsumption"
+          [(ngModel)]="electricityConsumption"
+          name="electricityConsumption"
+          min="0"
+          step="10"
+          required
+          (ngModelChange)="calculate()"
+        />
+        <small>Priemerná spotreba domácnosti: 250 kWh/mesiac</small>
+      </div>
+
+      <div class="form-group">
+        <label for="gasConsumption">🔥 Mesačná spotreba plynu (kWh):</label>
+        <input
+          type="number"
+          id="gasConsumption"
+          [(ngModel)]="gasConsumption"
+          name="gasConsumption"
+          min="0"
+          step="10"
+          (ngModelChange)="calculate()"
+        />
+        <small>Zadajte 0, ak nepoužívate plyn. Priemerná spotreba: 500 kWh/mesiac</small>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="electricityRate">💰 Cena elektriny (EUR/kWh):</label>
+        <input
+          type="number"
+          id="electricityRate"
+          [(ngModel)]="electricityRate"
+          name="electricityRate"
+          min="0"
+          step="0.01"
+          required
+          (ngModelChange)="calculate()"
+        />
+        <small>Aktuálna trhová cena: 0.15 - 0.25 EUR/kWh</small>
+      </div>
+
+      <div class="form-group" *ngIf="gasConsumption > 0">
+        <label for="gasRate">💰 Cena plynu (EUR/kWh):</label>
+        <input
+          type="number"
+          id="gasRate"
+          [(ngModel)]="gasRate"
+          name="gasRate"
+          min="0"
+          step="0.01"
+          (ngModelChange)="calculate()"
+        />
+        <small>Aktuálna trhová cena: 0.05 - 0.08 EUR/kWh</small>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group checkbox-group">
+        <label>
+          <input
+            type="checkbox"
+            [(ngModel)]="hasDualTariff"
+            name="hasDualTariff"
+            (ngModelChange)="calculate()"
+          />
+          <span>Mám dvojtarif (nízky/vysoký tarif)</span>
+        </label>
+        <small>Pri dvojtarife platíte rozdielne ceny podľa dennej doby</small>
+      </div>
+
+      <div class="form-group" *ngIf="hasDualTariff">
+        <label for="highTariffPercentage">📊 Podiel vysokého tarifu (%):</label>
+        <input
+          type="number"
+          id="highTariffPercentage"
+          [(ngModel)]="highTariffPercentage"
+          name="highTariffPercentage"
+          min="0"
+          max="100"
+          step="5"
+          (ngModelChange)="calculate()"
+        />
+        <small>Aké % spotreby je počas vysokého tarifu (zvyčajne 30-50%)</small>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="householdSize">👥 Veľkosť domácnosti (počet osôb):</label>
+        <input
+          type="number"
+          id="householdSize"
+          [(ngModel)]="householdSize"
+          name="householdSize"
+          min="1"
+          max="10"
+          required
+          (ngModelChange)="calculate()"
+        />
+        <small>Pre výpočet nákladov na osobu a porovnanie efektivity</small>
+      </div>
+    </div>
+  </form>
+
+  <div class="error-message" *ngIf="error">
+    {{ error }}
+  </div>
+
+  <div class="result-section" *ngIf="result">
+    <!-- Total Cost Summary -->
+    <div class="result-highlight total-card">
+      <h3>💰 Celkové náklady</h3>
+      <div class="total-grid">
+        <div class="total-item">
+          <div class="total-label">Mesačne</div>
+          <div class="total-value">{{ formatNumber(result.total.monthly_cost) }} €</div>
+        </div>
+        <div class="total-item">
+          <div class="total-label">Ročne</div>
+          <div class="total-value highlight-year">{{ formatNumber(result.total.annual_cost) }} €</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Electricity Details -->
+    <div class="result-card electricity-card">
+      <h3>⚡ Elektrina</h3>
+      
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-icon">📊</div>
+          <div class="stat-content">
+            <div class="stat-label">Spotreba</div>
+            <div class="stat-value">{{ formatNumber(result.electricity.consumption_kwh, 0) }} kWh</div>
+          </div>
+        </div>
+
+        <div class="stat-item">
+          <div class="stat-icon">💵</div>
+          <div class="stat-content">
+            <div class="stat-label">Variabilné náklady</div>
+            <div class="stat-value">{{ formatNumber(result.electricity.variable_cost) }} €</div>
+          </div>
+        </div>
+
+        <div class="stat-item">
+          <div class="stat-icon">🔒</div>
+          <div class="stat-content">
+            <div class="stat-label">Fixné náklady</div>
+            <div class="stat-value">{{ formatNumber(result.electricity.fixed_cost) }} €</div>
+          </div>
+        </div>
+
+        <div class="stat-item">
+          <div class="stat-icon">💰</div>
+          <div class="stat-content">
+            <div class="stat-label">Celkom mesačne</div>
+            <div class="stat-value highlight">{{ formatNumber(result.electricity.total_monthly) }} €</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-row" *ngIf="result.electricity.has_dual_tariff">
+        <span>🌙 Nízky tarif (0.15 €/kWh):</span>
+        <strong>{{ formatNumber(result.electricity.low_tariff_kwh, 0) }} kWh</strong>
+      </div>
+      <div class="detail-row" *ngIf="result.electricity.has_dual_tariff">
+        <span>☀️ Vysoký tarif (0.20 €/kWh):</span>
+        <strong>{{ formatNumber(result.electricity.high_tariff_kwh, 0) }} kWh</strong>
+      </div>
+
+      <div class="detail-row annual">
+        <span>📅 Ročné náklady na elektrinu:</span>
+        <strong>{{ formatNumber(result.electricity.total_annual) }} €</strong>
+      </div>
+
+      <div class="comparison-box" [ngClass]="getComparisonClass(result.electricity.vs_average_percentage)">
+        <span class="comparison-icon">{{ getComparisonIcon(result.electricity.vs_average_percentage) }}</span>
+        <span class="comparison-text">{{ getComparisonText(result.electricity.vs_average_percentage) }}</span>
+        <strong>{{ formatNumber(result.electricity.vs_average_percentage, 1) }}%</strong>
+      </div>
+
+      <div class="percentage-display">
+        <span>Podiel na celkových nákladoch:</span>
+        <strong>{{ formatNumber(result.total.electricity_percentage, 1) }}%</strong>
+      </div>
+    </div>
+
+    <!-- Gas Details -->
+    <div class="result-card gas-card" *ngIf="gasConsumption > 0">
+      <h3>🔥 Plyn</h3>
+      
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-icon">📊</div>
+          <div class="stat-content">
+            <div class="stat-label">Spotreba</div>
+            <div class="stat-value">{{ formatNumber(result.gas.consumption_kwh, 0) }} kWh</div>
+          </div>
+        </div>
+
+        <div class="stat-item">
+          <div class="stat-icon">💵</div>
+          <div class="stat-content">
+            <div class="stat-label">Variabilné náklady</div>
+            <div class="stat-value">{{ formatNumber(result.gas.variable_cost) }} €</div>
+          </div>
+        </div>
+
+        <div class="stat-item">
+          <div class="stat-icon">🔒</div>
+          <div class="stat-content">
+            <div class="stat-label">Fixné náklady</div>
+            <div class="stat-value">{{ formatNumber(result.gas.fixed_cost) }} €</div>
+          </div>
+        </div>
+
+        <div class="stat-item">
+          <div class="stat-icon">💰</div>
+          <div class="stat-content">
+            <div class="stat-label">Celkom mesačne</div>
+            <div class="stat-value highlight">{{ formatNumber(result.gas.total_monthly) }} €</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-row annual">
+        <span>📅 Ročné náklady na plyn:</span>
+        <strong>{{ formatNumber(result.gas.total_annual) }} €</strong>
+      </div>
+
+      <div class="comparison-box" *ngIf="result.gas.vs_average_percentage !== null" 
+           [ngClass]="getComparisonClass(result.gas.vs_average_percentage || 0)">
+        <span class="comparison-icon">{{ getComparisonIcon(result.gas.vs_average_percentage || 0) }}</span>
+        <span class="comparison-text">{{ getComparisonText(result.gas.vs_average_percentage || 0) }}</span>
+        <strong>{{ formatNumber(result.gas.vs_average_percentage, 1) }}%</strong>
+      </div>
+
+      <div class="percentage-display">
+        <span>Podiel na celkových nákladoch:</span>
+        <strong>{{ formatNumber(result.total.gas_percentage, 1) }}%</strong>
+      </div>
+    </div>
+
+    <!-- Household Analysis -->
+    <div class="result-card household-card">
+      <h3>👥 Analýza domácnosti</h3>
+      
+      <div class="household-grid">
+        <div class="household-item">
+          <div class="household-icon">👨‍👩‍👧‍👦</div>
+          <div class="household-label">Počet osôb</div>
+          <div class="household-value">{{ result.household.household_size }}</div>
+        </div>
+
+        <div class="household-item">
+          <div class="household-icon">💰</div>
+          <div class="household-label">Náklady/osobu mesačne</div>
+          <div class="household-value">{{ formatNumber(result.household.cost_per_person_monthly) }} €</div>
+        </div>
+
+        <div class="household-item">
+          <div class="household-icon">📅</div>
+          <div class="household-label">Náklady/osobu ročne</div>
+          <div class="household-value">{{ formatNumber(result.household.cost_per_person_annual) }} €</div>
+        </div>
+
+        <div class="household-item">
+          <div class="household-icon">⚡</div>
+          <div class="household-label">Elektrina/osobu</div>
+          <div class="household-value">{{ formatNumber(result.household.electricity_per_person, 0) }} kWh</div>
+        </div>
+      </div>
+
+      <div class="efficiency-badge" [style.background-color]="getEfficiencyColor(result.household.efficiency_category)">
+        <span class="badge-icon">🏆</span>
+        <span class="badge-text">{{ result.household.efficiency_category }}</span>
+      </div>
+    </div>
+
+    <!-- Averages Reference -->
+    <div class="result-card averages-card">
+      <h3>📊 Porovnanie s priemerom (Slovensko)</h3>
+      
+      <div class="averages-grid">
+        <div class="average-item">
+          <div class="average-label">Priemerná spotreba elektriny</div>
+          <div class="average-value">{{ formatNumber(result.averages.avg_electricity_monthly_kwh, 0) }} kWh/mes.</div>
+        </div>
+
+        <div class="average-item">
+          <div class="average-label">Priemerné náklady na elektrinu</div>
+          <div class="average-value">{{ formatNumber(result.averages.avg_electricity_cost) }} €/mes.</div>
+        </div>
+
+        <div class="average-item" *ngIf="gasConsumption > 0">
+          <div class="average-label">Priemerná spotreba plynu</div>
+          <div class="average-value">{{ formatNumber(result.averages.avg_gas_monthly_kwh, 0) }} kWh/mes.</div>
+        </div>
+
+        <div class="average-item" *ngIf="result.averages.avg_gas_cost !== null">
+          <div class="average-label">Priemerné náklady na plyn</div>
+          <div class="average-value">{{ formatNumber(result.averages.avg_gas_cost) }} €/mes.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="seo-content">
+    <h2>Kalkulačka nákladov na energiu - Elektrinu a plyn na Slovensku</h2>
+    
+    <p>
+      Naša <strong>kalkulačka nákladov na energiu</strong> vám pomôže presne vypočítať mesačné a ročné výdavky 
+      na elektrinu a plyn pre vašu domácnosť. Stačí zadať vašu mesačnú spotrebu v kWh a nastavenia domácnosti.
+    </p>
+
+    <h3>Ako vypočítať náklady na elektrinu?</h3>
+    <p>
+      Náklady na elektrinu sa skladajú z dvoch častí:
+    </p>
+    <ul>
+      <li><strong>Variabilné náklady:</strong> Spotreba v kWh × cena za kWh (0.15-0.25 EUR/kWh)</li>
+      <li><strong>Fixné náklady:</strong> Mesačný poplatok za distribúciu (cca 8 EUR/mesiac)</li>
+    </ul>
+
+    <h3>Dvojtarif (vysoký a nízky tarif)</h3>
+    <p>
+      Ak máte <strong>dvojtarif</strong>, platíte rozdielne ceny podľa dennej doby:
+    </p>
+    <ul>
+      <li><strong>Nízky tarif (NT):</strong> Zvyčajne v noci a cez víkend (0.15 EUR/kWh)</li>
+      <li><strong>Vysoký tarif (VT):</strong> Cez deň v pracovné dni (0.20 EUR/kWh)</li>
+    </ul>
+
+    <h3>Priemerná spotreba na Slovensku</h3>
+    <p>
+      Typická slovenská domácnosť spotrebuje:
+    </p>
+    <ul>
+      <li><strong>Elektrina:</strong> 250-350 kWh mesačne (3000-4200 kWh ročne)</li>
+      <li><strong>Plyn:</strong> 500-800 kWh mesačne pri vykurovaní (6000-9600 kWh ročne)</li>
+    </ul>
+
+    <h3>Ako ušetriť na energiách?</h3>
+    <ul>
+      <li>Využívajte nízky tarif pre energeticky náročné spotrebiče (práčka, umývačka)</li>
+      <li>Investujte do úsporných LED žiaroviek a spotrebičov triedy A+++</li>
+      <li>Zateplete dom a zlepšite izoláciu okien</li>
+      <li>Znížte teplotu vykurovania o 1°C = úspora až 6% nákladov</li>
+      <li>Vypínajte spotrebiče úplne, nie len pohotovostný režim</li>
+    </ul>
+
+    <div class="navigation-links">
+      <a href="/calculator/salary" class="related-link">Kalkulačka mzdy →</a>
+    </div>
+  </div>
+</div>

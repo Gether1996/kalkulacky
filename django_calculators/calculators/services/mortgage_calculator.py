@@ -31,39 +31,39 @@ class MortgageCalculator(BaseCalculator):
         
         # Validate loan amount
         if not loan_amount:
-            raise ValueError("loan_amount is required")
+            raise ValueError("Čiastka úveru je povinná")
         try:
             amount = self.to_decimal(loan_amount)
         except (ValueError, TypeError):
-            raise ValueError("loan_amount must be a valid number")
+            raise ValueError("Čiastka úveru musí byť platné číslo")
         if amount <= 0:
-            raise ValueError("loan_amount must be greater than 0")
+            raise ValueError("Čiastka úveru musí byť väčšia ako 0")
         if amount > 1000000:
-            raise ValueError("loan_amount seems unrealistically high (>€1,000,000)")
+            raise ValueError("Čiastka úveru sa zdá nereálne vysoká (>€1,000,000)")
         
         # Validate interest rate
         if not annual_interest_rate:
-            raise ValueError("annual_interest_rate is required")
+            raise ValueError("Úroková sadzba je povinná")
         try:
             rate = self.to_decimal(annual_interest_rate)
         except (ValueError, TypeError):
-            raise ValueError("annual_interest_rate must be a valid number")
+            raise ValueError("Úroková sadzba musí byť platné číslo")
         if rate < 0:
-            raise ValueError("annual_interest_rate cannot be negative")
+            raise ValueError("Úroková sadzba nemôže byť záporná")
         if rate > 20:
-            raise ValueError("annual_interest_rate seems unrealistically high (>20%)")
+            raise ValueError("Úroková sadzba sa zdá nereálne vysoká (>20%)")
         
         # Validate loan term
         if not loan_term_years:
-            raise ValueError("loan_term_years is required")
+            raise ValueError("Dĺžka úveru (roky) je povinná")
         try:
             years = int(loan_term_years)
         except (ValueError, TypeError):
-            raise ValueError("loan_term_years must be a valid integer")
+            raise ValueError("Dĺžka úveru musí byť platné celé číslo")
         if years <= 0:
-            raise ValueError("loan_term_years must be greater than 0")
+            raise ValueError("Dĺžka úveru musí byť väčšia ako 0")
         if years > 40:
-            raise ValueError("loan_term_years seems unrealistically long (>40 years)")
+            raise ValueError("Dĺžka úveru sa zdá nereálne dlhá (>40 rokov)")
         
         return True
     

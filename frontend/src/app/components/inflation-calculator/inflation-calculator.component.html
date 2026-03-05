@@ -1,0 +1,238 @@
+<div class="calculator-container">
+  <div class="calculator-header">
+    <h1>📉 Kalkulačka inflácie</h1>
+    <p class="calculator-description">
+      Vypočítajte skutočnú hodnotu peňazí v čase s ohľadom na infláciu. 
+      Zistite, ako inflácia ovplyvňuje vašu kúpnu silu a úspory.
+    </p>
+  </div>
+
+  <div class="calculator-content">
+    <div class="input-section">
+      <h2>💰 Vstupné údaje</h2>
+
+      <div class="input-group">
+        <label for="presentValue">{{ calculateReverse ? 'Hodnota v minulosti' : 'Súčasná hodnota' }}</label>
+        <div class="input-with-unit">
+          <input
+            type="number"
+            id="presentValue"
+            [(ngModel)]="presentValue"
+            (ngModelChange)="calculate()"
+            min="0.01"
+            step="1000"
+          />
+          <span class="unit">€</span>
+        </div>
+        <small>{{ calculateReverse ? 'Koľko ste mali v minulosti' : 'Súčasná suma peňazí' }}</small>
+      </div>
+
+      <div class="input-group">
+        <label for="years">Počet rokov</label>
+        <div class="input-with-unit">
+          <input
+            type="number"
+            id="years"
+            [(ngModel)]="years"
+            (ngModelChange)="calculate()"
+            min="1"
+            max="100"
+            step="1"
+          />
+          <span class="unit">rokov</span>
+        </div>
+        <small>{{ calculateReverse ? 'Koľko rokov uplynulo' : 'Do koľkých rokov počítať' }}</small>
+      </div>
+
+      <div class="input-group">
+        <label for="inflationRate">Ročná inflácia</label>
+        <div class="input-with-unit">
+          <input
+            type="number"
+            id="inflationRate"
+            [(ngModel)]="inflationRate"
+            (ngModelChange)="calculate()"
+            min="-10"
+            max="50"
+            step="0.1"
+          />
+          <span class="unit">%</span>
+        </div>
+        <small>Priemerná ročná miera inflácie (Slovensko ~3%)</small>
+      </div>
+
+      <div class="input-group">
+        <label>Typ výpočtu</label>
+        <div class="calculation-type-options">
+          <div 
+            class="option-card" 
+            [class.selected]="!calculateReverse"
+            (click)="calculateReverse = false; calculate()"
+          >
+            <div class="option-icon">⏩</div>
+            <div class="option-label">Do budúcnosti</div>
+            <div class="option-description">Koľko budú stáť dnešné peniaze</div>
+          </div>
+          <div 
+            class="option-card" 
+            [class.selected]="calculateReverse"
+            (click)="calculateReverse = true; calculate()"
+          >
+            <div class="option-icon">⏪</div>
+            <div class="option-label">Z minulosti</div>
+            <div class="option-description">Koľko stoja staré peniaze dnes</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="error-message" *ngIf="error">
+        ⚠️ {{ error }}
+      </div>
+    </div>
+
+    <div class="results-section" *ngIf="result">
+      <h2>📊 Výsledky</h2>
+
+      <!-- Future Value Highlight -->
+      <div class="result-card highlight-card">
+        <div class="card-icon">{{ calculateReverse ? '📈' : '📉' }}</div>
+        <div class="card-content">
+          <div class="card-label">{{ calculateReverse ? 'Súčasná hodnota' : 'Hodnota v budúcnosti' }}</div>
+          <div class="card-value">{{ formatCurrency(result.result.future_value) }}</div>
+          <div class="card-details">
+            <span>{{ calculateReverse ? 'Vzrástla o' : 'Strata hodnoty' }}: {{ formatCurrency(result.result.total_inflation) }}</span>
+            <span class="separator">•</span>
+            <span>{{ formatPercent(result.result.total_inflation_percent) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="summary-icon">💵</div>
+          <div class="summary-label">Kúpna sila</div>
+          <div class="summary-value" [style.color]="getPowerColor(result.result.purchasing_power)">
+            {{ formatPercent(result.result.purchasing_power) }}
+          </div>
+          <div class="summary-note">{{ result.analysis.power_category }}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon">📊</div>
+          <div class="summary-label">Kumulatívna inflácia</div>
+          <div class="summary-value">{{ formatPercent(result.result.cumulative_inflation_rate) }}</div>
+          <div class="summary-note">Za {{ result.input.years }} rokov</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon">📅</div>
+          <div class="summary-label">Priemerná ročná zmena</div>
+          <div class="summary-value">{{ formatCurrency(result.result.avg_annual_change) }}</div>
+          <div class="summary-note">{{ calculateReverse ? 'Nárast' : 'Pokles' }} hodnoty</div>
+        </div>
+        <div class="summary-card important">
+          <div class="summary-icon">💸</div>
+          <div class="summary-label">Potrebná budúca hodnota</div>
+          <div class="summary-value">{{ formatCurrency(result.result.required_future_value) }}</div>
+          <div class="summary-note">Pre rovnakú kúpnu silu</div>
+        </div>
+      </div>
+
+      <!-- Analysis Card -->
+      <div class="detail-card">
+        <div class="detail-header">
+          <h3>🔍 Analýza</h3>
+          <span class="detail-badge" [style.background]="getPowerColor(result.result.purchasing_power)">
+            {{ result.analysis.power_category }}
+          </span>
+        </div>
+        <div class="detail-body">
+          <div class="analysis-item">
+            <div class="analysis-label">Stav kúpnej sily:</div>
+            <div class="analysis-value">{{ result.analysis.power_description }}</div>
+          </div>
+          <div class="analysis-item">
+            <div class="analysis-label">{{ calculateReverse ? 'Priemer hodnoty ročne:' : 'Priemerná strata ročne:' }}</div>
+            <div class="analysis-value">{{ formatCurrency(result.analysis.yearly_loss) }}</div>
+          </div>
+          <div class="analysis-item">
+            <div class="analysis-label">Efektívna inflácia:</div>
+            <div class="analysis-value">{{ formatPercent(result.analysis.effective_rate) }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Yearly Breakdown -->
+      <div class="detail-card" *ngIf="result.yearly_breakdown.length > 0">
+        <div class="detail-header">
+          <h3>📈 Vývoj hodnoty po rokoch</h3>
+        </div>
+        <div class="detail-body">
+          <div class="yearly-table-container">
+            <table class="yearly-table">
+              <thead>
+                <tr>
+                  <th>Rok</th>
+                  <th>Hodnota</th>
+                  <th>{{ calculateReverse ? 'Nárast' : 'Pokles' }}</th>
+                  <th>Kúpna sila</th>
+                  <th>Kumulatívna inflácia</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let year of result.yearly_breakdown">
+                  <td>{{ year.year }}</td>
+                  <td class="value-cell">{{ formatCurrency(year.value) }}</td>
+                  <td class="change-cell" [style.color]="getChangeColor(year.change)">
+                    {{ formatCurrency(year.change) }}
+                  </td>
+                  <td class="power-cell" [style.color]="getPowerColor(year.purchasing_power)">
+                    {{ formatPercent(year.purchasing_power) }}
+                  </td>
+                  <td>{{ formatPercent(year.cumulative_inflation) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-note" *ngIf="result.input.years > 50">
+            Zobrazených prvých 50 rokov z {{ result.input.years }} rokov
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparison with Other Rates -->
+      <div class="detail-card" *ngIf="result.comparison.length > 0">
+        <div class="detail-header">
+          <h3>⚖️ Porovnanie s inými sadzbami inflácie</h3>
+        </div>
+        <div class="detail-body">
+          <div class="comparison-grid">
+            <div class="comparison-item" *ngFor="let comp of result.comparison">
+              <div class="comparison-header">
+                <span class="comparison-rate">{{ formatPercent(comp.inflation_rate) }}</span>
+                <span class="comparison-label">ročná inflácia</span>
+              </div>
+              <div class="comparison-value">{{ formatCurrency(comp.value) }}</div>
+              <div class="comparison-diff" [style.color]="getChangeColor(comp.difference)">
+                {{ comp.difference >= 0 ? '+' : '' }}{{ formatCurrency(comp.difference) }}
+                ({{ comp.difference_percent >= 0 ? '+' : '' }}{{ formatPercent(comp.difference_percent) }})
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Card -->
+      <div class="info-card">
+        <h3>ℹ️ Dôležité informácie</h3>
+        <ul>
+          <li>Výpočty sú orientačné a predpokladajú konštantnú infláciu počas celého obdobia.</li>
+          <li>Skutočná inflácia sa každý rok mení a líši sa podľa kategórií produktov a služieb.</li>
+          <li>Kúpna sila ukazuje, koľko percent pôvodnej hodnoty si peniaze zachovajú.</li>
+          <li>Priemerná inflácia na Slovensku je približne 3% ročne (môže sa výrazne líšiť).</li>
+          <li>{{ calculateReverse ? 'Výpočet z minulosti ukazuje, ako narastá hodnota peňazí s infláciou.' : 'Výpočet do budúcnosti ukazuje, ako inflácia znižuje hodnotu peňazí.' }}</li>
+          <li>Pre ochranu pred infláciou zvážte investície s výnosom vyšším ako inflácia.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

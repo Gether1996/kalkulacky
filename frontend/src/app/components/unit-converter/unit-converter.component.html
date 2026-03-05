@@ -1,0 +1,198 @@
+<div class="calculator-container">
+  <div class="calculator-header">
+    <h1>� Konvertor jednotiek</h1>
+    <p class="subtitle">Rýchla a presná konverzia medzi jednotkami</p>
+  </div>
+
+  <!-- Category Selection -->
+  <div class="section">
+    <h2>📂 Vyberte kategóriu</h2>
+    <div class="category-grid">
+      <button 
+        *ngFor="let cat of categories"
+        [class.active]="category === cat.value"
+        (click)="category = cat.value; onCategoryChange()"
+        class="category-btn">
+        <span class="category-icon">{{ getCategoryIcon(cat.value) }}</span>
+        <span class="category-label">{{ cat.label }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Conversion Section -->
+  <div class="section conversion-section">
+    <h2>🔢 Konverzia</h2>
+    
+    <!-- Value Input -->
+    <div class="input-group">
+      <label for="value" class="input-label">Hodnota na konverziu:</label>
+      <input 
+        type="number" 
+        id="value"
+        [(ngModel)]="value" 
+        (ngModelChange)="calculate()"
+        step="any"
+        class="value-input"
+        placeholder="Zadajte hodnotu">
+    </div>
+
+    <!-- From Unit -->
+    <div class="input-group">
+      <label for="fromUnit" class="input-label">Z jednotky:</label>
+      <select 
+        id="fromUnit"
+        [(ngModel)]="fromUnit" 
+        (ngModelChange)="calculate()"
+        class="unit-select">
+        <option *ngFor="let unit of availableUnits" [value]="unit.value">
+          {{ unit.label }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Swap Button -->
+    <div class="swap-container">
+      <button 
+        (click)="swapUnits()" 
+        class="swap-btn"
+        title="Vymeniť jednotky">
+        <span class="swap-icon">⇅</span>
+        <span class="swap-text">Vymeniť</span>
+      </button>
+    </div>
+
+    <!-- To Unit -->
+    <div class="input-group">
+      <label for="toUnit" class="input-label">Na jednotku:</label>
+      <select 
+        id="toUnit"
+        [(ngModel)]="toUnit" 
+        (ngModelChange)="calculate()"
+        class="unit-select">
+        <option *ngFor="let unit of availableUnits" [value]="unit.value">
+          {{ unit.label }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="error-message">
+    ⚠️ {{ error }}
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading">
+    <div class="spinner"></div>
+    <p>Vypočítavam...</p>
+  </div>
+
+  <!-- Result Section -->
+  <div *ngIf="result && !isLoading" class="result-section">
+    <h2>✅ Výsledok</h2>
+    
+    <div class="result-card">
+      <div class="result-row">
+        <div class="result-label">Vstup:</div>
+        <div class="result-value">
+          <span class="number">{{ result.value | number:'1.0-6' }}</span>
+          <span class="unit">{{ result.from_unit_name }}</span>
+        </div>
+      </div>
+      
+      <div class="result-equals">=</div>
+      
+      <div class="result-row result-highlight">
+        <div class="result-label">Výsledok:</div>
+        <div class="result-value result-main">
+          <span class="number">{{ result.result | number:'1.0-6' }}</span>
+          <span class="unit">{{ result.to_unit_name }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-formula" *ngIf="result.formula">
+      <strong>Vzorec:</strong> {{ result.formula }}
+    </div>
+  </div>
+
+  <!-- Common Conversions -->
+  <div class="section common-conversions" *ngIf="!isLoading">
+    <h2>⚡ Časté konverzie</h2>
+    <div class="common-grid">
+      <button 
+        *ngFor="let conv of getCommonConversions()"
+        (click)="useCommonConversion(conv)"
+        class="common-btn">
+        {{ conv.label }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Information Section -->
+  <div class="info-section">
+    <h3>💡 Podporované kategórie:</h3>
+    <ul class="info-list">
+      <li><strong>📏 Dĺžka:</strong> metre, kilometre, míle, stopy, palce, centimetre...</li>
+      <li><strong>⚖️ Hmotnosť:</strong> kilogramy, gramy, libry, unce, tony...</li>
+      <li><strong>🧪 Objem:</strong> litre, mililitre, galóny, kubické metre...</li>
+      <li><strong>📐 Plocha:</strong> m², km², hektáre, ákre, ft²...</li>
+      <li><strong>🌡️ Teplota:</strong> Celsius, Fahrenheit, Kelvin</li>
+    </ul>
+  </div>
+
+  <!-- Examples Section -->
+  <div class="examples-section">
+    <h2>📊 Príklady použitia</h2>
+    <div class="examples-grid">
+      <div class="example-card">
+        <h3>🏃 Šport</h3>
+        <p>Maratón je 42.195 km = 26.219 míľ</p>
+      </div>
+      <div class="example-card">
+        <h3>🍳 Varenie</h3>
+        <p>250 ml mlieka = 1.057 šálok (US)</p>
+      </div>
+      <div class="example-card">
+        <h3>🌡️ Počasie</h3>
+        <p>20°C = 68°F (príjemná izbová teplota)</p>
+      </div>
+      <div class="example-card">
+        <h3>🏠 Stavba</h3>
+        <p>100 m² = 1076.39 ft² (byt)</p>
+      </div>
+      <div class="example-card">
+        <h3>⚖️ Hmotnosť</h3>
+        <p>70 kg = 154.32 lb (priemerná váha)</p>
+      </div>
+      <div class="example-card">
+        <h3>✈️ Výška</h3>
+        <p>10,000 m = 32,808 ft (lietadlo)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEO Content -->
+  <div class="seo-content">
+    <h2>🔍 Prečo používať konvertor jednotiek?</h2>
+    <p>
+      Náš online konvertor jednotiek je ideálny nástroj pre rýchlu a presnú konverziu medzi rôznymi jednotkami merania.
+      Či už potrebujete konvertovať kilometre na míle, kilogramy na libry, alebo stupne Celzia na Fahrenheit, 
+      náš nástroj vám poskytne okamžitý a presný výsledok.
+    </p>
+    <p>
+      <strong>Podporované kategórie:</strong>
+    </p>
+    <ul>
+      <li><strong>Dĺžka:</strong> meter, kilometer, centimeter, milimeter, míľa, stopa, palec, yard</li>
+      <li><strong>Hmotnosť:</strong> kilogram, gram, miligram, tona, libra, unca</li>
+      <li><strong>Objem:</strong> liter, mililiter, kubický meter, galón (US/UK), šálka, pinta</li>
+      <li><strong>Plocha:</strong> štvorcový meter, hektár, aker, štvorcový kilometer, štvorcová stopa</li>
+      <li><strong>Teplota:</strong> Celsius, Fahrenheit, Kelvin</li>
+    </ul>
+    <p>
+      Konvertor je optimalizovaný pre slovenských používateľov a poskytuje výsledky v reálnom čase.
+      Ideálny pre študentov, inžinierov, kulinárskych nadšencov a každého, kto potrebuje rýchle konverzie jednotiek.
+    </p>
+  </div>
+</div>

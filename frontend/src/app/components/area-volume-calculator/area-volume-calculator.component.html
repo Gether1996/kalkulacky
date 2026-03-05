@@ -1,0 +1,233 @@
+<div class="calculator-container">
+  <!-- Header -->
+  <header class="calculator-header">
+    <h1 class="calculator-title">
+      📐 Kalkulačka plochy a objemu
+    </h1>
+    <p class="calculator-subtitle">
+      Vypočítajte plochu alebo objem geometrických tvarov. Vhodné pre stavbu, záhradu, školu a domácnosť.
+    </p>
+  </header>
+
+  <!-- Loading State -->
+  <div *ngIf="shapesLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Načítavam tvary...</p>
+  </div>
+
+  <!-- Calculator Body -->
+  <div class="calculator-body" *ngIf="!shapesLoading">
+    <!-- Shape Selection -->
+    <div class="shape-selection-section">
+      <h2 class="section-title">Vyberte tvar</h2>
+
+      <!-- 2D Shapes -->
+      <div class="shape-category">
+        <h3 class="category-title">📏 2D Tvary (Plocha)</h3>
+        <div class="shapes-grid">
+          <button
+            *ngFor="let shape of getShapesByType('2d')"
+            (click)="selectShape(shape.id)"
+            class="shape-button"
+            [class.active]="selectedShape === shape.id"
+          >
+            <span class="shape-icon">{{ shape.icon }}</span>
+            <span class="shape-name">{{ shape.name }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3D Shapes -->
+      <div class="shape-category">
+        <h3 class="category-title">📦 3D Tvary (Objem)</h3>
+        <div class="shapes-grid">
+          <button
+            *ngFor="let shape of getShapesByType('3d')"
+            (click)="selectShape(shape.id)"
+            class="shape-button"
+            [class.active]="selectedShape === shape.id"
+          >
+            <span class="shape-icon">{{ shape.icon }}</span>
+            <span class="shape-name">{{ shape.name }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Section -->
+    <div class="input-section" *ngIf="selectedShapeInfo">
+      <h2 class="section-title">
+        {{ selectedShapeInfo.icon }} {{ selectedShapeInfo.name }}
+      </h2>
+
+      <!-- Dimension Inputs -->
+      <div class="dimensions-container">
+        <div class="input-group" *ngFor="let dim of selectedShapeInfo.dimensions">
+          <label [for]="dim" class="input-label">
+            {{ getDimensionLabel(dim) }}
+          </label>
+          <div class="input-wrapper">
+            <input
+              [id]="dim"
+              type="number"
+              [(ngModel)]="dimensions[dim]"
+              (ngModelChange)="calculate()"
+              class="input-field"
+              placeholder="10"
+              min="0.01"
+              step="0.1"
+            />
+            <span class="unit-suffix">cm</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calculate Button (Mobile) -->
+      <button class="calculate-button mobile-only" (click)="calculate()">
+        Vypočítať
+      </button>
+
+      <!-- Info Box -->
+      <div class="info-box">
+        <h4 class="info-title">ℹ️ Výpočet</h4>
+        <p class="info-text">
+          Výsledky sú uvedené v cm², m², cm³ alebo m³ podľa veľkosti.
+          Všetky rozmery zadávajte v centimetroch (cm).
+        </p>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="result-section" id="results" *ngIf="result && !loading">
+      <h2 class="section-title">Výsledok</h2>
+
+      <!-- Error State -->
+      <div *ngIf="error" class="error-state">
+        <p class="error-message">{{ error }}</p>
+      </div>
+
+      <!-- Main Result -->
+      <div class="result-card main-result" *ngIf="!error">
+        <div class="result-header">
+          <span class="result-icon">{{ result.type === '2d' ? '📏' : '📦' }}</span>
+          <h3 class="result-title">{{ result.shape_name }}</h3>
+        </div>
+        
+        <div class="result-primary">
+          <span class="result-label">{{ result.result_label }}</span>
+          <span class="result-value">
+            {{ formatNumber(result.result) }} {{ result.unit }}
+          </span>
+        </div>
+
+        <div class="result-secondary" *ngIf="result.secondary_result">
+          <div class="secondary-item">
+            <span class="secondary-label">{{ result.secondary_label }}</span>
+            <span class="secondary-value">
+              {{ formatNumber(result.secondary_result) }} 
+              {{ result.type === '2d' ? 'cm' : 'cm²' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="formula-box">
+          <span class="formula-label">Vzorec:</span>
+          <code class="formula-text">{{ result.formula }}</code>
+        </div>
+      </div>
+
+      <!-- Dimension Summary -->
+      <div class="dimensions-summary">
+        <h4 class="summary-title">Zadané rozmery</h4>
+        <ul class="dimensions-list">
+          <li *ngFor="let dim of selectedShapeInfo?.dimensions">
+            <strong>{{ getDimensionLabel(dim) }}:</strong> 
+            {{ formatNumber(dimensions[dim]) }} cm
+          </li>
+        </ul>
+      </div>
+
+      <!-- Conversions -->
+      <div class="conversions-box" *ngIf="result.type === '2d'">
+        <h4 class="conversions-title">Prepočty plochy</h4>
+        <div class="conversions-grid">
+          <div class="conversion-item">
+            <span class="conversion-label">m²</span>
+            <span class="conversion-value">{{ formatNumber(result.result / 10000) }}</span>
+          </div>
+          <div class="conversion-item">
+            <span class="conversion-label">dm²</span>
+            <span class="conversion-value">{{ formatNumber(result.result / 100) }}</span>
+          </div>
+          <div class="conversion-item" *ngIf="result.result > 10000">
+            <span class="conversion-label">hektár (ha)</span>
+            <span class="conversion-value">{{ formatNumber(result.result / 100000000) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="conversions-box" *ngIf="result.type === '3d'">
+        <h4 class="conversions-title">Prepočty objemu</h4>
+        <div class="conversions-grid">
+          <div class="conversion-item">
+            <span class="conversion-label">m³</span>
+            <span class="conversion-value">{{ formatNumber(result.result / 1000000) }}</span>
+          </div>
+          <div class="conversion-item">
+            <span class="conversion-label">dm³ (liter)</span>
+            <span class="conversion-value">{{ formatNumber(result.result / 1000) }}</span>
+          </div>
+          <div class="conversion-item">
+            <span class="conversion-label">ml</span>
+            <span class="conversion-value">{{ formatNumber(result.result) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Result -->
+    <div class="result-section" *ngIf="loading">
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Počítam...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEO Content -->
+  <section class="seo-content">
+    <h2>Ako vypočítať plochu a objem?</h2>
+    <p>
+      Výpočet plochy a objemu je základná geometrická operácia potrebná pri stavbe, záhrade, 
+      vymaľovaní miestností, výpočte množstva materiálu alebo riešení školských úloh.
+    </p>
+    
+    <h3>2D Tvary - Výpočet plochy</h3>
+    <p>
+      <strong>Štvorec:</strong> S = a² (strana × strana)<br>
+      <strong>Obdĺžnik:</strong> S = a × b (dĺžka × šírka)<br>
+      <strong>Kruh:</strong> S = π × r² (pí × polomer na druhú)<br>
+      <strong>Trojuholník:</strong> S = (a × v) / 2 (základňa × výška delené dvoma)<br>
+      <strong>Lichobežník:</strong> S = ((a + b) × v) / 2
+    </p>
+    
+    <h3>3D Tvary - Výpočet objemu</h3>
+    <p>
+      <strong>Kocka:</strong> V = a³ (strana na tretiu)<br>
+      <strong>Kváder:</strong> V = a × b × c (dĺžka × šírka × výška)<br>
+      <strong>Valec:</strong> V = π × r² × v (plocha kruhu × výška)<br>
+      <strong>Guľa:</strong> V = (4/3) × π × r³<br>
+      <strong>Kužeľ:</strong> V = (1/3) × π × r² × v<br>
+      <strong>Ihlan:</strong> V = (1/3) × Sp × v (plocha podstavy × výška delené tromi)
+    </p>
+    
+    <h3>Praktické použitie</h3>
+    <p>
+      <strong>Maľovanie:</strong> Vypočítajte plochu stien a zistite, koľko farieb potrebujete.<br>
+      <strong>Dlažba/Podlaha:</strong> Zistite plochu podlahy pre objednanie dlažíc alebo parkiet.<br>
+      <strong>Betón:</strong> Vypočítajte objem betónu pre základy, podlahu alebo plot.<br>
+      <strong>Mulčovanie záhrady:</strong> Plocha záhonu × hrúbka mulču = objem materiálu.<br>
+      <strong>Bazén:</strong> Objem valca pre potrebné množstvo vody alebo chemikálií.
+    </p>
+  </section>
+</div>

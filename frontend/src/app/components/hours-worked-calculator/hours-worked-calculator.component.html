@@ -1,0 +1,241 @@
+<div class="calculator-container">
+  <div class="calculator-header">
+    <h1>⏰ Kalkulačka odpracovaných hodín</h1>
+    <p class="calculator-description">
+      Vypočítajte odpracované hodiny, nadčasy a výnosy. Sledujte work-life balance.
+    </p>
+  </div>
+
+  <div class="calculator-content">
+    <div class="input-section">
+      <h2>📝 Vstupné údaje</h2>
+
+      <div class="input-group">
+        <label for="hoursWorked">Odpracované hodiny</label>
+        <div class="input-with-unit">
+          <input
+            type="number"
+            id="hoursWorked"
+            [(ngModel)]="hoursWorked"
+            min="0"
+            max="744"
+            step="0.5"
+            (ngModelChange)="calculate()"
+          />
+          <span class="unit">hodín</span>
+        </div>
+        <small>Celkový počet odpracovaných hodín</small>
+      </div>
+
+      <div class="input-group">
+        <label>Obdobie</label>
+        <div class="period-options">
+          <div 
+            class="option-card" 
+            *ngFor="let period of periodTypes"
+            [class.selected]="periodType === period.value"
+            (click)="periodType = period.value; calculate()"
+          >
+            <div class="option-icon">{{ period.icon }}</div>
+            <div class="option-label">{{ period.label }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="hourlyRate">Hodinová sadzba (voliteľné)</label>
+        <div class="input-with-unit">
+          <input
+            type="number"
+            id="hourlyRate"
+            [(ngModel)]="hourlyRate"
+            min="0"
+            step="0.1"
+            (ngModelChange)="calculate()"
+          />
+          <span class="unit">€/hod</span>
+        </div>
+        <small>Sadzba pre výpočet výnosov</small>
+      </div>
+
+      <div class="input-group">
+        <label for="weekendHours">Víkendové hodiny</label>
+        <div class="input-with-unit">
+          <input
+            type="number"
+            id="weekendHours"
+            [(ngModel)]="weekendHours"
+            min="0"
+            step="0.5"
+            (ngModelChange)="calculate()"
+          />
+          <span class="unit">hodín</span>
+        </div>
+        <small>Práca cez víkend (1.5× sadzba)</small>
+      </div>
+
+      <div class="input-group">
+        <label for="holidayHours">Sviatkové hodiny</label>
+        <div class="input-with-unit">
+          <input
+            type="number"
+            id="holidayHours"
+            [(ngModel)]="holidayHours"
+            min="0"
+            step="0.5"
+            (ngModelChange)="calculate()"
+          />
+          <span class="unit">hodín</span>
+        </div>
+        <small>Práca vo sviatok (2× sadzba)</small>
+      </div>
+
+      <div class="error-message" *ngIf="error">
+        ⚠️ {{ error }}
+      </div>
+    </div>
+
+    <div class="results-section" *ngIf="result">
+      <h2>📊 Výsledky</h2>
+
+      <!-- Total Hours Highlight -->
+      <div class="result-card highlight-card" [style.background]="'linear-gradient(135deg, ' + getBalanceColor(result.analysis.balance_category) + ', ' + getBalanceColor(result.analysis.balance_category) + 'dd)'">
+        <div class="card-icon">⏰</div>
+        <div class="card-content">
+          <div class="card-label">Celkom odpracované hodiny</div>
+          <div class="card-value">{{ formatNumber(result.hours.total_hours, 1) }} h</div>
+          <div class="card-details">
+            <span>{{ result.analysis.balance_category }}: {{ result.analysis.balance_description }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="summary-grid">
+        <div class="summary-card regular">
+          <div class="summary-icon">✅</div>
+          <div class="summary-label">Štandardné hodiny</div>
+          <div class="summary-value">{{ formatNumber(result.hours.regular_hours, 1) }} h</div>
+          <div class="summary-note">{{ formatNumber(result.percentages.regular_percentage, 1) }}%</div>
+        </div>
+        <div class="summary-card overtime">
+          <div class="summary-icon">⏳</div>
+          <div class="summary-label">Nadčasy</div>
+          <div class="summary-value">{{ formatNumber(result.hours.overtime_hours, 1) }} h</div>
+          <div class="summary-note">{{ formatNumber(result.percentages.overtime_percentage, 1) }}%</div>
+        </div>
+        <div class="summary-card" *ngIf="result.analysis.daily_average">
+          <div class="summary-icon">📅</div>
+          <div class="summary-label">Denný priemer</div>
+          <div class="summary-value">{{ formatNumber(result.analysis.daily_average, 1) }} h</div>
+        </div>
+        <div class="summary-card" *ngIf="result.analysis.exceeds_standard">
+          <div class="summary-icon">⚠️</div>
+          <div class="summary-label">Nad normu</div>
+          <div class="summary-value">+{{ formatNumber(result.analysis.excess_hours, 1) }} h</div>
+        </div>
+      </div>
+
+      <!-- Hours Breakdown -->
+      <div class="detail-card">
+        <div class="detail-header">
+          <h3>📊 Rozdelenie hodín</h3>
+        </div>
+        <div class="detail-body">
+          <div class="detail-row">
+            <span class="detail-label">Štandardné hodiny ({{ result.analysis.period_type }}):</span>
+            <span class="detail-value">{{ formatNumber(result.hours.standard_hours, 1) }} h</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Pravidelné nadčasy (1.25×):</span>
+            <span class="detail-value">{{ formatNumber(result.hours.overtime_breakdown.regular_overtime, 1) }} h</span>
+          </div>
+          <div class="detail-row" *ngIf="result.hours.overtime_breakdown.weekend_overtime > 0">
+            <span class="detail-label">Víkendové nadčasy (1.5×):</span>
+            <span class="detail-value strong">{{ formatNumber(result.hours.overtime_breakdown.weekend_overtime, 1) }} h</span>
+          </div>
+          <div class="detail-row" *ngIf="result.hours.overtime_breakdown.holiday_overtime > 0">
+            <span class="detail-label">Sviatkové nadčasy (2×):</span>
+            <span class="detail-value strong">{{ formatNumber(result.hours.overtime_breakdown.holiday_overtime, 1) }} h</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Earnings (if hourly rate provided) -->
+      <div class="detail-card" *ngIf="result.earnings">
+        <div class="detail-header">
+          <h3>💰 Výnosy</h3>
+          <span class="detail-badge" *ngIf="result.rates.hourly_rate">{{ formatCurrency(result.rates.hourly_rate) }}/hod</span>
+        </div>
+        <div class="detail-body">
+          <div class="detail-row">
+            <span class="detail-label">Štandardné hodiny:</span>
+            <span class="detail-value">{{ formatCurrency(result.earnings.regular_earnings) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Pravidelné nadčasy:</span>
+            <span class="detail-value">{{ formatCurrency(result.earnings.overtime_breakdown.regular_overtime) }}</span>
+          </div>
+          <div class="detail-row" *ngIf="result.earnings.overtime_breakdown.weekend_overtime > 0">
+            <span class="detail-label">Víkendové nadčasy:</span>
+            <span class="detail-value">{{ formatCurrency(result.earnings.overtime_breakdown.weekend_overtime) }}</span>
+          </div>
+          <div class="detail-row" *ngIf="result.earnings.overtime_breakdown.holiday_overtime > 0">
+            <span class="detail-label">Sviatkové nadčasy:</span>
+            <span class="detail-value">{{ formatCurrency(result.earnings.overtime_breakdown.holiday_overtime) }}</span>
+          </div>
+          <div class="detail-row highlight">
+            <span class="detail-label">Celkové výnosy:</span>
+            <span class="detail-value strong">{{ formatCurrency(result.earnings.total_earnings) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Efektívna sadzba/hod:</span>
+            <span class="detail-value">{{ formatCurrency(result.earnings.average_hourly_effective) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overtime Multipliers Info -->
+      <div class="detail-card">
+        <div class="detail-header">
+          <h3>ℹ️ Násobky pre nadčasy</h3>
+        </div>
+        <div class="detail-body">
+          <div class="multiplier-grid">
+            <div class="multiplier-item">
+              <div class="multiplier-icon">⏰</div>
+              <div class="multiplier-label">Základné nadčasy</div>
+              <div class="multiplier-value">{{ result.rates.multipliers.basic }}×</div>
+              <div class="multiplier-note">Monday - Sunday (bežný deň)</div>
+            </div>
+            <div class="multiplier-item">
+              <div class="multiplier-icon">🌴</div>
+              <div class="multiplier-label">Víkendové nadčasy</div>
+              <div class="multiplier-value">{{ result.rates.multipliers.weekend }}×</div>
+              <div class="multiplier-note">Sobota, Nedeľa</div>
+            </div>
+            <div class="multiplier-item">
+              <div class="multiplier-icon">🎉</div>
+              <div class="multiplier-label">Sviatkové nadčasy</div>
+              <div class="multiplier-value">{{ result.rates.multipliers.holiday }}×</div>
+              <div class="multiplier-note">Štátne sviatky</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Card -->
+      <div class="info-card">
+        <h3>ℹ️ Dôležité informácie</h3>
+        <ul>
+          <li>Štandardná pracovná doba na Slovensku je 40 hodín týždenne / 8 hodín denne.</li>
+          <li>Nadčasy sú hodiny nad štandardným fondom pracovného času.</li>
+          <li>Práca cez víkend a sviatky má vyššie príplatky podľa Zákonníka práce.</li>
+          <li>Násobky nadčasov: Základné 1.25×, Víkend 1.5×, Sviatok 2×.</li>
+          <li>Maximálny rozsah nadčasov je 150 hodín za kalendárny rok (alebo 400 hodín s dlhodobým vyrovnávaním).</li>
+          <li>Work-life balance je dôležitý pre vaše zdravie a produktivitu.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

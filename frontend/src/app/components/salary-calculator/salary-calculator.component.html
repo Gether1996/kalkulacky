@@ -1,7 +1,6 @@
 <div class="calculator-container">
   <!-- Header -->
   <header class="calculator-header">
-    <a routerLink="/" class="back-button">← Späť</a>
     <h1 class="calculator-title">
       💰 Kalkulačka čistej mzdy 2026
     </h1>
@@ -10,12 +9,11 @@
     </p>
   </header>
 
-  <!-- Two Column Layout -->
-  <div class="calculator-grid">
-    <!-- LEFT COLUMN: Inputs -->
-    <div class="inputs-column">
-      <div class="card">
-        <h2 class="card-title">Zadajte údaje</h2>
+  <!-- Calculator Body -->
+  <div class="calculator-body">
+    <!-- Input Section -->
+    <div class="input-section">
+      <h2 class="section-title">Zadajte údaje</h2>
         
         <!-- Main Input -->
         <div class="input-group">
@@ -141,37 +139,31 @@
           </div>
         </div>
 
-        <!-- Info Section -->
-        <div class="info-box">
-          <h4 class="info-title">ℹ️ Odvody a dane 2026</h4>
-          <ul class="info-list">
-            <li><strong>Sociálne:</strong> 9.4% | <strong>Zdravotné:</strong> {{ hasDisability ? '2.5% (ZŤP)' : '5%' }}</li>
-            <li><strong>Daň:</strong> 19% / 25% / 30% / 35% (progresívna)</li>
-            <li><strong>Bonus na dieťa:</strong> 100€ (do 15r.) / 50€ (15-18r.)</li>
-          </ul>
-        </div>
+      <!-- Info Section -->
+      <div class="info-box">
+        <h4 class="info-title">ℹ️ Odvody a dane 2026</h4>
+        <ul class="info-list">
+          <li><strong>Sociálne:</strong> 9.4% | <strong>Zdravotné:</strong> {{ hasDisability ? '2.5% (ZŤP)' : '5%' }}</li>
+          <li><strong>Daň:</strong> 19% / 25% / 30% / 35% (progresívna)</li>
+          <li><strong>Bonus na dieťa:</strong> 100€ (do 15r.) / 50€ (15-18r.)</li>
+        </ul>
       </div>
     </div>
 
-    <!-- RIGHT COLUMN: Results (Sticky) -->
-    <div class="results-column">
-      <div class="results-sticky" style="position: relative;">
-        <!-- Loading Overlay -->
-        <div class="loading-overlay" [class.active]="loading">
-          <div class="loading-state">
-            <div class="spinner"></div>
-            <p>Počítam...</p>
-          </div>
-        </div>
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Počítam...</p>
+    </div>
 
-        <!-- Error State -->
-        <div class="error-state" *ngIf="error && !loading">
-          <p>{{ error }}</p>
-        </div>
+    <!-- Error State -->
+    <div *ngIf="error && !loading" class="error-state">
+      <p>{{ error }}</p>
+    </div>
 
-        <!-- Results (Always in DOM for smooth transitions) -->
-        <div [style.opacity]="result && !loading ? '1' : '0.3'" style="transition: opacity 0.3s ease;">
-          <div *ngIf="result">
+    <!-- Results Section -->
+    <div *ngIf="result && !loading" class="results-section">
+      <h2 class="section-title">Výsledky</h2>
           <!-- Big Result Card -->
           <div class="big-result-card">
             <div class="result-label">💰 Čistá mzda</div>
@@ -215,7 +207,6 @@
             </div>
           </div>
 
-          <!-- Detailed Table -->
           <div class="details-card">
             <h3 class="details-title">📋 Detailný výpočet</h3>
             <div class="details-table">
@@ -266,17 +257,28 @@
                 <span>{{ formatCurrency(result.gross_salary) }}</span>
               </div>
               <div class="detail-row">
-                <span>� Odvody zamestnávateľa (36.2%)</span>
+                <span>🏭 Odvody zamestnávateľa (36.2%)</span>
                 <span class="negative">+ {{ formatCurrency(result.total_employer_contributions) }}</span>
               </div>
               <div class="detail-row total-row">
                 <strong>💸 Superhrubá mzda</strong>
                 <strong style="color: #dc2626;">{{ formatCurrency(result.super_gross_salary) }}</strong>
-              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+    <section class="info-section">
+      <h3>ℹ️ Ako funguje výpočet čistej mzdy v roku 2026?</h3>
+      <ul>
+        <li><strong>Hrubá mzda:</strong> Suma dohodnutá v pracovnej zmluve pred odvodmi.</li>
+        <li><strong>Sociálne poistenie (9,4%):</strong> Dôchodkové + Nemocenské + Úrazové + Garančné + Rezervný fond solidarity.</li>
+        <li><strong>Zdravotné poistenie (5% alebo 2,5% pre ZŤP):</strong> Povinné odvody do zdravotnej poisťovne.</li>
+        <li><strong>Daň z príjmu:</strong> Progresívna sadzba - 19% / 25% / 30% / 35% podľa výšky príjmu.</li>
+        <li><strong>NČZD (Nezdaniteľná časť):</strong> 497,23 € mesačne - znižuje daňový základ pre väčšinu zamestnancov.</li>
+        <li><strong>Daňový bonus na dieťa:</strong> 100 € mesačne (do 15 rokov) alebo 50 € (15-18 rokov).</li>
+        <li><strong>Superhrubá mzda:</strong> Celkové náklady zamestnávateľa = hrubá mzda + odvody zamestnávateľa (36,2%).</li>
+        <li><strong>Tip:</strong> Pri viacerých deťoch môže daňový bonus výrazne zvýšiť čistú mzdu!</li>
+      </ul>
+    </section>
   </div>
-</div>

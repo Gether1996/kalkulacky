@@ -1,0 +1,314 @@
+<div class="calculator-container">
+  <!-- Header -->
+  <div class="calculator-header">
+    <h1>💼 Kalkulačka dôchodku</h1>
+    <p class="subtitle">Vypočítajte odhad dôchodku a dôchodkové odvody</p>
+    <div class="seo-keywords">
+      <span class="keyword">Dôchodok</span>
+      <span class="keyword">Starobný dôchodok</span>
+      <span class="keyword">Dôchodkové odvody</span>
+    </div>
+  </div>
+
+  <!-- Calculator Grid -->
+  <div class="calculator-grid">
+    <!-- Input Card -->
+    <div class="card">
+      <h2>Údaje o vás</h2>
+      
+      <!-- Age Input -->
+      <div class="input-group">
+        <label for="currentAge">
+          Váš vek
+          <span class="tooltip" title="Aktuálny vek v rokoch">ⓘ</span>
+        </label>
+        <input 
+          type="number" 
+          id="currentAge"
+          [(ngModel)]="currentAge"
+          min="18"
+          max="70"
+          class="input-field"
+          (change)="calculate()"
+        />
+      </div>
+
+      <!-- Gross Salary Input -->
+      <div class="input-group">
+        <label for="grossSalary">
+          Hrubá mzda (€ / mesiac)
+          <span class="tooltip" title="Mesačná hrubá mzda pred odvodmi">ⓘ</span>
+        </label>
+        <input 
+          type="number" 
+          id="grossSalary"
+          [(ngModel)]="grossSalary"
+          min="0"
+          step="50"
+          class="input-field"
+          (change)="calculate()"
+        />
+        
+        <!-- Benchmarks -->
+        <div class="benchmarks">
+          <button 
+            *ngFor="let benchmark of salaryBenchmarks"
+            class="benchmark-btn"
+            (click)="setBenchmark(benchmark.value)">
+            {{ benchmark.label }}<br>
+            <strong>{{ formatCurrency(benchmark.value) }}</strong>
+          </button>
+        </div>
+      </div>
+
+      <!-- Years Worked Input -->
+      <div class="input-group">
+        <label for="yearsWorked">
+          Odpracované roky
+          <span class="tooltip" title="Koľko rokov ste už odpracovali">ⓘ</span>
+        </label>
+        <input 
+          type="number" 
+          id="yearsWorked"
+          [(ngModel)]="yearsWorked"
+          min="0"
+          [max]="currentAge - 18"
+          class="input-field"
+          (change)="calculate()"
+        />
+      </div>
+
+      <!-- Gender Selection -->
+      <div class="input-group">
+        <label>Pohlavie</label>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input 
+              type="radio" 
+              [(ngModel)]="gender"
+              value="male"
+              (change)="calculate()"
+            />
+            Muž
+          </label>
+          <label class="radio-label">
+            <input 
+              type="radio" 
+              [(ngModel)]="gender"
+              value="female"
+              (change)="calculate()"
+            />
+            Žena
+          </label>
+        </div>
+      </div>
+
+      <!-- Second Pillar Options -->
+      <div class="input-group">
+        <label class="checkbox-label">
+          <input 
+            type="checkbox" 
+            [(ngModel)]="includeSecondPillar"
+            (change)="calculate()"
+          />
+          Sporím v II. pilieri
+        </label>
+      </div>
+
+      <div class="input-group" *ngIf="includeSecondPillar">
+        <label for="secondPillarRate">
+          Príspevok do II. piliera (%)
+          <span class="tooltip" title="Percento zo mzdy, ktoré ide do II. piliera">ⓘ</span>
+        </label>
+        <input 
+          type="number" 
+          id="secondPillarRate"
+          [(ngModel)]="secondPillarRate"
+          min="0"
+          max="18"
+          step="0.5"
+          class="input-field"
+          (change)="calculate()"
+        />
+      </div>
+    </div>
+
+    <!-- Results Card -->
+    <div class="card">
+      <h2>Odhad dôchodku</h2>
+      
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Počítam...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="error && !loading" class="error-message">
+        {{ error }}
+      </div>
+
+      <!-- Results -->
+      <div *ngIf="result && !loading && !error" class="results">
+        <!-- Monthly Pension Highlight -->
+        <div class="result-highlight">
+          <div class="result-label">Odhadovaný mesačný dôchodok</div>
+          <div class="result-value">{{ formatCurrency(result.estimated_monthly_pension) }}</div>
+          <div class="result-sublabel">
+            {{ formatPercent(result.replacement_rate) }} zo súčasnej mzdy
+          </div>
+        </div>
+
+        <!-- Retirement Info -->
+        <div class="info-card">
+          <h3>Dôchodok a pracovná kariéra</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-icon">👤</span>
+              <span class="info-label">Váš vek</span>
+              <span class="info-value">{{ result.current_age }} rokov</span>
+            </div>
+            <div class="info-item">
+              <span class="info-icon">🎯</span>
+              <span class="info-label">Dôchodkový vek</span>
+              <span class="info-value">{{ result.retirement_age }} rokov</span>
+            </div>
+            <div class="info-item">
+              <span class="info-icon">⏳</span>
+              <span class="info-label">Rokov do dôchodku</span>
+              <span class="info-value">{{ result.years_to_retirement }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-icon">💼</span>
+              <span class="info-label">Odpracované roky</span>
+              <span class="info-value">{{ result.years_worked }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Replacement Rate -->
+        <div class="replacement-card" [ngClass]="getReplacementRateColor(result.replacement_rate)">
+          <h3>Náhradový pomer</h3>
+          <div class="replacement-value">
+            {{ formatPercent(result.replacement_rate) }}
+            <span class="badge" [ngClass]="getReplacementRateColor(result.replacement_rate)">
+              {{ getReplacementRateLabel(result.replacement_rate) }}
+            </span>
+          </div>
+          <p class="replacement-desc">
+            Váš dôchodok bude {{ formatPercent(result.replacement_rate) }} vašej súčasnej hrubej mzdy.
+          </p>
+          <div class="replacement-bar">
+            <div class="bar-fill" [style.width.%]="result.replacement_rate"></div>
+          </div>
+        </div>
+
+        <!-- Monthly Contributions -->
+        <div class="contributions-card">
+          <h3>Mesačné odvody na dôchodok</h3>
+          <div class="contribution-item highlight">
+            <span class="contrib-label">Celkové odvody</span>
+            <span class="contrib-value">{{ formatCurrency(result.contributions.total_monthly) }}</span>
+          </div>
+          <div class="contribution-item">
+            <span class="contrib-label">Zamestnanec</span>
+            <span class="contrib-value">{{ formatCurrency(result.contributions.employee_monthly) }}</span>
+          </div>
+          <div class="contribution-item">
+            <span class="contrib-label">Zamestnávateľ</span>
+            <span class="contrib-value">{{ formatCurrency(result.contributions.employer_monthly) }}</span>
+          </div>
+          <hr>
+          <div class="contribution-item">
+            <span class="contrib-label">I. pilier</span>
+            <span class="contrib-value">{{ formatCurrency(result.contributions.first_pillar_monthly) }}</span>
+          </div>
+          <div class="contribution-item" *ngIf="result.pension_system.include_second_pillar">
+            <span class="contrib-label">II. pilier</span>
+            <span class="contrib-value">{{ formatCurrency(result.contributions.second_pillar_monthly) }}</span>
+          </div>
+        </div>
+
+        <!-- Lifetime Contributions -->
+        <div class="lifetime-card">
+          <h3>Celoživotné odvody</h3>
+          <div class="lifetime-item">
+            <span class="lifetime-label">Už odvedené</span>
+            <span class="lifetime-value">{{ formatCurrency(result.contributions.total_contributed_so_far) }}</span>
+          </div>
+          <div class="lifetime-item">
+            <span class="lifetime-label">Budúce odvody</span>
+            <span class="lifetime-value">{{ formatCurrency(result.contributions.total_future_contributions) }}</span>
+          </div>
+          <div class="lifetime-item highlight">
+            <span class="lifetime-label">Celkom za život</span>
+            <span class="lifetime-value">{{ formatCurrency(result.contributions.total_lifetime_contributions) }}</span>
+          </div>
+        </div>
+
+        <!-- Projections -->
+        <div class="projections-card">
+          <h3>Projekcie</h3>
+          <div class="projection-item">
+            <span class="projection-label">Priemerná dĺžka dôchodku</span>
+            <span class="projection-value">{{ result.projections.life_expectancy_after_retirement }} rokov</span>
+          </div>
+          <div class="projection-item">
+            <span class="projection-label">Celkový dôchodok za život</span>
+            <span class="projection-value">{{ formatCurrency(result.projections.total_pension_lifetime) }}</span>
+          </div>
+          <div class="projection-item" [ngClass]="result.projections.roi_percentage > 0 ? 'positive' : 'negative'">
+            <span class="projection-label">Návratnosť odvodov</span>
+            <span class="projection-value">{{ formatPercent(result.projections.roi_percentage) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEO Content -->
+  <div class="seo-content">
+    <h2>O kalkulačke dôchodku</h2>
+    
+    <h3>Ako sa vypočíta dôchodok na Slovensku?</h3>
+    <p>
+      Výška starobného dôchodku závisí od viacerých faktorov: počtu odpracovaných rokov,  
+      výšky vašej mzdy počas kariéry, a od toho, či sporíte v druhom pilieri dôchodkového systému.  
+      Naša kalkulačka používa <strong>zjednodušený výpočet</strong> na základe aktuálnych údajov  
+      a dôchodkových pravidiel platných v roku 2026.
+    </p>
+
+    <h3>Tri piliere dôchodkového systému</h3>
+    <ul>
+      <li><strong>I. pilier (priebežný):</strong> Povinný systém, kde odvody súčasných pracujúcich financujú dôchodky súčasných dôchodcov</li>
+      <li><strong>II. pilier (kapitalizačný):</strong> Dobrovoľný systém, kde si sporíte na vlastný dôchodok v dôchodkovej správcovskej spoločnosti (DSS)</li>
+      <li><strong>III. pilier (doplnkový):</strong> Dobrovoľné dôchodkové sporenie nad rámec povinných odvodov</li>
+    </ul>
+
+    <h3>Náhradový pomer (Replacement Rate)</h3>
+    <p>
+      <strong>Náhradový pomer</strong> ukazuje, aké percento vašej súčasnej mzdy budete dostávať  
+      ako dôchodok. Odborníci odporúčajú, aby bol náhradový pomer aspoň <strong>70%</strong> pre  
+      zachovanie vášho životného štandardu po odchode do dôchodku. Ak je váš náhradový pomer nízky,  
+      zvážte doplnkové sporenie.
+    </p>
+
+    <h3>Dôchodkový vek</h3>
+    <p>
+      Od roku 2023 je dôchodkový vek na Slovensku unifikovaný na <strong>64 rokov</strong> pre mužov  
+      aj ženy. Pred touto reformou sa dôchodkový vek líšil v závislosti od pohlavia a počtu vychovaných detí.
+    </p>
+
+    <h3>Dôležité upozornenie</h3>
+    <p>
+      Táto kalkulačka poskytuje <strong>iba orientačný odhad</strong>. Skutočná výška dôchodku závisí  
+      od mnohých faktorov, vrátane legislatívnych zmien, ekonomického vývoja, a individuálnej pracovnej  
+      histórie. Pre presný výpočet vášho budúceho dôchodku kontaktujte Sociálnu poisťovňu.
+    </p>
+  </div>
+
+  <!-- Navigation -->
+  <div class="navigation-links">
+    <a routerLink="/calculator/salary" class="nav-link">Čistá mzda kalkulačka →</a>
+  </div>
+</div>

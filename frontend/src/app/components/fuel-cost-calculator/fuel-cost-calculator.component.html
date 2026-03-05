@@ -1,0 +1,273 @@
+<div class="calculator-container">
+  <div class="calculator-header">
+    <h1>🚗 Kalkulačka spotreby auta</h1>
+    <p class="subtitle">Výpočet nákladov na palivo pre vašu cestu</p>
+    <div class="seo-keywords">
+      <span class="keyword">spotreba auta kalkulačka</span>
+      <span class="keyword">náklady na palivo</span>
+      <span class="keyword">výpočet spotreby</span>
+    </div>
+  </div>
+
+  <div class="calculator-grid">
+    <!-- Input Section -->
+    <div class="input-section card">
+      <h2>📊 Parametre cesty</h2>
+
+      <!-- Route Benchmarks -->
+      <div class="benchmarks">
+        <label class="benchmark-label">Populárne trasy:</label>
+        <div class="benchmark-buttons">
+          <button 
+            *ngFor="let route of routeBenchmarks"
+            (click)="selectRoute(route.distance)"
+            [class.active]="distance === route.distance"
+            class="benchmark-btn">
+            {{ route.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Distance -->
+      <div class="input-group">
+        <label for="distance">
+          Vzdialenosť (km)
+          <span class="tooltip" title="Celková vzdialenosť cesty v kilometroch">ℹ️</span>
+        </label>
+        <input 
+          type="number" 
+          id="distance"
+          [(ngModel)]="distance"
+          (ngModelChange)="calculate()"
+          min="1"
+          max="10000"
+          step="1"
+          class="input-field"
+        />
+        <input 
+          type="range"
+          [(ngModel)]="distance"
+          (ngModelChange)="calculate()"
+          min="10"
+          max="1000"
+          step="10"
+          class="slider"
+        />
+        <div class="range-labels">
+          <span>10 km</span>
+          <span>1 000 km</span>
+        </div>
+      </div>
+
+      <!-- Consumption Benchmarks -->
+      <div class="benchmarks">
+        <label class="benchmark-label">Typ vozidla:</label>
+        <div class="benchmark-buttons">
+          <button 
+            *ngFor="let bench of consumptionBenchmarks"
+            (click)="selectConsumption(bench.consumption)"
+            [class.active]="consumption === bench.consumption"
+            class="benchmark-btn">
+            {{ bench.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Consumption -->
+      <div class="input-group">
+        <label for="consumption">
+          Spotreba (l/100 km)
+          <span class="tooltip" title="Priemerná spotreba paliva na 100 km">ℹ️</span>
+        </label>
+        <input 
+          type="number" 
+          id="consumption"
+          [(ngModel)]="consumption"
+          (ngModelChange)="calculate()"
+          min="0.1"
+          max="50"
+          step="0.1"
+          class="input-field"
+        />
+        <input 
+          type="range"
+          [(ngModel)]="consumption"
+          (ngModelChange)="calculate()"
+          min="3"
+          max="15"
+          step="0.5"
+          class="slider"
+        />
+        <div class="range-labels">
+          <span>3 l/100km</span>
+          <span>15 l/100km</span>
+        </div>
+      </div>
+
+      <!-- Fuel Price -->
+      <div class="input-group">
+        <label for="fuelPrice">
+          Cena paliva (€/liter)
+          <span class="tooltip" title="Aktuálna cena paliva za liter">ℹ️</span>
+        </label>
+        <input 
+          type="number" 
+          id="fuelPrice"
+          [(ngModel)]="fuelPrice"
+          (ngModelChange)="calculate()"
+          min="0.01"
+          max="10"
+          step="0.01"
+          class="input-field"
+        />
+        <input 
+          type="range"
+          [(ngModel)]="fuelPrice"
+          (ngModelChange)="calculate()"
+          min="1.20"
+          max="2.50"
+          step="0.01"
+          class="slider"
+        />
+        <div class="range-labels">
+          <span>1.20 €/l</span>
+          <span>2.50 €/l</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="results-section card">
+      <h2>📈 Výsledky výpočtu</h2>
+
+      <div *ngIf="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Počítam...</p>
+      </div>
+
+      <div *ngIf="error" class="error-message">
+        ❌ {{ error }}
+      </div>
+
+      <div *ngIf="result && !loading" class="results">
+        <!-- Main Result -->
+        <div class="result-highlight">
+          <div class="result-label">Celkové náklady na palivo</div>
+          <div class="result-value primary">{{ formatCurrency(result.total_cost) }}</div>
+          <div class="result-note">{{ formatNumber(result.fuel_needed) }} litrov paliva</div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="summary-label">Vzdialenosť</div>
+            <div class="summary-value">{{ formatNumber(result.distance) }} km</div>
+          </div>
+          
+          <div class="summary-card">
+            <div class="summary-label">Spotreba paliva</div>
+            <div class="summary-value">{{ formatNumber(result.fuel_needed) }} l</div>
+          </div>
+          
+          <div class="summary-card">
+            <div class="summary-label">Cena za km</div>
+            <div class="summary-value">{{ formatCurrency(result.cost_per_km) }}/km</div>
+          </div>
+          
+          <div class="summary-card">
+            <div class="summary-label">Cena paliva</div>
+            <div class="summary-value">{{ formatCurrency(result.fuel_price) }}/l</div>
+          </div>
+        </div>
+
+        <!-- Return Trip -->
+        <div class="return-trip">
+          <h3>🔄 Spiatočná cesta (tam a späť)</h3>
+          <div class="breakdown-item">
+            <span class="breakdown-label">Celková vzdialenosť:</span>
+            <span class="breakdown-value">{{ formatNumber(result.return_trip.distance) }} km</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-label">Potrebné palivo:</span>
+            <span class="breakdown-value">{{ formatNumber(result.return_trip.fuel_needed) }} litrov</span>
+          </div>
+          <div class="breakdown-item highlight">
+            <span class="breakdown-label">Celkové náklady:</span>
+            <span class="breakdown-value primary">{{ formatCurrency(result.return_trip.total_cost) }}</span>
+          </div>
+        </div>
+
+        <!-- Breakdown -->
+        <div class="breakdown">
+          <h3>Detailný prehľad</h3>
+          <div class="breakdown-item">
+            <span class="breakdown-label">Spotreba vozidla:</span>
+            <span class="breakdown-value">{{ formatNumber(result.consumption) }} l/100km</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-label">Potrebné palivo:</span>
+            <span class="breakdown-value">{{ formatNumber(result.fuel_needed) }} litrov</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-label">Náklady na km:</span>
+            <span class="breakdown-value">{{ formatCurrency(result.cost_per_km) }}</span>
+          </div>
+        </div>
+
+        <!-- Price Comparison -->
+        <div class="price-comparison">
+          <h3>💡 Porovnanie cien paliva</h3>
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Cena paliva</th>
+                <th>Náklady</th>
+                <th>Úspora</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let price of [1.50, 1.60, 1.70, 1.80]">
+                <td>{{ formatCurrency(price) }}/l</td>
+                <td>{{ formatCurrency(result.fuel_needed * price) }}</td>
+                <td [class.positive]="price < result.fuel_price" 
+                    [class.negative]="price > result.fuel_price">
+                  {{ formatCurrency(result.total_cost - (result.fuel_needed * price)) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEO Content -->
+  <div class="seo-content card">
+    <h2>Ako vypočítať spotrebu paliva?</h2>
+    <p>
+      Naša kalkulačka spotreby auta vám pomôže presne vypočítať náklady na palivo pre vašu cestu.
+      Stačí zadať vzdialenosť, spotrebu vozidla a aktuálnu cenu paliva.
+    </p>
+    <h3>Ako znížiť spotrebu paliva?</h3>
+    <ul>
+      <li>Jazda konštantnou rýchlosťou na diaľnici</li>
+      <li>Pravidelná údržba vozidla</li>
+      <li>Správny tlak v pneumatikách</li>
+      <li>Vyhýbanie sa agresívnej jazde</li>
+      <li>Použitie tempomatu na diaľnici</li>
+    </ul>
+    <h3>Priemerná spotreba podľa typu vozidla</h3>
+    <p>
+      <strong>Malé mestské autá:</strong> 4-6 l/100km<br>
+      <strong>Stredné autá:</strong> 6-8 l/100km<br>
+      <strong>Veľké autá a SUV:</strong> 8-11 l/100km<br>
+      <strong>Dieselové motory:</strong> zvyčajne o 1-2 l/100km menej
+    </p>
+  </div>
+
+  <!-- Navigation -->
+  <div class="navigation-links">
+
+    <a routerLink="/calculator/loan" class="nav-link">Úver →</a>
+  </div>
+</div>

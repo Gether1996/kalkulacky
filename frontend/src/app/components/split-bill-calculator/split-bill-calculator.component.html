@@ -1,0 +1,337 @@
+<div class="calculator-container">
+  <!-- Header -->
+  <header class="calculator-header">
+    <h1 class="calculator-title">
+      🧾 Kalkulačka rozdelenia účtu
+    </h1>
+    <p class="calculator-subtitle">
+      Rozdeľte účet v reštaurácii alebo bare medzi priateľov. Spravodlivo a s prepitným.
+    </p>
+  </header>
+
+  <!-- Calculator Body -->
+  <div class="calculator-body">
+    <!-- Input Section -->
+    <div class="input-section">
+      <h2 class="section-title">Typ delenia</h2>
+
+      <!-- Split Type Selector -->
+      <div class="split-type-selector">
+        <button
+          (click)="changeSplitType('equal')"
+          class="type-button"
+          [class.active]="splitType === 'equal'"
+        >
+          <span class="type-icon">➗</span>
+          <span class="type-label">Rovnomerne</span>
+        </button>
+        <button
+          (click)="changeSplitType('by_items')"
+          class="type-button"
+          [class.active]="splitType === 'by_items'"
+        >
+          <span class="type-icon">📋</span>
+          <span class="type-label">Podľa položiek</span>
+        </button>
+        <button
+          (click)="changeSplitType('custom')"
+          class="type-button"
+          [class.active]="splitType === 'custom'"
+        >
+          <span class="type-icon">✏️</span>
+          <span class="type-label">Vlastné sumy</span>
+        </button>
+      </div>
+
+      <!-- Equal Split Inputs -->
+      <div class="split-inputs" *ngIf="splitType === 'equal'">
+        <div class="input-group">
+          <label for="total-amount" class="input-label">Celková suma účtu (€)</label>
+          <div class="input-wrapper">
+            <input
+              type="number"
+              id="total-amount"
+              [(ngModel)]="totalAmount"
+              (ngModelChange)="calculate(); loadTipSuggestions()"
+              class="input-field"
+              placeholder="100"
+              min="0"
+              step="0.5"
+            />
+            <span class="currency-symbol">€</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="num-people" class="input-label">Počet ľudí</label>
+          <div class="number-stepper">
+            <button
+              (click)="numPeople = Math.max(1, numPeople - 1); calculate()"
+              class="stepper-button"
+            >
+              −
+            </button>
+            <input
+              type="number"
+              id="num-people"
+              [(ngModel)]="numPeople"
+              (ngModelChange)="calculate()"
+              class="stepper-input"
+              min="1"
+              max="50"
+            />
+            <button
+              (click)="numPeople = numPeople + 1; calculate()"
+              class="stepper-button"
+            >
+              +
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- By Items Split -->
+      <div class="split-inputs" *ngIf="splitType === 'by_items'">
+        <h3 class="subsection-title">Položky</h3>
+        <div class="items-list">
+          <div class="item-row" *ngFor="let item of items; let i = index">
+            <input
+              type="text"
+              [(ngModel)]="item.person"
+              (ngModelChange)="calculate()"
+              class="item-person-input"
+              placeholder="Meno"
+            />
+            <div class="item-amount-wrapper">
+              <input
+                type="number"
+                [(ngModel)]="item.amount"
+                (ngModelChange)="calculate()"
+                class="item-amount-input"
+                placeholder="0"
+                min="0"
+                step="0.5"
+              />
+              <span class="currency-suffix">€</span>
+            </div>
+            <button
+              (click)="removeItem(i)"
+              class="remove-button"
+              [disabled]="items.length === 1"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+        <button (click)="addItem()" class="add-button">
+          + Pridať položku
+        </button>
+
+        <div class="total-preview">
+          <strong>Celkom bez prepitného:</strong>
+          <span>{{ formatCurrency(getTotalFromItems()) }}</span>
+        </div>
+      </div>
+
+      <!-- Custom Split -->
+      <div class="split-inputs" *ngIf="splitType === 'custom'">
+        <h3 class="subsection-title">Vlastné sumy</h3>
+        <div class="items-list">
+          <div class="item-row" *ngFor="let person of customAmounts; let i = index">
+            <input
+              type="text"
+              [(ngModel)]="person.person"
+              (ngModelChange)="calculate()"
+              class="item-person-input"
+              placeholder="Meno"
+            />
+            <div class="item-amount-wrapper">
+              <input
+                type="number"
+                [(ngModel)]="person.amount"
+                (ngModelChange)="calculate()"
+                class="item-amount-input"
+                placeholder="0"
+                min="0"
+                step="0.5"
+              />
+              <span class="currency-suffix">€</span>
+            </div>
+            <button
+              (click)="removeCustomPerson(i)"
+              class="remove-button"
+              [disabled]="customAmounts.length === 1"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+        <button (click)="addCustomPerson()" class="add-button">
+          + Pridať osobu
+        </button>
+
+        <div class="total-preview">
+          <strong>Celkom bez prepitného:</strong>
+          <span>{{ formatCurrency(getTotalFromItems()) }}</span>
+        </div>
+      </div>
+
+      <!-- Tip Selection -->
+      <div class="tip-section">
+        <h3 class="subsection-title">Prepitné</h3>
+        
+        <div class="tip-buttons" *ngIf="tipSuggestions">
+          <button
+            *ngFor="let suggestion of tipSuggestions.suggestions"
+            (click)="setTipPercent(suggestion.percent)"
+            class="tip-button"
+            [class.active]="tipPercent === suggestion.percent"
+          >
+            <span class="tip-percent">{{ formatPercentage(suggestion.percent) }}</span>
+            <span class="tip-label">{{ suggestion.label }}</span>
+          </button>
+        </div>
+
+        <div class="input-group">
+          <label for="tip-percent" class="input-label">
+            Vlastné prepitné (%)
+          </label>
+          <div class="input-wrapper">
+            <input
+              type="number"
+              id="tip-percent"
+              [(ngModel)]="tipPercent"
+              (ngModelChange)="calculate()"
+              class="input-field"
+              placeholder="10"
+              min="0"
+              max="100"
+              step="1"
+            />
+            <span class="currency-symbol">%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Box -->
+      <div class="info-box">
+        <h4 class="info-title">ℹ️ Tipy</h4>
+        <ul class="info-list">
+          <li><strong>Rovnomerne:</strong> Celková suma delená rovnako</li>
+          <li><strong>Podľa položiek:</strong> Každý platí, čo konzumoval</li>
+          <li><strong>Vlastné sumy:</strong> Manuálne zadané sumy pre každého</li>
+          <li><strong>Prepitné:</strong> Rozdelené proporcionálne medzi osoby</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="result-section" id="results" *ngIf="result">
+      <h2 class="section-title">Rozdelenie účtu</h2>
+
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Počítam...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="error" class="error-state">
+        <p class="error-message">{{ error }}</p>
+      </div>
+
+      <!-- Summary -->
+      <div class="summary-card" *ngIf="!loading && !error">
+        <div class="summary-row">
+          <span class="summary-label">Celkom bez prepitného:</span>
+          <span class="summary-value">{{ formatCurrency(result.original_amount) }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Prepitné ({{ formatPercentage(result.tip_percent) }}):</span>
+          <span class="summary-value tip">{{ formatCurrency(result.tip_amount) }}</span>
+        </div>
+        <div class="summary-row total">
+          <span class="summary-label">Celkom s prepitným:</span>
+          <span class="summary-value">{{ formatCurrency(result.total_with_tip) }}</span>
+        </div>
+      </div>
+
+      <!-- Per Person Breakdown -->
+      <div class="breakdown-section" *ngIf="!loading && !error">
+        <h3 class="breakdown-title">💳 Koľko platí každý</h3>
+        
+        <div class="person-cards">
+          <div class="person-card" *ngFor="let person of result.breakdown">
+            <div class="person-header">
+              <span class="person-icon">👤</span>
+              <h4 class="person-name">{{ person.person }}</h4>
+            </div>
+            <div class="person-amounts">
+              <div class="amount-row">
+                <span class="amount-label">Účet:</span>
+                <span class="amount-value">{{ formatCurrency(person.subtotal) }}</span>
+              </div>
+              <div class="amount-row">
+                <span class="amount-label">Prepitné:</span>
+                <span class="amount-value tip">{{ formatCurrency(person.tip) }}</span>
+              </div>
+              <div class="amount-row total-row">
+                <span class="amount-label">Celkom:</span>
+                <span class="amount-value">{{ formatCurrency(person.total) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Share Buttons -->
+      <div class="share-section" *ngIf="!loading && !error">
+        <button class="share-button" (click)="scrollToResults()">
+          📤 Zdieľať rozdelenie
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEO Content -->
+  <section class="seo-content">
+    <h2>Ako rozdeliť účet v reštaurácii?</h2>
+    <p>
+      Delenie účtu medzi priateľov či kolegov môže byť nepríjemné. Náš nástroj vám pomôže 
+      rozdeliť účet spravodlivo, vrátane prepitného, a to viacerými spôsobmi.
+    </p>
+    
+    <h3>Rovnomerné delenie</h3>
+    <p>
+      Najjednoduchší spôsob. Celková suma účtu (vrátane prepitného) sa vydelí počtom osôb. 
+      Vhodné, ak všetci konzumovali približne rovnako.
+    </p>
+    
+    <h3>Delenie podľa položiek</h3>
+    <p>
+      Každý platí presne to, čo si objednal. Prepitné sa rozdelí proporcionálne podľa výšky 
+      účtu každého. Spravodlivé, ak niektorí konzumovali výrazne viac.
+    </p>
+    
+    <h3>Vlastné sumy</h3>
+    <p>
+      Manuálne zadané sumy pre každého. Užitočné, keď niekto platí za viacerých ľudí alebo 
+      keď máte zložité rozdelenie.
+    </p>
+    
+    <h3>Prepitné na Slovensku</h3>
+    <p>
+      Štandardné prepitné je 10% pri slušnej obsluhe. Pri vynikajúcej obsluhe sa dáva 15-20%. 
+      V baroch a kaviarniciach sa často zaokrúhľuje nahor. V luxusnejších reštauráciách sa 
+      očakáva minimálne 10-15%.
+    </p>
+    
+    <h3>Tipy na fair rozdelenie</h3>
+    <ul>
+      <li>Dohodnite sa na spôsobe delenia vopred</li>
+      <li>Ak niekto pil alkohol a iní nie, zvážte delenie podľa položiek</li>
+      <li>Zahrňte do prepitného aj daň, nie len čistý účet jedla</li>
+      <li>Použite kalkulačku na rýchle a presné rozdelenie</li>
+    </ul>
+  </section>
+</div>

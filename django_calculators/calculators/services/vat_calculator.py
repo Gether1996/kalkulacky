@@ -35,27 +35,27 @@ class VATCalculator(BaseCalculator):
         
         # Validate amount
         if not amount:
-            raise ValueError("amount is required")
+            raise ValueError("Suma je povinná")
         try:
             amt = self.to_decimal(amount)
         except (ValueError, TypeError):
-            raise ValueError("amount must be a valid number")
+            raise ValueError("Suma musí byť platné číslo")
         if amt < 0:
-            raise ValueError("amount cannot be negative")
+            raise ValueError("Suma nemôže byť záporná")
         
         # Validate VAT rate
         try:
             rate = self.to_decimal(vat_rate)
         except (ValueError, TypeError):
-            raise ValueError("vat_rate must be a valid number")
+            raise ValueError("Sadzba DPH musí byť platné číslo")
         if rate < 0:
-            raise ValueError("vat_rate cannot be negative")
+            raise ValueError("Sadzba DPH nemôže byť záporná")
         if rate > 100:
-            raise ValueError("vat_rate cannot be greater than 100%")
+            raise ValueError("Sadzba DPH nemôže byť väčšia ako 100%")
         
         # Validate calculation type
         if calculation_type not in ['add_vat', 'remove_vat']:
-            raise ValueError("calculation_type must be 'add_vat' or 'remove_vat'")
+            raise ValueError("Typ výpočtu musí byť 'add_vat' alebo 'remove_vat'")
         
         return True
     

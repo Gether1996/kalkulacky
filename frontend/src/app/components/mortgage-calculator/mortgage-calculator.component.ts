@@ -1,18 +1,17 @@
-import { Component, PLATFORM_ID, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { MortgageCalculationResponse } from '../../models/calculator.models';
 
 @Component({
   selector: 'app-mortgage-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './mortgage-calculator.component.html',
   styleUrls: ['./mortgage-calculator.component.css']
 })
-export class MortgageCalculatorComponent {
+export class MortgageCalculatorComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   loanAmount: number = 150000;
@@ -32,9 +31,13 @@ export class MortgageCalculatorComponent {
     { label: 'Investícia', amount: 100000, rate: 4.2, years: 20 }
   ];
 
-  constructor(private calculatorService: CalculatorService) {
-    // No auto-calculate - user inputs have (ngModelChange)="calculate()"
-    // so calculation happens automatically when user changes values
+  constructor(private calculatorService: CalculatorService) {}
+
+  ngOnInit(): void {
+    // Auto-calculate on component init (browser only)
+    if (isPlatformBrowser(this.platformId)) {
+      this.calculate();
+    }
   }
 
   calculate(): void {

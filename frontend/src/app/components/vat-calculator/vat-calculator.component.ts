@@ -1,14 +1,13 @@
 import { Component, OnInit, PLATFORM_ID, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { VATCalculationRequest, VATCalculationResponse } from '../../models/calculator.models';
 
 @Component({
   selector: 'app-vat-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './vat-calculator.component.html',
   styleUrl: './vat-calculator.component.css'
 })
@@ -36,8 +35,10 @@ export class VatCalculatorComponent implements OnInit {
   constructor(private calculatorService: CalculatorService) {}
 
   ngOnInit() {
-    // No auto-calculate - user inputs have (ngModelChange)="calculate()"
-    // so calculation happens automatically when user changes values
+    // Auto-calculate on component init (browser only)
+    if (isPlatformBrowser(this.platformId)) {
+      this.calculate();
+    }
   }
 
   calculate() {

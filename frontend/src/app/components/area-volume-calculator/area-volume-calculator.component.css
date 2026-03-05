@@ -1,0 +1,519 @@
+/* Area & Volume Calculator Styles */
+.calculator-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.calculator-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.calculator-title {
+  font-size: 2.5rem;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.calculator-subtitle {
+  font-size: 1.2rem;
+  color: #7f8c8d;
+  margin-bottom: 1rem;
+}
+
+/* Loading State */
+.loading-state {
+  text-align: center;
+  padding: 3rem;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 1rem;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Calculator Body */
+.calculator-body {
+  display: grid;
+  grid-template-columns: 1fr 400px 400px;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 1400px) {
+  .calculator-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Shape Selection */
+.shape-selection-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.shape-category {
+  margin-bottom: 2rem;
+}
+
+.shape-category:last-child {
+  margin-bottom: 0;
+}
+
+.category-title {
+  color: #34495e;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.shapes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 1400px) {
+  .shapes-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .shapes-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.shape-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.shape-button:hover {
+  border-color: #667eea;
+  transform: translateY(-4px);
+  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.15);
+}
+
+.shape-button.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  color: white;
+}
+
+.shape-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.shape-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Input Section */
+.input-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  height: fit-content;
+  position: sticky;
+  top: 20px;
+}
+
+@media (max-width: 1400px) {
+  .input-section {
+    position: relative;
+    top: 0;
+  }
+}
+
+.dimensions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-label {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.75rem;
+  padding-right: 3rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.unit-suffix {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #7f8c8d;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.calculate-button {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-bottom: 1.5rem;
+}
+
+.calculate-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+}
+
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 1400px) {
+  .mobile-only {
+    display: block;
+  }
+}
+
+/* Info Box */
+.info-box {
+  padding: 1rem;
+  background: #e8f4fd;
+  border-left: 4px solid #3498db;
+  border-radius: 8px;
+}
+
+.info-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.info-text {
+  font-size: 0.9rem;
+  color: #34495e;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Result Section */
+.result-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  height: fit-content;
+  position: sticky;
+  top: 20px;
+}
+
+@media (max-width: 1400px) {
+  .result-section {
+    position: relative;
+    top: 0;
+  }
+}
+
+.error-state {
+  padding: 2rem;
+  text-align: center;
+}
+
+.error-message {
+  color: #e74c3c;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+/* Result Card */
+.result-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 2rem;
+  color: white;
+  margin-bottom: 1.5rem;
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.result-icon {
+  font-size: 2rem;
+}
+
+.result-title {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.result-primary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.result-label {
+  font-size: 0.95rem;
+  opacity: 0.9;
+  margin-bottom: 0.5rem;
+}
+
+.result-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.result-secondary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.secondary-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+}
+
+.secondary-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.secondary-value {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.formula-box {
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.formula-label {
+  display: block;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin-bottom: 0.5rem;
+}
+
+.formula-text {
+  display: block;
+  font-family: 'Courier New', monospace;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+}
+
+/* Dimensions Summary */
+.dimensions-summary {
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.summary-title {
+  font-size: 1.1rem;
+  color: #2c3e50;
+  margin-bottom: 0.75rem;
+}
+
+.dimensions-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #34495e;
+  line-height: 1.8;
+}
+
+.dimensions-list li {
+  margin-bottom: 0.5rem;
+}
+
+/* Conversions */
+.conversions-box {
+  padding: 1.5rem;
+  background: #e8f4fd;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+}
+
+.conversions-title {
+  font-size: 1.1rem;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.conversions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.conversion-item {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 6px;
+}
+
+.conversion-label {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  margin-bottom: 0.25rem;
+}
+
+.conversion-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* SEO Content */
+.seo-content {
+  max-width: 900px;
+  margin: 3rem auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.seo-content h2 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+}
+
+.seo-content h3 {
+  color: #34495e;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.3rem;
+}
+
+.seo-content p {
+  line-height: 1.8;
+  color: #555;
+  margin-bottom: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .calculator-container {
+    padding: 1rem;
+  }
+
+  .calculator-title {
+    font-size: 1.8rem;
+  }
+
+  .calculator-subtitle {
+    font-size: 1rem;
+  }
+
+  .shape-selection-section,
+  .input-section,
+  .result-section {
+    padding: 1.5rem;
+  }
+
+  .shapes-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .shape-button {
+    padding: 1rem 0.5rem;
+  }
+
+  .shape-icon {
+    font-size: 2rem;
+  }
+
+  .shape-name {
+    font-size: 0.8rem;
+  }
+
+  .result-value {
+    font-size: 2rem;
+  }
+
+  .conversions-grid {
+    grid-template-columns: 1fr;
+  }
+}

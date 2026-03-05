@@ -1,0 +1,336 @@
+<div class="calculator-container">
+  <div class="calculator-header">
+    <h1>🏥 Kalkulačka nemocenskej</h1>
+    <p class="subtitle">Vypočítajte si výšku nemocenského príspevku podľa slovenskej legislatívy (2026)</p>
+  </div>
+
+  <!-- Input Section -->
+  <div class="section inputs-section">
+    <h2>📝 Zadajte údaje</h2>
+    
+    <div class="input-group">
+      <label for="gross_salary">
+        💰 Hrubá mesačná mzda
+        <span class="help-text">Vaša aktuálna hrubá mzda v EUR</span>
+      </label>
+      <input 
+        type="number" 
+        id="gross_salary"
+        [(ngModel)]="gross_salary" 
+        (ngModelChange)="calculate()"
+        placeholder="Napr. 1500"
+        step="10"
+        min="0"
+        max="10000">
+      <span class="input-suffix">€</span>
+    </div>
+
+    <div class="input-group">
+      <label for="days_sick">
+        📅 Počet dní pracovnej neschopnosti
+        <span class="help-text">Koľko dní budete/ste na PN</span>
+      </label>
+      <input 
+        type="number" 
+        id="days_sick"
+        [(ngModel)]="days_sick" 
+        (ngModelChange)="calculate()"
+        placeholder="Napr. 7"
+        step="1"
+        min="1"
+        max="365">
+      <span class="input-suffix">dní</span>
+    </div>
+
+    <div class="input-group">
+      <label>
+        🏥 Typ pracovnej neschopnosti
+      </label>
+      <div class="radio-group">
+        <label class="radio-option">
+          <input 
+            type="radio" 
+            name="leave_type" 
+            value="illness"
+            [(ngModel)]="leave_type"
+            (ngModelChange)="calculate()">
+          <span>Choroba (vlastná PN)</span>
+        </label>
+        <label class="radio-option">
+          <input 
+            type="radio" 
+            name="leave_type" 
+            value="care"
+            [(ngModel)]="leave_type"
+            (ngModelChange)="calculate()">
+          <span>Ošetrovanie člena rodiny (OČR)</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preset Scenarios -->
+  <div class="section presets-section">
+    <h2>⚡ Rýchle scenáre</h2>
+    <div class="presets-grid">
+      <button (click)="usePreset('short')" class="preset-btn">
+        <span class="preset-icon">🤒</span>
+        <span class="preset-label">Krátka PN</span>
+        <span class="preset-desc">3 dni, 1200€</span>
+      </button>
+      <button (click)="usePreset('medium')" class="preset-btn">
+        <span class="preset-icon">🤧</span>
+        <span class="preset-label">Stredná PN</span>
+        <span class="preset-desc">10 dní, 1500€</span>
+      </button>
+      <button (click)="usePreset('long')" class="preset-btn">
+        <span class="preset-icon">🏥</span>
+        <span class="preset-label">Dlhá PN</span>
+        <span class="preset-desc">20 dní, 2000€</span>
+      </button>
+      <button (click)="usePreset('care')" class="preset-btn">
+        <span class="preset-icon">👨‍👩‍👧</span>
+        <span class="preset-label">OČR</span>
+        <span class="preset-desc">5 dní, 1800€</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="error-message">
+    ⚠️ {{ error }}
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading">
+    Vypočítavam nemocenskú...
+  </div>
+
+  <!-- Result Section -->
+  <div *ngIf="result && !isLoading" class="result-section">
+    <h2>💰 Výsledok výpočtu</h2>
+    
+    <!-- Main Result Card -->
+    <div class="result-main-card">
+      <div class="result-highlight">
+        <div class="result-label">Celková nemocenská za {{ result.days_sick }} {{ result.days_sick === 1 ? 'deň' : (result.days_sick < 5 ? 'dni' : 'dní') }}</div>
+        <div class="result-value-huge">{{ formatCurrency(result.total_sick_leave) }}</div>
+        <div class="result-sublabel">{{ result.leave_type_label }}</div>
+      </div>
+
+      <div class="result-comparison">
+        <div class="comparison-item loss">
+          <span class="comparison-label">Strata oproti plnej mzde</span>
+          <span class="comparison-value">{{ formatCurrency(result.loss_vs_full_salary) }}</span>
+          <span class="comparison-percent">({{ result.loss_percentage.toFixed(1) }}%)</span>
+        </div>
+        <div class="comparison-item daily">
+          <span class="comparison-label">Priemerná denná dávka</span>
+          <span class="comparison-value">{{ formatCurrency(result.avg_daily_rate) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Breakdown -->
+    <div class="breakdown-cards">
+      <div class="breakdown-card employer">
+        <div class="breakdown-header">
+          <span class="breakdown-icon">🏢</span>
+          <span class="breakdown-title">Zamestnávateľ</span>
+        </div>
+        <div class="breakdown-body">
+          <div class="breakdown-detail">
+            <span class="detail-label">Počet dní:</span>
+            <span class="detail-value">{{ result.employer_payment_days }}</span>
+          </div>
+          <div class="breakdown-detail">
+            <span class="detail-label">Sadzba:</span>
+            <span class="detail-value">{{ result.employer_rate_percent }}%</span>
+          </div>
+          <div class="breakdown-amount">
+            {{ formatCurrency(result.employer_payment) }}
+          </div>
+        </div>
+      </div>
+
+      <div class="breakdown-card insurance">
+        <div class="breakdown-header">
+          <span class="breakdown-icon">🏛️</span>
+          <span class="breakdown-title">Sociálna poisťovňa</span>
+        </div>
+        <div class="breakdown-body">
+          <div class="breakdown-detail">
+            <span class="detail-label">Počet dní:</span>
+            <span class="detail-value">{{ result.insurance_payment_days }}</span>
+          </div>
+          <div class="breakdown-detail">
+            <span class="detail-label">Sadzba:</span>
+            <span class="detail-value">{{ result.insurance_rate_percent }}%</span>
+          </div>
+          <div class="breakdown-amount">
+            {{ formatCurrency(result.insurance_payment) }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Explanation -->
+    <div class="explanation-box">
+      <h3>📋 Vysvetlenie výpočtu</h3>
+      <p>{{ result.explanation }}</p>
+      
+      <div class="dvz-info">
+        <p><strong>Denný vymeriavací základ (DVZ):</strong> {{ formatCurrency(result.daily_assessment_base) }}</p>
+        <p *ngIf="result.is_capped" class="capped-notice">
+          ⚠️ DVZ bol limitovaný stropom {{ formatCurrency(result.max_daily_base) }} denne
+        </p>
+      </div>
+    </div>
+
+    <!-- Day-by-Day Breakdown -->
+    <div class="daily-breakdown" *ngIf="result.breakdown && result.breakdown.length > 0">
+      <h3>📊 Denný rozpis</h3>
+      
+      <div class="breakdown-table-container">
+        <table class="breakdown-table">
+          <thead>
+            <tr>
+              <th>Deň</th>
+              <th>Platiteľ</th>
+              <th>Sadzba</th>
+              <th>Suma</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let day of result.breakdown.slice(0, showBreakdownDays)">
+              <td class="day-number">{{ day.day }}.</td>
+              <td>
+                <span [class]="'payer-badge ' + getPayerBadgeClass(day.payer)">
+                  {{ day.payer }}
+                </span>
+              </td>
+              <td class="rate-cell">{{ day.rate_percent }}%</td>
+              <td class="amount-cell">{{ formatCurrency(day.daily_amount) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <button 
+        *ngIf="result.breakdown.length > 10"
+        (click)="toggleFullBreakdown()"
+        class="btn-show-more">
+        {{ showBreakdownDays === 10 ? '▼ Zobraziť všetky dni' : '▲ Skryť' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Information Section -->
+  <div class="info-section">
+    <h2>💡 Ako funguje nemocenská na Slovensku?</h2>
+    <div class="info-content">
+      <div class="info-card">
+        <h3>📌 Prvé 3 dni (25% DVZ)</h3>
+        <p>
+          Prvé tri dni pracovnej neschopnosti platí zamestnávateľ. Výška je 25% denného vymeriavacieho základu.
+          Toto platí pre chorobu aj ošetrovanie člena rodiny.
+        </p>
+      </div>
+      
+      <div class="info-card">
+        <h3>📌 Od 4. dňa (55% DVZ)</h3>
+        <p>
+          Od štvrtého dňa nemocenskú vypláca Sociálna poisťovňa vo výške 55% denného vymeriavacieho základu.
+          Platí sa počas celého trvania pracovnej neschopnosti.
+        </p>
+      </div>
+      
+      <div class="info-card">
+        <h3>📌 Denný vymeriavací základ (DVZ)</h3>
+        <p>
+          DVZ sa vypočíta ako súčet vašich hrubých miezd za posledných 12 mesiacov vydelený 365.
+          Pre zjednodušenie kalkulačka predpokladá, že všetky mesiace mali rovnakú mzdu.
+        </p>
+      </div>
+      
+      <div class="info-card">
+        <h3>📌 Maximálny vymeriavací základ 2026</h3>
+        <p>
+          Nemocenská je limitovaná stropom. V roku 2026 je maximálny ročný vymeriavací základ 88,200 €,
+          čo zodpovedá dennému maximu 241.64 € denne.
+        </p>
+      </div>
+
+      <div class="info-card">
+        <h3>📌 Ošetrovanie člena rodiny (OČR)</h3>
+        <p>
+          Pri ošetrovaní chorého člena domácnosti platia rovnaké pravidlá ako pri vlastnej chorobe.
+          Prvé 3 dni 25% DVZ od zamestnávateľa, od 4. dňa 55% DVZ od poisťovne.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Examples Section -->
+  <div class="examples-section">
+    <h2>📈 Príklady výpočtu</h2>
+    <div class="examples-grid">
+      <div class="example-card">
+        <h3>💼 Priemerná mzda</h3>
+        <p><strong>Mzda:</strong> 1,500 € | <strong>PN:</strong> 7 dní</p>
+        <p><strong>Nemocenská:</strong> ~271 €</p>
+        <p class="example-note">Strata: ~79 € (22.6%)</p>
+      </div>
+      
+      <div class="example-card">
+        <h3>💰 Vyššia mzda</h3>
+        <p><strong>Mzda:</strong> 2,500 € | <strong>PN:</strong> 14 dní</p>
+        <p><strong>Nemocenská:</strong> ~634 €</p>
+        <p class="example-note">Strata: ~532 € (45.6%)</p>
+      </div>
+      
+      <div class="example-card">
+        <h3>🏥 Dlhšia PN</h3>
+        <p><strong>Mzda:</strong> 1,800 € | <strong>PN:</strong> 30 dní</p>
+        <p><strong>Nemocenská:</strong> ~1,020 €</p>
+        <p class="example-note">Strata: ~780 € (43.3%)</p>
+      </div>
+
+      <div class="example-card">
+        <h3>👶 Ošetrovanie dieťaťa</h3>
+        <p><strong>Mzda:</strong> 1,200 € | <strong>PN:</strong> 5 dní</p>
+        <p><strong>Nemocenská:</strong> ~179 €</p>
+        <p class="example-note">Strata: ~21 € (10.5%)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEO Content -->
+  <div class="seo-content">
+    <h2>🔍 Všetko o nemocenskej na Slovensku</h2>
+    <p>
+      Nemocenská je dávka, ktorú dostávate počas pracovnej neschopnosti (PN). Na Slovensku funguje systém,
+      kde prvé tri dni platí zamestnávateľ a od štvrtého dňa preberá platbu Sociálna poisťovňa.
+    </p>
+    <p>
+      <strong>Kedy máte nárok na nemocenskú?</strong>
+    </p>
+    <ul>
+      <li>Ste platiteľom nemocenského poistenia (zamestnanec, SZČO)</li>
+      <li>Dostali ste potvrdenie o pracovnej neschopnosti od lekára</li>
+      <li>Dodržali ste postup ohlásenia PN zamestnávateľovi</li>
+    </ul>
+    <p>
+      <strong>Dôležité termíny:</strong>
+    </p>
+    <ul>
+      <li><strong>DVZ (Denný vymeriavací základ):</strong> Priemerný denný príjem za posledných 12 mesiacov</li>
+      <li><strong>PN (Pracovná neschopnosť):</strong> Stav, kedy nemôžete pracovať kvôli chorobe</li>
+      <li><strong>OČR (Ošetrovanie člena rodiny):</strong> Starostlivosť o choré dieťa alebo rodinného príslušníka</li>
+    </ul>
+    <p>
+      Náš online nástroj vám umožní rýchlo vypočítať výšku nemocenskej dávky podľa aktuálnych pravidiel platných v roku 2026.
+      Stačí zadať hrubú mzdu a počet dní pracovnej neschopnosti.
+    </p>
+  </div>
+</div>

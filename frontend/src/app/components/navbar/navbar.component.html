@@ -1,0 +1,113 @@
+<nav class="navbar">
+  <div class="navbar-container">
+    <!-- Logo / Brand -->
+    <div class="navbar-brand">
+      <a routerLink="/" class="brand-link" (click)="closeMenu()">
+        <span class="brand-icon">🧮</span>
+        <span class="brand-text">Kalkulačky<span class="brand-accent">.sk</span></span>
+      </a>
+    </div>
+
+    <!-- Desktop Navigation -->
+    <div class="navbar-menu">
+      <!-- Home Link -->
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">
+        <span class="nav-icon">🏠</span>
+        <span>Domov</span>
+      </a>
+
+      <!-- Basic Calculator Link -->
+      <a routerLink="/calculator/basic" routerLinkActive="active" class="nav-link nav-link-highlight">
+        <span class="nav-icon">🧮</span>
+        <span>Kalkulačka</span>
+      </a>
+
+      <!-- Category Dropdowns -->
+      <div 
+        *ngFor="let category of categories" 
+        class="nav-dropdown"
+        [class.active]="isCategoryActive(category.id)"
+        [class.open]="openCategory === category.id"
+        (mouseenter)="openCategory = category.id"
+        (mouseleave)="openCategory = null"
+      >
+        <button class="nav-link dropdown-trigger">
+          <span class="nav-icon">{{ category.icon }}</span>
+          <span>{{ category.name }}</span>
+          <span class="dropdown-arrow">▼</span>
+        </button>
+
+        <div class="dropdown-menu">
+          <div class="dropdown-content">
+            <a 
+              *ngFor="let calculator of category.calculators"
+              [routerLink]="calculator.route"
+              routerLinkActive="active"
+              class="dropdown-item"
+              (click)="closeMenu()"
+            >
+              <span class="dropdown-icon">{{ calculator.icon }}</span>
+              <span class="dropdown-text">{{ calculator.name }}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" (click)="toggleMenu()" [class.open]="isMenuOpen">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
+  </div>
+
+  <!-- Mobile Navigation -->
+  <div class="mobile-menu" [class.open]="isMenuOpen">
+    <div class="mobile-menu-content">
+      <!-- Mobile Home Link -->
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="mobile-nav-link" (click)="closeMenu()">
+        <span class="nav-icon">🏠</span>
+        <span>Domov</span>
+      </a>
+
+      <!-- Mobile Basic Calculator Link -->
+      <a routerLink="/calculator/basic" routerLinkActive="active" class="mobile-nav-link mobile-nav-link-highlight" (click)="closeMenu()">
+        <span class="nav-icon">🧮</span>
+        <span>Kalkulačka</span>
+      </a>
+
+      <!-- Mobile Categories -->
+      <div *ngFor="let category of categories" class="mobile-category">
+        <button 
+          class="mobile-category-header"
+          [class.active]="isCategoryActive(category.id)"
+          [class.open]="openCategory === category.id"
+          (click)="toggleCategory(category.id)"
+        >
+          <span class="category-info">
+            <span class="nav-icon">{{ category.icon }}</span>
+            <span>{{ category.name }}</span>
+          </span>
+          <span class="category-arrow" [class.rotate]="openCategory === category.id">▼</span>
+        </button>
+
+        <div class="mobile-category-content" [class.open]="openCategory === category.id">
+          <a 
+            *ngFor="let calculator of category.calculators"
+            [routerLink]="calculator.route"
+            routerLinkActive="active"
+            class="mobile-calculator-link"
+            (click)="closeMenu()"
+          >
+            <span class="nav-icon">{{ calculator.icon }}</span>
+            <span>{{ calculator.name }}</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Overlay for mobile menu -->
+<div class="mobile-overlay" [class.visible]="isMenuOpen" (click)="closeMenu()"></div>

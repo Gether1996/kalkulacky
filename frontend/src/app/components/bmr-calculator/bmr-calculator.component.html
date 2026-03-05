@@ -1,0 +1,346 @@
+<div class="calculator-container">
+  <div class="calculator-header">
+    <h1>🔥 BMR Kalkulačka - Bazálny metabolizmus</h1>
+    <p class="subtitle">Vypočítajte dennú potrebu kalórií a makroživín</p>
+    <div class="keywords">
+      <span class="keyword-badge">BMR kalkulačka</span>
+      <span class="keyword-badge">Bazálny metabolizmus</span>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <strong>ℹ️ Čo je BMR?</strong>
+    <p>BMR (Basal Metabolic Rate) je bazálny metabolizmus - počet kalórií, ktoré vaše telo spáli v pokoji. TDEE (Total Daily Energy Expenditure) zahŕňa vašu aktivitu a udáva celkovú dennú potrebu kalórií.</p>
+  </div>
+
+  <form class="calculator-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="weight">⚖️ Hmotnosť (kg):</label>
+        <input
+          type="number"
+          id="weight"
+          [(ngModel)]="weight"
+          name="weight"
+          min="1"
+          step="0.1"
+          required
+          (ngModelChange)="calculate()"
+        />
+        <small>Aktuálna telesná hmotnosť</small>
+      </div>
+
+      <div class="form-group">
+        <label for="height">📏 Výška (cm):</label>
+        <input
+          type="number"
+          id="height"
+          [(ngModel)]="height"
+          name="height"
+          min="1"
+          step="1"
+          required
+          (ngModelChange)="calculate()"
+        />
+        <small>Telesná výška v centimetroch</small>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="age">🎂 Vek (roky):</label>
+        <input
+          type="number"
+          id="age"
+          [(ngModel)]="age"
+          name="age"
+          min="15"
+          max="100"
+          required
+          (ngModelChange)="calculate()"
+        />
+        <small>Vek v rokoch</small>
+      </div>
+
+      <div class="form-group">
+        <label>👤 Pohlavie:</label>
+        <div class="gender-options">
+          <label class="radio-option" [class.selected]="gender === 'male'">
+            <input type="radio" [(ngModel)]="gender" name="gender" value="male" (ngModelChange)="calculate()" />
+            <span>♂️ Muž</span>
+          </label>
+          <label class="radio-option" [class.selected]="gender === 'female'">
+            <input type="radio" [(ngModel)]="gender" name="gender" value="female" (ngModelChange)="calculate()" />
+            <span>♀️ Žena</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group full-width">
+      <label>🏃 Úroveň aktivity:</label>
+      <div class="activity-grid">
+        <label *ngFor="let level of activityLevels" 
+               class="activity-option"
+               [class.selected]="activityLevel === level.value">
+          <input type="radio" [(ngModel)]="activityLevel" name="activityLevel" [value]="level.value" (ngModelChange)="calculate()" />
+          <div class="activity-card">
+            <div class="activity-icon">{{ level.icon }}</div>
+            <div class="activity-label">{{ level.label }}</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-group full-width">
+      <label>🎯 Cieľ hmotnosti:</label>
+      <div class="goal-grid">
+        <label *ngFor="let goal of weightGoals" 
+               class="goal-option"
+               [class.selected]="weightGoal === goal.value"
+               [class]="goal.class">
+          <input type="radio" [(ngModel)]="weightGoal" name="weightGoal" [value]="goal.value" (ngModelChange)="calculate()" />
+          <div class="goal-card">
+            <div class="goal-icon">{{ goal.icon }}</div>
+            <div class="goal-label">{{ goal.label }}</div>
+          </div>
+        </label>
+      </div>
+    </div>
+  </form>
+
+  <div class="error-message" *ngIf="error">
+    {{ error }}
+  </div>
+
+  <div class="result-section" *ngIf="result">
+    <!-- BMR Values -->
+    <div class="result-highlight bmr-card">
+      <h3>🔥 Bazálny metabolizmus (BMR)</h3>
+      <div class="bmr-grid">
+        <div class="bmr-item primary">
+          <div class="bmr-label">Odporúčaný BMR</div>
+          <div class="bmr-value">{{ formatNumber(result.bmr.recommended) }} kcal</div>
+          <small>Mifflin-St Jeor vzorec (presnejší)</small>
+        </div>
+        <div class="bmr-item">
+          <div class="bmr-label">Harris-Benedict</div>
+          <div class="bmr-value secondary">{{ formatNumber(result.bmr.harris_benedict) }} kcal</div>
+        </div>
+      </div>
+      <p class="bmr-info">
+        Toto je počet kalórií, ktoré vaše telo spáli v úplnom pokoji.
+      </p>
+    </div>
+
+    <!-- TDEE -->
+    <div class="result-card tdee-card">
+      <h3>⚡ Celková denná spotreba (TDEE)</h3>
+      
+      <div class="tdee-main">
+        <div class="tdee-value-large">{{ formatNumber(result.tdee.calories) }} <span class="unit">kcal/deň</span></div>
+        <div class="tdee-description">{{ result.tdee.activity_description }}</div>
+      </div>
+
+      <div class="tdee-details">
+        <div class="detail-item">
+          <span>BMR:</span>
+          <strong>{{ formatNumber(result.bmr.recommended) }} kcal</strong>
+        </div>
+        <div class="detail-item">
+          <span>× Koeficient aktivity:</span>
+          <strong>{{ result.tdee.activity_multiplier }}</strong>
+        </div>
+        <div class="detail-item highlight">
+          <span>= TDEE:</span>
+          <strong>{{ formatNumber(result.tdee.calories) }} kcal</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calorie Recommendations -->
+    <div class="result-card recommendations-card">
+      <h3>🎯 Odporúčaný denný príjem kalórií</h3>
+      
+      <div class="recommendation-main">
+        <div class="goal-badge-large" [class]="weightGoals.find(g => g.value === result!.recommendations.weight_goal)?.class">
+          {{ weightGoals.find(g => g.value === result!.recommendations.weight_goal)?.icon }}
+          {{ result.recommendations.goal_description }}
+        </div>
+        
+        <div class="target-calories">
+          <div class="target-value">{{ formatNumber(result.recommendations.target_calories) }} <span class="unit">kcal/deň</span></div>
+          <div class="target-adjustment">
+            <span>Úprava od TDEE:</span>
+            <strong [class.positive]="result.recommendations.calorie_adjustment > 0"
+                    [class.negative]="result.recommendations.calorie_adjustment < 0">
+              {{ result.recommendations.calorie_adjustment > 0 ? '+' : '' }}{{ formatNumber(result.recommendations.calorie_adjustment) }} kcal
+            </strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="weekly-change" *ngIf="result.recommendations.kg_per_week">
+        <span>Očakávaná zmena hmotnosti:</span>
+        <strong>{{ getWeeklyChange() }}</strong>
+      </div>
+
+      <div class="safety-warning" *ngIf="result.recommendations.is_below_minimum">
+        ⚠️ Poznámka: Odporúčaná hodnota bola upravená na minimálnu bezpečnú úroveň ({{ formatNumber(result.recommendations.min_safe_calories) }} kcal/deň).
+      </div>
+    </div>
+
+    <!-- Macronutrients -->
+    <div class="result-card macros-card">
+      <h3>🍽️ Rozdelenie makroživín</h3>
+      <p class="macros-subtitle">Odporúčaná vyvážená strava pre {{ formatNumber(result.recommendations.target_calories) }} kcal/deň</p>
+      
+      <div class="macros-grid">
+        <div class="macro-item" [style.border-color]="getMacroColor('protein')">
+          <div class="macro-icon" [style.color]="getMacroColor('protein')">🥩</div>
+          <div class="macro-name">Proteíny</div>
+          <div class="macro-value">{{ formatNumber(result.macros.protein.grams) }} g</div>
+          <div class="macro-calories">{{ formatNumber(result.macros.protein.calories) }} kcal</div>
+          <div class="macro-percentage" [style.color]="getMacroColor('protein')">
+            {{ result.macros.protein.percentage }}%
+          </div>
+          <div class="macro-bar">
+            <div class="macro-fill" [style.width.%]="result.macros.protein.percentage" 
+                 [style.background-color]="getMacroColor('protein')"></div>
+          </div>
+        </div>
+
+        <div class="macro-item" [style.border-color]="getMacroColor('carbs')">
+          <div class="macro-icon" [style.color]="getMacroColor('carbs')">🍞</div>
+          <div class="macro-name">Sacharidy</div>
+          <div class="macro-value">{{ formatNumber(result.macros.carbs.grams) }} g</div>
+          <div class="macro-calories">{{ formatNumber(result.macros.carbs.calories) }} kcal</div>
+          <div class="macro-percentage" [style.color]="getMacroColor('carbs')">
+            {{ result.macros.carbs.percentage }}%
+          </div>
+          <div class="macro-bar">
+            <div class="macro-fill" [style.width.%]="result.macros.carbs.percentage" 
+                 [style.background-color]="getMacroColor('carbs')"></div>
+          </div>
+        </div>
+
+        <div class="macro-item" [style.border-color]="getMacroColor('fats')">
+          <div class="macro-icon" [style.color]="getMacroColor('fats')">🥑</div>
+          <div class="macro-name">Tuky</div>
+          <div class="macro-value">{{ formatNumber(result.macros.fats.grams) }} g</div>
+          <div class="macro-calories">{{ formatNumber(result.macros.fats.calories) }} kcal</div>
+          <div class="macro-percentage" [style.color]="getMacroColor('fats')">
+            {{ result.macros.fats.percentage }}%
+          </div>
+          <div class="macro-bar">
+            <div class="macro-fill" [style.width.%]="result.macros.fats.percentage" 
+                 [style.background-color]="getMacroColor('fats')"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Summary -->
+    <div class="result-card profile-card">
+      <h3>👤 Váš profil</h3>
+      
+      <div class="profile-grid">
+        <div class="profile-item">
+          <div class="profile-icon">⚖️</div>
+          <div class="profile-label">Hmotnosť</div>
+          <div class="profile-value">{{ formatNumber(result.profile.weight, 1) }} kg</div>
+        </div>
+
+        <div class="profile-item">
+          <div class="profile-icon">📏</div>
+          <div class="profile-label">Výška</div>
+          <div class="profile-value">{{ formatNumber(result.profile.height, 0) }} cm</div>
+        </div>
+
+        <div class="profile-item">
+          <div class="profile-icon">🎂</div>
+          <div class="profile-label">Vek</div>
+          <div class="profile-value">{{ result.profile.age }} rokov</div>
+        </div>
+
+        <div class="profile-item">
+          <div class="profile-icon">👤</div>
+          <div class="profile-label">Pohlavie</div>
+          <div class="profile-value">{{ result.profile.gender === 'male' ? 'Muž' : 'Žena' }}</div>
+        </div>
+      </div>
+
+      <div class="bmi-section">
+        <div class="bmi-label">Body Mass Index (BMI):</div>
+        <div class="bmi-value" [style.color]="getBMIColor(result.profile.bmi)">
+          {{ formatNumber(result.profile.bmi, 1) }}
+        </div>
+        <div class="bmi-category" [style.color]="getBMIColor(result.profile.bmi)">
+          {{ getBMICategory(result.profile.bmi) }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="seo-content">
+    <h2>BMR Kalkulačka - Vypočítajte bazálny metabolizmus a kalorické potreby</h2>
+    
+    <p>
+      Naša <strong>BMR kalkulačka</strong> vám pomôže presne vypočítať bazálny metabolizmus (BMR) a celkovú dennú spotrebu energie (TDEE).
+      Zistíte, koľko kalórií potrebujete na chudnutie, udržanie hmotnosti alebo nabieranie svalovej hmoty.
+    </p>
+
+    <h3>Čo je BMR?</h3>
+    <p>
+      <strong>BMR (Basal Metabolic Rate)</strong> je bazálny metabolizmus - počet kalórií, ktoré vaše telo spáli v úplnom pokoji
+      len na udržanie základných životných funkcií (dýchanie, cirkulácia krvi, regulácia teploty).
+    </p>
+
+    <h3>Výpočtové vzorce</h3>
+    <p>Používame dva najpoužívanejšie vzorce:</p>
+    
+    <h4>1. Mifflin-St Jeor Equation (odporúčaný)</h4>
+    <ul>
+      <li><strong>Muži:</strong> BMR = (10 × hmotnosť) + (6.25 × výška) - (5 × vek) + 5</li>
+      <li><strong>Ženy:</strong> BMR = (10 × hmotnosť) + (6.25 × výška) - (5 × vek) - 161</li>
+    </ul>
+
+    <h4>2. Harris-Benedict Equation (revidovaná)</h4>
+    <ul>
+      <li><strong>Muži:</strong> BMR = 88.362 + (13.397 × hmotnosť) + (4.799 × výška) - (5.677 × vek)</li>
+      <li><strong>Ženy:</strong> BMR = 447.593 + (9.247 × hmotnosť) + (3.098 × výška) - (4.330 × vek)</li>
+    </ul>
+
+    <h3>Čo je TDEE?</h3>
+    <p>
+      <strong>TDEE (Total Daily Energy Expenditure)</strong> je celková denná spotreba energie, ktorá zahŕňa váš BMR
+      plus kalórie spálené aktivitou. Vypočítava sa vynásobením BMR koeficientom aktivity:
+    </p>
+    <ul>
+      <li><strong>Sedavý (1.2):</strong> Žiadne cvičenie, väčšinou sedenie</li>
+      <li><strong>Mierna aktivita (1.375):</strong> Ľahké cvičenie 1-3x týždenne</li>
+      <li><strong>Stredná aktivita (1.55):</strong> Cvičenie 3-5x týždenne</li>
+      <li><strong>Aktívny (1.725):</strong> Intenzívne cvičenie 6-7x týždenne</li>
+      <li><strong>Veľmi aktívny (1.9):</strong> Veľmi intenzívne cvičenie, fyzická práca</li>
+    </ul>
+
+    <h3>Ako použiť výsledky?</h3>
+    <ul>
+      <li><strong>Chudnutie:</strong> Konzumujte 250-1000 kcal menej ako TDEE (0.25-1 kg/týždeň)</li>
+      <li><strong>Udržanie hmotnosti:</strong> Konzumujte približne toľko, koľko je TDEE</li>
+      <li><strong>Nabieranie hmotnosti:</strong> Konzumujte 250-1000 kcal viac ako TDEE</li>
+    </ul>
+
+    <h3>Rozdelenie makroživín</h3>
+    <p>Odporúčaná vyvážená strava:</p>
+    <ul>
+      <li><strong>Proteíny (30%):</strong> 4 kcal/g - dôležité pre svaly a regeneráciu</li>
+      <li><strong>Sacharidy (40%):</strong> 4 kcal/g - hlavný zdroj energie</li>
+      <li><strong>Tuky (30%):</strong> 9 kcal/g - hormóny a zdravie</li>
+    </ul>
+
+    <div class="navigation-links">
+      <a href="/calculator/bmi" class="related-link">BMI Kalkulačka →</a>
+    </div>
+  </div>
+</div>

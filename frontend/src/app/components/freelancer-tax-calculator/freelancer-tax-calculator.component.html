@@ -1,0 +1,324 @@
+<div class="calculator-container">
+  <div class="calculator-header">
+    <h1>💼 Kalkulačka daní SZČO</h1>
+    <p class="calculator-description">
+      Vypočítajte dane a odvody pre samostatne zárobkovo činné osoby (SZČO) na Slovensku.
+      Zahŕňa daň z príjmu, zdravotné poistenie a sociálne odvody.
+    </p>
+  </div>
+
+  <div class="calculator-content">
+    <div class="input-section">
+      <h2>📊 Vstupné údaje</h2>
+
+      <div class="input-group">
+        <label for="annualRevenue">Ročný príjem (obrat)</label>
+        <div class="input-with-unit">
+          <input
+            type="number"
+            id="annualRevenue"
+            [(ngModel)]="annualRevenue"
+            (ngModelChange)="calculate()"
+            min="0"
+            step="1000"
+          />
+          <span class="unit">€</span>
+        </div>
+        <small>Celkové príjmy za rok pred odpočítaním výdavkov</small>
+      </div>
+
+      <div class="input-group">
+        <label>Typ výdavkov</label>
+        <div class="expenses-type-options">
+          <div 
+            class="option-card" 
+            [class.selected]="useFlatExpenses"
+            (click)="useFlatExpenses = true; onExpensesMethodChange(); calculate()"
+          >
+            <div class="option-icon">📋</div>
+            <div class="option-label">Paušálne výdavky</div>
+            <div class="option-description">60% z príjmu</div>
+          </div>
+          <div 
+            class="option-card" 
+            [class.selected]="!useFlatExpenses"
+            (click)="useFlatExpenses = false; onExpensesMethodChange(); calculate()"
+          >
+            <div class="option-icon">🧾</div>
+            <div class="option-label">Skutočné výdavky</div>
+            <div class="option-description">Vaše náklady</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-group" *ngIf="!useFlatExpenses">
+        <label for="annualExpenses">Ročné výdavky (náklady)</label>
+        <div class="input-with-unit">
+          <input
+            type="number"
+            id="annualExpenses"
+            [(ngModel)]="annualExpenses"
+            (ngModelChange)="calculate()"
+            min="0"
+            step="1000"
+          />
+          <span class="unit">€</span>
+        </div>
+        <small>Oprávnené výdavky na podnikanie</small>
+      </div>
+
+      <div class="input-group">
+        <label>Nemocenské poistenie</label>
+        <div class="sickness-options">
+          <div 
+            class="option-card" 
+            [class.selected]="includeSickness"
+            (click)="includeSickness = true; calculate()"
+          >
+            <div class="option-icon">✅</div>
+            <div class="option-label">Áno</div>
+            <div class="option-description">Dobrovoné</div>
+          </div>
+          <div 
+            class="option-card" 
+            [class.selected]="!includeSickness"
+            (click)="includeSickness = false; calculate()"
+          >
+            <div class="option-icon">❌</div>
+            <div class="option-label">Nie</div>
+            <div class="option-description">Bez nemocenského</div>
+          </div>
+        </div>
+        <small>Nemocenské poistenie je pre SZČO dobrovoľné</small>
+      </div>
+
+      <div class="input-group">
+        <label for="monthsActive">Počet aktívnych mesiacov</label>
+        <div class="input-with-unit">
+          <input
+            type="number"
+            id="monthsActive"
+            [(ngModel)]="monthsActive"
+            (ngModelChange)="calculate()"
+            min="1"
+            max="12"
+            step="1"
+          />
+          <span class="unit">mesiacov</span>
+        </div>
+        <small>Počet mesiacov aktívneho podnikania v roku</small>
+      </div>
+
+      <div class="error-message" *ngIf="error">
+        ⚠️ {{ error }}
+      </div>
+    </div>
+
+    <div class="results-section" *ngIf="result">
+      <h2>💰 Výsledky</h2>
+
+      <!-- Net Income Highlight -->
+      <div class="result-card highlight-card">
+        <div class="card-icon">💵</div>
+        <div class="card-content">
+          <div class="card-label">Čistý zisk</div>
+          <div class="card-value">{{ formatCurrency(result.summary.net_income) }}</div>
+          <div class="card-details">
+            <span>{{ formatCurrency(result.summary.monthly_net) }} / mesiac</span>
+            <span class="separator">•</span>
+            <span [style.color]="getEffectiveRateColor(result.summary.effective_rate)">
+              Efektívna sadzba: {{ formatPercent(result.summary.effective_rate) }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="summary-icon">💰</div>
+          <div class="summary-label">Ročný príjem</div>
+          <div class="summary-value">{{ formatCurrency(result.income.annual_revenue) }}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon">📉</div>
+          <div class="summary-label">Výdavky</div>
+          <div class="summary-value">{{ formatCurrency(result.income.annual_expenses) }}</div>
+          <div class="summary-note">{{ result.income.expenses_note }}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon">🧾</div>
+          <div class="summary-label">Daňový základ</div>
+          <div class="summary-value">{{ formatCurrency(result.income.tax_base) }}</div>
+        </div>
+        <div class="summary-card important">
+          <div class="summary-icon">⚠️</div>
+          <div class="summary-label">Celkové odvody</div>
+          <div class="summary-value">{{ formatCurrency(result.summary.total_tax_and_contributions) }}</div>
+          <div class="summary-note">{{ formatCurrency(result.summary.monthly_deductions) }} / mesiac</div>
+        </div>
+      </div>
+
+      <!-- Income Tax Details -->
+      <div class="detail-card">
+        <div class="detail-header">
+          <h3>🏛️ Daň z príjmu</h3>
+        </div>
+        <div class="detail-body">
+          <div class="detail-row">
+            <span class="detail-label">Základ dane po odpočítaniach:</span>
+            <span class="detail-value">{{ formatCurrency(result.income.taxable_income) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Nezdaniteľná časť:</span>
+            <span class="detail-value">{{ formatCurrency(result.income.non_taxable_amount) }}</span>
+          </div>
+          <div class="detail-row highlight">
+            <span class="detail-label">Daň ({{ formatPercent(result.tax.tax_rate_applied) }}):</span>
+            <span class="detail-value strong">{{ formatCurrency(result.tax.income_tax) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Priemerná mesačná daň:</span>
+            <span class="detail-value">{{ formatCurrency(result.tax.monthly_average) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Health Insurance Details -->
+      <div class="detail-card">
+        <div class="detail-header">
+          <h3>🏥 Zdravotné poistenie</h3>
+          <span class="detail-rate">{{ formatPercent(result.health_insurance.rate) }}</span>
+        </div>
+        <div class="detail-body">
+          <div class="detail-row">
+            <span class="detail-label">Vymeriavací základ (mesačne):</span>
+            <span class="detail-value">{{ formatCurrency(result.health_insurance.monthly_base) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Minimálny základ:</span>
+            <span class="detail-value">{{ formatCurrency(result.health_insurance.min_base) }}</span>
+          </div>
+          <div class="detail-row highlight">
+            <span class="detail-label">Mesačná platba:</span>
+            <span class="detail-value strong">{{ formatCurrency(result.health_insurance.monthly_payment) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Ročná platba ({{ result.summary.months_active }} mesiacov):</span>
+            <span class="detail-value">{{ formatCurrency(result.health_insurance.annual_payment) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Social Insurance Details -->
+      <div class="detail-card">
+        <div class="detail-header">
+          <h3>🛡️ Sociálne poistenie</h3>
+        </div>
+        <div class="detail-body">
+          <div class="detail-row">
+            <span class="detail-label">Vymeriavací základ (mesačne):</span>
+            <span class="detail-value">{{ formatCurrency(result.social_insurance.monthly_base) }}</span>
+          </div>
+          <div class="detail-row highlight">
+            <span class="detail-label">Mesačná platba celkom:</span>
+            <span class="detail-value strong">{{ formatCurrency(result.social_insurance.monthly_payment) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Ročná platba celkom ({{ result.summary.months_active }} mesiacov):</span>
+            <span class="detail-value">{{ formatCurrency(result.social_insurance.annual_payment) }}</span>
+          </div>
+
+          <div class="social-breakdown">
+            <h4>Rozdelenie sociálnych odvodov:</h4>
+            
+            <div class="breakdown-item" *ngIf="result.social_insurance.breakdown.sickness.included">
+              <div class="breakdown-header">
+                <span class="breakdown-name">🤒 Nemocenské</span>
+                <span class="breakdown-rate">{{ formatPercent(result.social_insurance.breakdown.sickness.rate) }}</span>
+              </div>
+              <div class="breakdown-values">
+                <span>{{ formatCurrency(result.social_insurance.breakdown.sickness.monthly) }} / mes.</span>
+                <span class="separator">•</span>
+                <span>{{ formatCurrency(result.social_insurance.breakdown.sickness.annual) }} / rok</span>
+              </div>
+            </div>
+
+            <div class="breakdown-item">
+              <div class="breakdown-header">
+                <span class="breakdown-name">👴 Starobné</span>
+                <span class="breakdown-rate">{{ formatPercent(result.social_insurance.breakdown.pension.rate) }}</span>
+              </div>
+              <div class="breakdown-values">
+                <span>{{ formatCurrency(result.social_insurance.breakdown.pension.monthly) }} / mes.</span>
+                <span class="separator">•</span>
+                <span>{{ formatCurrency(result.social_insurance.breakdown.pension.annual) }} / rok</span>
+              </div>
+            </div>
+
+            <div class="breakdown-item">
+              <div class="breakdown-header">
+                <span class="breakdown-name">♿ Invalidné</span>
+                <span class="breakdown-rate">{{ formatPercent(result.social_insurance.breakdown.disability.rate) }}</span>
+              </div>
+              <div class="breakdown-values">
+                <span>{{ formatCurrency(result.social_insurance.breakdown.disability.monthly) }} / mes.</span>
+                <span class="separator">•</span>
+                <span>{{ formatCurrency(result.social_insurance.breakdown.disability.annual) }} / rok</span>
+              </div>
+            </div>
+
+            <div class="breakdown-item">
+              <div class="breakdown-header">
+                <span class="breakdown-name">🚑 Úrazové</span>
+                <span class="breakdown-rate">{{ formatPercent(result.social_insurance.breakdown.accident.rate) }}</span>
+              </div>
+              <div class="breakdown-values">
+                <span>{{ formatCurrency(result.social_insurance.breakdown.accident.monthly) }} / mes.</span>
+                <span class="separator">•</span>
+                <span>{{ formatCurrency(result.social_insurance.breakdown.accident.annual) }} / rok</span>
+              </div>
+            </div>
+
+            <div class="breakdown-item">
+              <div class="breakdown-header">
+                <span class="breakdown-name">🏦 Garančné</span>
+                <span class="breakdown-rate">{{ formatPercent(result.social_insurance.breakdown.guarantee.rate) }}</span>
+              </div>
+              <div class="breakdown-values">
+                <span>{{ formatCurrency(result.social_insurance.breakdown.guarantee.monthly) }} / mes.</span>
+                <span class="separator">•</span>
+                <span>{{ formatCurrency(result.social_insurance.breakdown.guarantee.annual) }} / rok</span>
+              </div>
+            </div>
+
+            <div class="breakdown-item">
+              <div class="breakdown-header">
+                <span class="breakdown-name">💾 Rezervný fond</span>
+                <span class="breakdown-rate">{{ formatPercent(result.social_insurance.breakdown.reserve.rate) }}</span>
+              </div>
+              <div class="breakdown-values">
+                <span>{{ formatCurrency(result.social_insurance.breakdown.reserve.monthly) }} / mes.</span>
+                <span class="separator">•</span>
+                <span>{{ formatCurrency(result.social_insurance.breakdown.reserve.annual) }} / rok</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Important Notes -->
+      <div class="info-card">
+        <h3>ℹ️ Dôležité informácie</h3>
+        <ul>
+          <li>Výpočty sú orientačné a vychádzajú zo sadzieb a limitov pre rok 2026.</li>
+          <li>Vymeriavací základ pre odvody sa v skutočnosti určuje na základe príjmu z predchádzajúceho roka.</li>
+          <li>Pri paušálnych výdavkoch sa odpočíta 60% z príjmu (maximálne do určitého limitu).</li>
+          <li>Nemocenské poistenie je pre SZČO dobrovoľné.</li>
+          <li>Minimálny mesačný vymeriavací základ je {{ formatCurrency(result.health_insurance.min_base) }}.</li>
+          <li>Pre presný výpočet konzultujte s daňovým poradcom alebo účtovníkom.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
