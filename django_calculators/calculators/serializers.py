@@ -907,3 +907,135 @@ class SplitBillCalculatorSerializer(serializers.Serializer):
         
         return data
 
+
+class ParentalBenefitCalculatorSerializer(serializers.Serializer):
+    """Serializer for Parental Benefit Calculator API"""
+    birth_date = serializers.DateField(
+        help_text="Child's date of birth (YYYY-MM-DD)"
+    )
+    gross_salary = serializers.DecimalField(
+        required=False,
+        max_digits=10,
+        decimal_places=2,
+        min_value=0,
+        max_value=10000,
+        help_text="Mother's gross monthly salary before maternity (for materské calculation)"
+    )
+    benefit_type = serializers.ChoiceField(
+        choices=['basic', 'alternative'],
+        default='basic',
+        help_text="'basic' (osnova - €381.90 for 3 years) or 'alternative' (alternatíva - €270 for 6 years)"
+    )
+    twins_or_more = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text="Whether birth was twins/triplets (affects maternity duration: 43 weeks instead of 34)"
+    )
+    plan_to_work = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text="Whether parent plans to work while receiving benefit"
+    )
+    planned_monthly_income = serializers.DecimalField(
+        required=False,
+        default=0,
+        max_digits=10,
+        decimal_places=2,
+        min_value=0,
+        help_text="Expected monthly income if working (gross) - must be under €635.70 to keep benefit"
+    )
+    second_child_birth_date = serializers.DateField(
+        required=False,
+        allow_null=True,
+        help_text="If planning second child, date of birth (extends benefit)"
+    )
+    current_date = serializers.DateField(
+        required=False,
+        allow_null=True,
+        help_text="Current date for calculations (defaults to today)"
+    )
+
+
+# ============================================================================
+# SAVED CALCULATIONS & NOTIFICATIONS SERIALIZERS
+# ============================================================================
+
+class SavedCalculationSerializer(serializers.Serializer):
+    """Serializer for SavedCalculation model"""
+    id = serializers.IntegerField(read_only=True)
+    session_key = serializers.CharField(max_length=100)
+    email = serializers.EmailField(
+        required=False,
+        allow_null=True,
+        help_text="Optional email for notifications"
+    )
+    calculator_type = serializers.ChoiceField(
+        choices=[
+            'pregnancy', 'vacation', 'mortgage', 'loan', 'salary', 'vat',
+            'pension', 'freelancer_tax', 'bmi', 'bmr', 'energy', 'sick_leave',
+            'parental_benefit', 'fuel_cost', 'percentage', 'payment',
+            'inflation', 'roi', 'hours_worked', 'unit_converter',
+            'car_leasing', 'area_volume', 'split_bill'
+        ]
+    )
+    name = serializers.CharField(
+        max_length=200,
+        help_text="User-defined name for the calculation"
+    )
+    params = serializers.JSONField(
+        help_text="Calculator input parameters"
+    )
+    result = serializers.JSONField(
+        required=False,
+        allow_null=True,
+        help_text="Cached calculation result"
+    )
+    is_tracking = serializers.BooleanField(
+        default=False,
+        help_text="Enable notifications for this calculation"
+    )
+    is_favorite = serializers.BooleanField(
+        default=False,
+        help_text="Mark as favorite"
+    )
+    notification_enabled = serializers.BooleanField(
+        default=True,
+        help_text="Enable/disable notifications"
+    )
+    access_count = serializers.IntegerField(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+    last_accessed = serializers.DateTimeField(read_only=True)
+    
+    def create(self, validated_data):
+        from calculators.models import SavedCalculation
+        return SavedCalculation.objects.create(**validated_data)
+    
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
+
+class ScheduledNotificationSerializer(serializers.Serializer):
+    """Serializer for ScheduledNotification model"""
+    id = serializers.IntegerField(read_only=True)
+    calculation_id = serializers.IntegerField(source='calculation.id', read_only=True)
+    notification_type = serializers.CharField(max_length=50)
+    priority = serializers.ChoiceField(
+        choices=['low', 'medium', 'high', 'urgent'],
+        default='medium'
+    )
+    scheduled_date = serializers.DateField()
+    scheduled_time = serializers.TimeField()
+    title = serializers.CharField(max_length=200)
+    message = serializers.CharField()
+    action_url = serializers.CharField(
+        max_length=500,
+        required=False,
+        allow_null=True
+    )
+    sent = serializers.BooleanField(read_only=True)
+    sent_at = serializers.DateTimeField(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+

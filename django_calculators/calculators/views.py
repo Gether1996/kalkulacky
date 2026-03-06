@@ -33,6 +33,7 @@ from .serializers import (
     CarLeasingCalculatorSerializer,
     AreaVolumeCalculatorSerializer,
     SplitBillCalculatorSerializer,
+    ParentalBenefitCalculatorSerializer,
 )
 from .services import (
     SalaryCalculator,
@@ -57,6 +58,7 @@ from .services import (
     CarLeasingCalculator,
     AreaVolumeCalculator,
     SplitBillCalculator,
+    ParentalBenefitCalculator,
 )
 
 
@@ -1060,7 +1062,7 @@ class HealthCheckView(APIView):
 # Blog Views
 
 from rest_framework import generics, filters
-from django.utils import timezone
+from datetime import datetime
 from .models import BlogCategory, BlogPost
 from .serializers import (
     BlogCategorySerializer,
@@ -1095,7 +1097,7 @@ class BlogPostListView(generics.ListAPIView):
     def get_queryset(self):
         queryset = BlogPost.objects.filter(
             status='published',
-            published_at__lte=timezone.now()
+            published_at__lte=datetime.now()
         )
         
         # Filter by category slug
@@ -1153,7 +1155,7 @@ class FeaturedBlogPostsView(generics.ListAPIView):
     def get_queryset(self):
         return BlogPost.objects.filter(
             status='published',
-            published_at__lte=timezone.now()
+            published_at__lte=datetime.now()
         ).order_by('-published_at')[:5]
 
 
@@ -1523,4 +1525,235 @@ class TipSuggestionsView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+
+class ParentalBenefitCalculatorView(APIView):
+    """
+    Parental Benefit Calculator API Endpoint.
+    Rodičovský príspevok - Materské a rodičovské dávky.
+    
+    POST /api/calculators/parental-benefit/
+    
+    Calculates:
+    - Maternity benefit (Materské) - 70% of daily assessment base for 34/43 weeks
+    - Parental benefit basic (Osnova) - €381.90/month for 3 years
+    - Parental benefit alternative (Alternatíva) - €270/month for 6 years
+    - Timeline planning and expiration dates
+    - Work compatibility check
+    """
+    
+    def post(self, request):
+        serializer = ParentalBenefitCalculatorSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'success': False, 'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            calculator = ParentalBenefitCalculator()
+            result = calculator.calculate(**serializer.validated_data)
+            
+            return Response({
+                'success': True,
+                'data': result
+            })
+        
+        except ValueError as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': f'Chyba pri výpočte rodičovského príspevku: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+# ============================================================================
+# SAVED CALCULATIONS & NOTIFICATIONS VIEWS
+# ============================================================================
+
+class SavedCalculationViewSet(APIView):
+    """
+    API endpoints for Saved Calculations.
+    Supports anonymous users via session_key.
+    
+    GET /api/saved-calculations/?session_key=XXX
+    POST /api/saved-calculations/
+    PUT /api/saved-calculations/{id}/
+    DELETE /api/saved-calculations/{id}/
+    """
+    
+    def get(self, request):
+        """List all saved calculations for a session_key"""
+        session_key = request.query_params.get('session_key')
+        if not session_key:
+            return Response(
+                {'success': False, 'error': 'session_key je povinný parameter'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        from calculators.models import SavedCalculation
+        calculations = SavedCalculation.objects.filter(session_key=session_key)
+        
+        serializer = SavedCalculationSerializer(calculations, many=True)
+        return Response({
+            'success': True,
+            'data': serializer.data,
+            'count': calculations.count()
+        })
+    
+    def post(self, request):
+        """Create a new saved calculation"""
+        serializer = SavedCalculationSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(
+                {'success': False, 'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            calculation = serializer.save()
+            
+            # Generate notifications if tracking is enabled
+            if calculation.is_tracking:
+                self._generate_notifications(calculation)
+            
+            return Response({
+                'success': True,
+                'data': SavedCalculationSerializer(calculation).data
+            }, status=status.HTTP_201_CREATED)
+        
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def _generate_notifications(self, calculation):
+        """Generate scheduled notifications based on calculator type"""
+        from calculators.services.notification_generator import NotificationGenerator
+        
+        try:
+            NotificationGenerator.generate_for_calculation(calculation)
+        except Exception as e:
+            print(f"Error generating notifications: {e}")
+
+
+class SavedCalculationDetailView(APIView):
+    """
+    Detail view for a single saved calculation.
+    
+    GET /api/saved-calculations/{id}/
+    PUT /api/saved-calculations/{id}/
+    DELETE /api/saved-calculations/{id}/
+    """
+    
+    def get(self, request, pk):
+        """Retrieve a single saved calculation"""
+        try:
+            from calculators.models import SavedCalculation
+            calculation = SavedCalculation.objects.get(pk=pk)
+            
+            # Increment access counter
+            calculation.increment_access()
+            
+            return Response({
+                'success': True,
+                'data': SavedCalculationSerializer(calculation).data
+            })
+        except SavedCalculation.DoesNotExist:
+            return Response(
+                {'success': False, 'error': 'Výpočet nebol nájdený'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+    
+    def put(self, request, pk):
+        """Update a saved calculation"""
+        try:
+            from calculators.models import SavedCalculation
+            calculation = SavedCalculation.objects.get(pk=pk)
+            
+            serializer = SavedCalculationSerializer(calculation, data=request.data, partial=True)
+            if not serializer.is_valid():
+                return Response(
+                    {'success': False, 'errors': serializer.errors},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            calculation = serializer.save()
+            
+            # Regenerate notifications if tracking status changed
+            if 'is_tracking' in request.data:
+                from calculators.models import ScheduledNotification
+                # Delete old notifications
+                ScheduledNotification.objects.filter(calculation=calculation, sent=False).delete()
+                
+                if calculation.is_tracking:
+                    from calculators.services.notification_generator import NotificationGenerator
+                    NotificationGenerator.generate_for_calculation(calculation)
+            
+            return Response({
+                'success': True,
+                'data': SavedCalculationSerializer(calculation).data
+            })
+        
+        except SavedCalculation.DoesNotExist:
+            return Response(
+                {'success': False, 'error': 'Výpočet nebol nájdený'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def delete(self, request, pk):
+        """Delete a saved calculation"""
+        try:
+            from calculators.models import SavedCalculation
+            calculation = SavedCalculation.objects.get(pk=pk)
+            calculation.delete()
+            
+            return Response({
+                'success': True,
+                'message': 'Výpočet bol úspešne odstránený'
+            })
+        except SavedCalculation.DoesNotExist:
+            return Response(
+                {'success': False, 'error': 'Výpočet nebol nájdený'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+class NotificationListView(APIView):
+    """
+    List notifications for a saved calculation.
+    
+    GET /api/saved-calculations/{calculation_id}/notifications/
+    """
+    
+    def get(self, request, calculation_id):
+        """List all notifications for a calculation"""
+        try:
+            from calculators.models import SavedCalculation, ScheduledNotification
+            calculation = SavedCalculation.objects.get(pk=calculation_id)
+            
+            notifications = ScheduledNotification.objects.filter(calculation=calculation)
+            
+            serializer = ScheduledNotificationSerializer(notifications, many=True)
+            return Response({
+                'success': True,
+                'data': serializer.data,
+                'count': notifications.count()
+            })
+        except SavedCalculation.DoesNotExist:
+            return Response(
+                {'success': False, 'error': 'Výpočet nebol nájdený'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 

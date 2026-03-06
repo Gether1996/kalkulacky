@@ -180,6 +180,217 @@ class BlogPost(models.Model):
         if self.tags:
             return [tag.strip() for tag in self.tags.split(',')]
         return []
+
+
+# ============================================================================
+# SAVED CALCULATIONS & NOTIFICATIONS MODELS
+# ============================================================================
+
+class SavedCalculation(models.Model):
+    """
+    Saved calculator results with tracking and notification support.
+    Supports both anonymous (session-based) and authenticated users (future).
+    """
+    CALCULATOR_TYPES = [
+        ('pregnancy', 'Tehotenstvo'),
+        ('vacation', 'Dovolenka'),
+        ('mortgage', 'Hypotéka'),
+        ('loan', 'Úver'),
+        ('salary', 'Čistá mzda'),
+        ('vat', 'DPH'),
+        ('pension', 'Dôchodok'),
+        ('freelancer_tax', 'SZČO dane'),
+        ('bmi', 'BMI'),
+        ('bmr', 'BMR'),
+        ('energy', 'Energia'),
+        ('sick_leave', 'Nemocenská'),
+        ('parental_benefit', 'Rodičovský príspevok'),
+        ('fuel_cost', 'Spotreba paliva'),
+        ('percentage', 'Percentá'),
+        ('payment', 'Platobná kalkulačka'),
+        ('inflation', 'Inflácia'),
+        ('roi', 'ROI'),
+        ('hours_worked', 'Odpracované hodiny'),
+        ('unit_converter', 'Konvertor jednotiek'),
+        ('car_leasing', 'Auto lízing'),
+        ('area_volume', 'Plocha a objem'),
+        ('split_bill', 'Rozdelenie účtu'),
+    ]
+    
+    # Identification (support anonymous users via session_key)
+    session_key = models.CharField(
+        max_length=100,
+        db_index=True,
+        help_text="Session key for anonymous users"
+    )
+    email = models.EmailField(
+        null=True,
+        blank=True,
+        help_text="Optional email for notifications (even without account)"
+    )
+    
+    # Calculation details
+    calculator_type = models.CharField(
+        max_length=50,
+        choices=CALCULATOR_TYPES
+    )
+    name = models.CharField(
+        max_length=200,
+        help_text="User-defined name (e.g., 'Moje tehotenstvo - termín júl 2026')"
+    )
+    params = models.JSONField(
+        help_text="Calculator input parameters"
+    )
+    result = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Cached calculation result"
+    )
+    
+    # Tracking & notifications
+    is_tracking = models.BooleanField(
+        default=False,
+        help_text="Whether user wants notifications for this calculation"
+    )
+    is_favorite = models.BooleanField(
+        default=False,
+        help_text="User-marked favorite for quick access"
+    )
+    notification_enabled = models.BooleanField(
+        default=True,
+        help_text="Enable/disable notifications for this calculation"
+    )
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_accessed = models.DateTimeField(auto_now=True)
+    access_count = models.IntegerField(default=0)
+    
+    class Meta:
+        ordering = ['-last_accessed', '-created_at']
+        verbose_name = 'Saved Calculation'
+        verbose_name_plural = 'Saved Calculations'
+        indexes = [
+            models.Index(fields=['session_key', 'calculator_type']),
+            models.Index(fields=['session_key', 'is_tracking']),
+            models.Index(fields=['email']),
+            models.Index(fields=['-created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.name} ({self.get_calculator_type_display()})"
+    
+    def increment_access(self):
+        """Increment access counter"""
+        self.access_count += 1
+        self.save(update_fields=['access_count', 'last_accessed'])
+
+
+class ScheduledNotification(models.Model):
+    """
+    Scheduled notifications for tracked calculations.
+    Generated based on calculator type and user preferences.
+    """
+    NOTIFICATION_TYPES = [
+        # Pregnancy
+        ('pregnancy_week', 'Týždenná aktualizácia tehotenstva'),
+        ('pregnancy_milestone', 'Míľnik tehotenstva'),
+        ('trimester_change', 'Zmena trimestra'),
+        ('prenatal_visit', 'Prenatálna kontrola'),
+        ('due_date_approaching', 'Blíži sa termín pôrodu'),
+        
+        # Vacation
+        ('vacation_expiry', 'Dovolenka prepadne'),
+        ('vacation_quarterly', 'Štvrťročná kontrola dovolenky'),
+        ('birthday_33', 'Prírastok dovolenky (33 rokov)'),
+        ('vacation_reminder', 'Pripomienka dovolenky'),
+        
+        # Mortgage/Loan
+        ('payment_due', 'Splátka splatná'),
+        ('rate_change', 'Zmena úrokovej sadzby'),
+        ('milestone_paid', 'Míľnik splatenia'),
+        ('amortization_alert', 'Alert amortizácie'),
+        ('extra_payment_tip', 'Tip na nadplatenie'),
+        
+        # Other
+        ('generic_reminder', 'Všeobecná pripomienka'),
+    ]
+    
+    PRIORITY_CHOICES = [
+        ('low', 'Nízka'),
+        ('medium', 'Stredná'),
+        ('high', 'Vysoká'),
+        ('urgent', 'Urgentná'),
+    ]
+    
+    # Related calculation
+    calculation = models.ForeignKey(
+        SavedCalculation,
+        on_delete=models.CASCADE,
+        related_name='notifications'
+    )
+    
+    # Notification details
+    notification_type = models.CharField(
+        max_length=50,
+        choices=NOTIFICATION_TYPES
+    )
+    priority = models.CharField(
+        max_length=20,
+        choices=PRIORITY_CHOICES,
+        default='medium'
+    )
+    
+    # Scheduling
+    scheduled_date = models.DateField()
+    scheduled_time = models.TimeField(default='09:00:00')
+    
+    # Message content
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    action_url = models.CharField(
+        max_length=500,
+        null=True,
+        blank=True,
+        help_text="URL to navigate on click (e.g., /calculator/pregnancy)"
+    )
+    
+    # Status
+    sent = models.BooleanField(default=False)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    error_message = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Error message if sending failed"
+    )
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['scheduled_date', 'scheduled_time', '-priority']
+        verbose_name = 'Scheduled Notification'
+        verbose_name_plural = 'Scheduled Notifications'
+        indexes = [
+            models.Index(fields=['scheduled_date', 'sent']),
+            models.Index(fields=['calculation', 'notification_type']),
+            models.Index(fields=['sent', 'scheduled_date']),
+        ]
+    
+    def __str__(self):
+        return f"{self.title} - {self.scheduled_date}"
+    
+    def mark_sent(self):
+        """Mark notification as sent"""
+        from datetime import datetime
+        self.sent = True
+        self.sent_at = datetime.now()
+        self.save(update_fields=['sent', 'sent_at'])
+    
+    def mark_failed(self, error):
+        """Mark notification as failed with error message"""
+        self.error_message = str(error)
+        self.save(update_fields=['error_message'])
     
     def increment_views(self):
         """Increment view counter"""

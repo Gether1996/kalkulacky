@@ -99,6 +99,10 @@ export const routes: Routes = [
     loadComponent: () => import('./components/split-bill-calculator/split-bill-calculator.component').then(m => m.SplitBillCalculatorComponent)
   },
   {
+    path: 'calculator/parental-benefit',
+    loadComponent: () => import('./components/parental-benefit-calculator/parental-benefit-calculator.component').then(m => m.ParentalBenefitCalculatorComponent)
+  },
+  {
     path: 'blog',
     loadComponent: () => import('./components/blog-list/blog-list.component').then(m => m.BlogListComponent)
   },

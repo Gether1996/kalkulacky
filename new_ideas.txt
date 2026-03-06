@@ -1,0 +1,1225 @@
+================================================================================
+KALKULAČKY.SK - NOTIFIKÁCIE & NOVÉ NÁSTROJE - ANALÝZA & NÁVRH
+================================================================================
+Dátum: 6. marca 2026
+Účel: Zvýšenie návratnosti užívateľov pomocou notifikácií a tracking funkcií
+
+================================================================================
+1. EXISTUJÚCE KALKULAČKY - VHODNÉ PRE NOTIFIKÁCIE/PERSONALIZÁCIU
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 1.1 TEHOTENSTVO ⭐⭐⭐⭐⭐ (TOP PRIORITA)                                 │
+└─────────────────────────────────────────────────────────────────────────┘
+Status: Už máme funkčnú kalkulačku
+Potenciál: NAJVYŠŠÍ - ľudia sa vracajú 40 týždňov
+
+NOVÉ FEATURES:
+✓ Týždenné notifikácie: "Týždeň 12 - bábätko je veľké ako slivka 🍑"
+✓ Míľniky: "Za 3 mesiace do pôrodu! Čas pripraviť detskú izbu"
+✓ Lekárske kontroly: "Teraz by ste mali absolvovať ultrazvuk"
+✓ Trimester prechody: "Vitajte v 2. trimestri! ❤️"
+✓ Progress fotky: "Stiahni moju fotku tehotenstva každý týždeň"
+✓ Partner sharing: Zdieľať progress s partnerom/rodinou
+✓ Checklista: "Čo si zaobstarať pred pôrodom" (progresívne odomykanie)
+
+Implementácia:
+- Calculate current week based on LMP/conception date
+- Store user's due date
+- Weekly cron job to send notifications
+- Milestone events at weeks: 8, 12, 20, 28, 36, 38, 40
+- Trimester transitions: week 13, week 27
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 1.2 DOVOLENKA ⭐⭐⭐⭐⭐ (HIGH VALUE)                                     │
+└─────────────────────────────────────────────────────────────────────────┘
+Status: Máme vacation calculator
+Potenciál: VYSOKÝ - ročné plánovanie
+
+NOVÉ FEATURES:
+✓ Quarterly reminder: "Zostáva vám 10 dní dovolenky, nezabudnite ich vyčerpať!"
+✓ Birthday reminder: "O 2 mesiace máte 33 rokov = +5 dní dovolenky navyše!"
+✓ Planning helper: "Ideálny čas na dovolenku: máj alebo september"
+✓ Public holidays: "Využi predĺžený víkend 1.mája - priložíš len 2 dni"
+✓ Expiration alert: "Nevyčerpané dni prepadnú o 2 mesiace!"
+✓ Team coordination (beta): Zdieľanie s kolegami, aby ste sa neprekrývali
+
+Implementácia:
+- Track vacation days used vs. available
+- Slovak public holidays database
+- Birthday tracking for age 33 milestone
+- Quarterly notifications (March, June, September, December)
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 1.3 DÔCHODOK ⭐⭐⭐⭐ (LONG-TERM ENGAGEMENT)                              │
+└─────────────────────────────────────────────────────────────────────────┘
+Status: Máme pension calculator
+Potenciál: STREDNÝ - dlhodobý tracking
+
+NOVÉ FEATURES:
+✓ Annual review reminder: "Čas aktualizovať váš dôchodkový plán na 2027"
+✓ Milestone notifications: "O 10 rokov do dôchodku! 🎉"
+✓ Contribution alerts: "Ak zvýšite príspevky o €50/mes, budete mať o €200 viac"
+✓ Legislative changes: "Dôchodkový vek sa zvýšil na 63.5 roka"
+✓ Yearly progress: "Tento rok ste si navýšili dôchodok o €120/mes"
+✓ Comparison: "Váš dôchodok je 85% priemeru SR"
+
+Implementácia:
+- Store retirement age, current age
+- Annual notification every January
+- Milestone years: 10, 5, 3, 1 year before retirement
+- Track contributions over time
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 1.4 SZČO DANE ⭐⭐⭐⭐⭐ (RECURRING + HIGH VALUE)                         │
+└─────────────────────────────────────────────────────────────────────────┘
+Status: Máme freelancer tax calculator
+Potenciál: NAJVYŠŠÍ - mesačný/štvrťročný tracking
+
+NOVÉ FEATURES:
+✓ Quarterly reminders: "Blíži sa deadline daňového priznania (31.3.)"
+✓ Monthly tracking: "Tento mesiac ste zarobili €3,200 - dane €640"
+✓ Tax optimizations: "Ak použijete paušálne výdavky, ušetríte €300"
+✓ Threshold alerts: "Blížite sa k limitu €60K = vyššia daň!"
+✓ Invoice reminder: "Nezabudli ste vystaviť faktúru?"
+✓ Expenses tracking: "Pridajte výdavky za január"
+✓ Year-end projection: "Podľa aktuálneho príjmu zaplatíte €8,500 daní"
+
+Implementácia:
+- Monthly income/expense entry
+- Running total calculation
+- Tax deadline database
+- Quarterly advance payment reminders
+- Threshold monitoring (€60,000 limit for higher tax rate)
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 1.5 HYPOTÉKA/ÚVERY ⭐⭐⭐⭐ (COMPARISON TOOL)                             │
+└─────────────────────────────────────────────────────────────────────────┘
+Status: Máme mortgage + loan calculators
+Potenciál: VYSOKÝ - porovnávanie ponúk, long-term tracking
+
+NOVÉ FEATURES:
+✓ Rate watch: "Úrokové sadzby klesli o 0.5% - refinancovanie ušetrí €120/mes!"
+✓ Payment reminders: "O 5 dní splátka €850"
+✓ Extra payment calculator: "Ak zaplatíte €5,000 navyše, ušetríte €12,000"
+✓ Milestone tracking: "Už ste splatili 25% hypotéky! 🎉"
+✓ Comparison saved: "Hypotéka Banka A vs B vs C" (side-by-side)
+✓ Amortization alerts: "Tento rok splácate hlavne úroky"
+
+Implementácia:
+- Save multiple mortgage scenarios
+- Interest rate monitoring service
+- Payment schedule with reminders
+- Progress tracking (% paid vs remaining)
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 1.6 BMI/BMR + FITNESS ⭐⭐⭐⭐ (GOAL TRACKING)                            │
+└─────────────────────────────────────────────────────────────────────────┘
+Status: Máme BMI a BMR calculators
+Potenciál: VYSOKÝ - weekly tracking
+
+NOVÉ FEATURES:
+✓ Weekly check-ins: "Ako sa máte? Zadajte novú váhu"
+✓ Progress tracking: "Za 3 mesiace ste schudli 5kg! 🔥"
+✓ Goal reminders: "Cieľová váha 75kg - zostáva 8kg"
+✓ Calorie alerts: "Prechádzanie denného limitu 2200 kcal"
+✓ Workout suggestions: "Vyskúšajte 3x týždenne cardio"
+✓ Photo timeline: "Nahrať progress fotku"
+✓ Motivation: "Už 30 dní tracking! Keep going!"
+
+Implementácia:
+- Weight history tracking
+- Goal setting
+- Weekly reminders
+- Progress charts
+- Milestone celebrations
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 1.7 ENERGIA ⭐⭐⭐ (COST MONITORING)                                      │
+└─────────────────────────────────────────────────────────────────────────┘
+Status: Máme energy calculator
+Potenciál: STREDNÝ - monthly tracking
+
+NOVÉ FEATURES:
+✓ Monthly tracking: "Tento mesiac €120 vs minulý mesiac €140 (-14%)"
+✓ Rate changes: "Ceny elektriny vzrástli o 8%!"
+✓ Tariff optimization: "Dvojtarif by vám ušetril €15/mes"
+✓ Seasonal alerts: "Zima = vyššia spotreba, pripravte €180/mes"
+✓ Comparison: "Vaša spotreba je 20% nad priemerom SR"
+✓ Tips: "Tip: LED žiarovky ušetria €5/mes"
+
+Implementácia:
+- Monthly consumption entry
+- Energy rate database (automatic updates)
+- Seasonal consumption patterns
+- Comparison with SK averages
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 1.8 INFLÁCIA ⭐⭐⭐ (PASSIVE MONITORING)                                  │
+└─────────────────────────────────────────────────────────────────────────┘
+Status: Máme inflation calculator
+Potenciál: NÍZKY - ročný update
+
+NOVÉ FEATURES:
+✓ Annual update: "Inflácia 2026: 6.2% = vaše úspory stratili €600"
+✓ Savings erosion: "O 5 rokov bude €10,000 mať hodnotu €8,500"
+✓ Investment suggestion: "Potrebujete minimálne 7% ROI na pokrytie inflácie"
+✓ Real-time tracker: "Mesačná inflácia: 0.5%"
+
+Implementácia:
+- Annual inflation rate from statistical office
+- Saved amount tracking
+- Yearly notification
+
+
+================================================================================
+2. NOVÉ NÁSTROJE - VYSOKÝ POTENCIÁL
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 2.1 NEMOCENSKÁ TRACKER ⭐⭐⭐⭐⭐                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+Status: Máme sick leave calculator, CHÝBA tracker
+Gap: Užívatelia nevedia, koľko dostanú každý deň PN
+Search Volume: ~3,000/mesiac ("nemocenská kalkulačka")
+
+FEATURES:
+✓ Zadať dátum začiatku PN
+✓ Automatický výpočet výšky nemocenskej deň po dni
+✓ Notifikácie: "Dnes dostanete €45 (5. deň PN = 55% DVZ)"
+✓ Koniec PN reminder: "PN končí o 2 dni, nezabudnite uzatvoriť"
+✓ Export pre HR/účtovníčku
+✓ "Návrat do práce o X dní"
+✓ Daily breakdown: prvé 3 dni 25%, potom 55%
+
+Pravidlá SK:
+- Prvé 3 dni: 25% DVZ - platí zamestnávateľ
+- Od 4. do 10. dňa: 55% DVZ - platí Sociálna poisťovňa
+- Od 11. dňa: 55% DVZ
+
+Implementácia:
+- Start date input
+- Daily calculation based on gross salary
+- Daily notifications
+- End date prediction
+- Total payment summary
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 2.2 DAŇOVÝ KALENDÁR ⭐⭐⭐⭐⭐ (SUPER STICKY)                              │
+└─────────────────────────────────────────────────────────────────────────┘
+Status: NOVÝ nástroj
+Gap: Žiadna stránka na SK nemá komplexný daňový kalendár
+Search Volume: ~5,000/mesiac ("daňové priznanie termín", "preddavky termín")
+
+FEATURES:
+✓ Všetky daňové deadlines na rok (SZČO, firma, zamestnanci)
+✓ Notifikácie 30/14/3 dni pred deadlinom
+✓ Personalizované: "Vaše deadlines" vs "Všetky SR"
+✓ Integrácia s Google Calendar
+✓ Email reminders
+✓ Checklist: "Čo potrebujete na daňové priznanie"
+✓ Push notifications
+✓ SMS alerts (premium)
+
+DEADLINES 2026 (príklady):
+- 31.3. - Daňové priznanie FO (fyzické osoby)
+- 15.4. - Daňové priznanie PO (právnické osoby)
+- 30.6. - Preddavky na sociálne poistenie SZČO
+- 15.1., 15.4., 15.7., 15.10. - Preddavky na dane
+- 8. každého mesiaca - DPH za predchádzajúci mesiac
+- 25. každého mesiaca - Odvody za zamestnancov
+
+Implementácia:
+- Database of all Slovak tax deadlines
+- User profile: SZČO / zamestnanec / firma
+- Notification system
+- iCal export
+- Checklist per deadline type
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 2.3 RODIČOVSKÝ PRÍSPEVOK PLÁNOVAČ ⭐⭐⭐⭐⭐                               │
+└─────────────────────────────────────────────────────────────────────────┘
+Status: NOVÝ nástroj - VEĽKÁ MEDZERA!
+Gap: Nemáme rodičovský príspevok calculator
+Search Volume: ~8,000/mesiac ("rodičovský príspevok", "materská kalkulačka")
+
+FEATURES:
+✓ Výpočet rodičovskej (€380/mes osnova, €270/mes alternatíva)
+✓ Kalkulačka: "Čo je výhodnejšie?"
+✓ Timeline: "Kedy vám skončí nárok" (3/4/6 rokov)
+✓ Family planning: "Druhé dieťa = predĺženie nároku"
+✓ Notifikácie: "O 6 mesiacov končí rodičovská! Pripravte sa na pracovný návrat"
+✓ Budget helper: "Ako vyjsť s rodičovskou"
+✓ Kombinovanie s prácou: "Môžete pracovať a dostávať rodičovskú?"
+✓ Materská vs rodičovská: rozdiel, prechod
+
+Pravidlá SK 2026:
+- Materská: 70% denného vymeriavacieho základu (34 týždňov)
+- Rodičovská osnova: €381.90/mes (do 3 rokov dieťaťa)
+- Rodičovská alternatíva: €270/mes (do 6 rokov dieťaťa)
+- Možnosť pracovať: áno, ale s obmedzeniami
+
+Implementácia:
+- Birth date input
+- Benefit type selection (osnova vs alternatíva)
+- Timeline calculation
+- Benefit expiration notifications
+- Work + benefit compatibility checker
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 2.4 PREDDAVKY TRACKER (SZČO) ⭐⭐⭐⭐⭐                                    │
+└─────────────────────────────────────────────────────────────────────────┘
+Status: NOVÝ nástroj
+Gap: SZČO musia platiť preddavky, ale zabúdajú
+Problém: Nedoplatky = pokuty
+
+FEATURES:
+✓ Automatický výpočet preddavkov podľa predpokladaného príjmu
+✓ Quarterly reminders: "O 10 dní preddavok €850"
+✓ Overpayment warning: "Preplatili ste o €200, vráti sa v daňovom"
+✓ Underpayment risk: "Pozor! Preddavky sú nízke, hrozí pokuta"
+✓ Payment history: "Tento rok €8,500 preddavkov"
+✓ Auto-calculation: "Zadajte Q1 príjem → preddavky sa prepočítajú"
+✓ Split breakdown: dane + sociálne + zdravotné
+
+Pravidlá SK:
+- Preddavky na daň: 4x ročne (15.1., 15.4., 15.7., 15.10.)
+- Preddavky na sociálne: 1x ročne (30.6.)
+- Preddavky na zdravotné: mesačne (8. deň mesiaca)
+
+Implementácia:
+- Estimated annual income input
+- Automatic advance calculation
+- Payment tracking
+- Quarterly notifications
+- Over/under payment warnings
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 2.5 VÝŽIVNÉ KALKULAČKA ⭐⭐⭐⭐                                            │
+└─────────────────────────────────────────────────────────────────────────┘
+Status: NOVÝ nástroj
+Gap: Vysoký search volume, zatiaľ nemáme
+Search Volume: ~4,000/mesiac ("výživné kalkulačka", "výpočet výživného")
+
+FEATURES:
+✓ Výpočet výživného podľa príjmu (25-33% čistej mzdy/dieťa)
+✓ Legislatívny rámec SR
+✓ Tracking: "Tento mesiac €200 vyplatené"
+✓ Indexácia: "Výživné sa zvýšilo o €10 kvôli inflácii"
+✓ Reminders pre platiteľa: "O 5 dní splatnosť €200"
+✓ Multi-children: "Pre 2 deti €400/mes"
+✓ History: "Zaplatené za rok 2026: €2,400"
+
+Pravidlá SK:
+- Minimálne výživné: €30/mes
+- Štandardne: 25-33% čistej mzdy rodiča na 1 dieťa
+- Pre 2 deti: 40% čistej mzdy
+- Indexácia podľa inflácie
+
+Implementácia:
+- Net income input
+- Number of children
+- Percentage calculation
+- Payment tracking
+- Payment date reminders
+- Annual summary
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 2.6 PREPLÁCANIE ENERGIE ⭐⭐⭐⭐                                           │
+└─────────────────────────────────────────────────────────────────────────┘
+Status: NOVÝ nástroj (rozšírenie energy calculatora)
+Gap: Veľa ľudí netuší, že preplácajú zálohy
+Problém: Zbytočne zamknuté peniaze u dodávateľa
+
+FEATURES:
+✓ Zadať zálohy vs skutočná spotreba
+✓ "Preplácate €30/mes = €360 ročne!"
+✓ Doporučenie: "Znížte zálohy na €80/mes"
+✓ Reminder: "Čas poslať odpočet meračov"
+✓ Comparison: "Takto šetríte"
+✓ Annual settlement tracking
+
+Implementácia:
+- Monthly advance payment input
+- Actual consumption tracking
+- Overpayment calculation
+- Recommendation engine
+- Meter reading reminders
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 2.7 SPLÁTKY CENTRÁLNE HUB ⭐⭐⭐⭐                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+Status: NOVÝ nástroj - consolidation tool
+Gap: Ľudia majú hypotéku + auto lízing + úver → neprehľadné
+Problém: Zabudnutá splátka = pokuta
+
+FEATURES:
+✓ Všetky splátky na jednom mieste
+✓ Timeline: "Tento mesiac spolu €1,250 splátok"
+✓ Reminders 5 dní pred splatnosťou
+✓ Debt-free countdown: "O 15 rokov všetko splatené! 🎉"
+✓ Optimization: "Ak splácate najprv úver A, ušetríte €5K"
+✓ Budget overview: "Splátky = 42% príjmu (ideál <35%)"
+✓ Calendar view
+✓ Export to Google Calendar
+
+Implementácia:
+- Multiple loans/debts tracking
+- Payment schedule aggregation
+- Notification system
+- Debt optimization algorithm
+- Calendar integration
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 2.8 MINIMÁLNA MZDA MONITOR ⭐⭐⭐                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+Status: NOVÝ nástroj - jednoduchý ale užitočný
+Target: Nízkopríjmové skupiny, študenti
+
+FEATURES:
+✓ Aktuálna minimálna mzda 2026: €750
+✓ Notifikácia pri zmene: "Od 1.1.2027 minimálka €780"
+✓ Comparison: "Vaša mzda je 1.5× minimálna mzda"
+✓ Rights checker: "Máte nárok na X"
+✓ History chart: Vývoj minimálnej mzdy v SR
+
+Implementácia:
+- Database of minimum wage by year
+- Annual update notification
+- Comparison calculator
+- Rights information
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 2.9 STUDY LOAN CALCULATOR ⭐⭐⭐                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+Status: NOVÝ nástroj
+Gap: Študentské pôžičky nie sú časté v SR, ale EU študenti áno
+Target: Študenti v UK, USA, Holandsku
+
+FEATURES:
+✓ Výpočet splátok študentskej pôžičky
+✓ Grace period: "Začnete splácať po štúdiu"
+✓ Income-based repayment: "Splácate 10% príjmu nad €X"
+✓ Forgiveness timeline: "Po 20 rokoch odpustenie"
+✓ Interest calculation
+✓ Repayment scenarios
+
+Implementácia:
+- Loan amount, interest rate
+- Grace period calculation
+- Income-based repayment option
+- Forgiveness rules
+
+
+================================================================================
+3. TECHNICKÁ IMPLEMENTÁCIA
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 3.1 BACKEND - DJANGO MODELS                                              │
+└─────────────────────────────────────────────────────────────────────────┘
+
+# models.py
+
+class UserPreference(models.Model):
+    """User notification and preference settings"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    email_notifications = models.BooleanField(default=True)
+    sms_notifications = models.BooleanField(default=False)
+    push_notifications = models.BooleanField(default=True)
+    
+    notification_frequency = models.CharField(
+        max_length=20,
+        choices=[
+            ('realtime', 'V reálnom čase'),
+            ('daily', 'Denne'),
+            ('weekly', 'Týždenne'),
+            ('monthly', 'Mesačne')
+        ],
+        default='realtime'
+    )
+    
+    timezone = models.CharField(max_length=50, default='Europe/Bratislava')
+    language = models.CharField(max_length=10, default='sk')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class SavedCalculation(models.Model):
+    """Saved calculator results with tracking"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    
+    calculator_type = models.CharField(
+        max_length=50,
+        choices=[
+            ('pregnancy', 'Tehotenstvo'),
+            ('mortgage', 'Hypotéka'),
+            ('loan', 'Úver'),
+            ('vacation', 'Dovolenka'),
+            ('pension', 'Dôchodok'),
+            ('freelancer_tax', 'SZČO dane'),
+            ('bmi', 'BMI'),
+            ('energy', 'Energia'),
+            ('sick_leave', 'Nemocenská'),
+            # nové
+            ('parental_benefit', 'Rodičovský príspevok'),
+            ('child_support', 'Výživné'),
+            ('advances', 'Preddavky'),
+        ]
+    )
+    
+    name = models.CharField(
+        max_length=100,
+        help_text="User-defined name (e.g., 'Moja hypotéka VUB')"
+    )
+    
+    params = models.JSONField(
+        help_text="Calculator input parameters"
+    )
+    
+    result = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Cached calculation result"
+    )
+    
+    is_tracking = models.BooleanField(
+        default=False,
+        help_text="Whether user wants notifications for this calculation"
+    )
+    
+    is_favorite = models.BooleanField(default=False)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_accessed = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-last_accessed']
+        indexes = [
+            models.Index(fields=['user', 'calculator_type']),
+            models.Index(fields=['user', 'is_tracking']),
+        ]
+
+
+class ScheduledNotification(models.Model):
+    """Scheduled notifications for tracked calculations"""
+    calculation = models.ForeignKey(
+        SavedCalculation,
+        on_delete=models.CASCADE,
+        related_name='notifications'
+    )
+    
+    notification_type = models.CharField(
+        max_length=50,
+        choices=[
+            # Pregnancy
+            ('pregnancy_week', 'Týždenná aktualizácia tehotenstva'),
+            ('pregnancy_milestone', 'Míľnik tehotenstva'),
+            ('trimester_change', 'Zmena trimestra'),
+            
+            # Vacation
+            ('vacation_expiry', 'Dovolenka prepadne'),
+            ('vacation_quarterly', 'Štvrťročná kontrola dovolenky'),
+            ('birthday_33', 'Prírastok dovolenky (33 rokov)'),
+            
+            # Mortgage/Loan
+            ('payment_due', 'Splátka splatná'),
+            ('rate_change', 'Zmena úrokovej sadzby'),
+            ('milestone_paid', 'Míľnik splatenia'),
+            
+            # Tax
+            ('tax_deadline', 'Daňový deadline'),
+            ('advance_due', 'Preddavok splatný'),
+            ('threshold_warning', 'Blížite sa k daňovému prahu'),
+            
+            # Pension
+            ('pension_annual', 'Ročná kontrola dôchodku'),
+            ('pension_milestone', 'Míľnik pred dôchodkom'),
+            
+            # BMI/Fitness
+            ('weight_checkin', 'Týždenné váženie'),
+            ('goal_milestone', 'Míľnik cieľa'),
+            
+            # Energy
+            ('energy_monthly', 'Mesačná spotreba energie'),
+            ('rate_increase', 'Zdraženie energie'),
+            
+            # Sick leave
+            ('sick_leave_daily', 'Denný update nemocenskej'),
+            ('sick_leave_end', 'Koniec nemocenskej'),
+            
+            # Parental benefit
+            ('parental_expiry', 'Koniec rodičovského príspevku'),
+            ('work_return', 'Návrat do práce'),
+        ]
+    )
+    
+    scheduled_date = models.DateField()
+    scheduled_time = models.TimeField(default='09:00:00')
+    
+    message_title = models.CharField(max_length=200)
+    message_body = models.TextField()
+    
+    sent = models.BooleanField(default=False)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['scheduled_date', 'scheduled_time']
+        indexes = [
+            models.Index(fields=['scheduled_date', 'sent']),
+            models.Index(fields=['calculation', 'notification_type']),
+        ]
+
+
+class NotificationHistory(models.Model):
+    """Log of all sent notifications"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    notification = models.ForeignKey(
+        ScheduledNotification,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    
+    notification_type = models.CharField(max_length=50)
+    message_title = models.CharField(max_length=200)
+    message_body = models.TextField()
+    
+    channel = models.CharField(
+        max_length=20,
+        choices=[
+            ('email', 'Email'),
+            ('sms', 'SMS'),
+            ('push', 'Push notification'),
+            ('in_app', 'In-app notification'),
+        ]
+    )
+    
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('sent', 'Odoslané'),
+            ('delivered', 'Doručené'),
+            ('read', 'Prečítané'),
+            ('failed', 'Zlyhalo'),
+        ],
+        default='sent'
+    )
+    
+    sent_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-sent_at']
+        verbose_name_plural = 'Notification History'
+
+
+class TaxCalendar(models.Model):
+    """Slovak tax deadlines database"""
+    deadline_type = models.CharField(
+        max_length=50,
+        choices=[
+            ('tax_return_fo', 'Daňové priznanie FO'),
+            ('tax_return_po', 'Daňové priznanie PO'),
+            ('vat_monthly', 'DPH mesačne'),
+            ('vat_quarterly', 'DPH štvrťročne'),
+            ('advance_tax', 'Preddavky na daň'),
+            ('advance_social', 'Preddavky sociálne'),
+            ('advance_health', 'Preddavky zdravotné'),
+            ('payroll_contributions', 'Odvody za zamestnancov'),
+        ]
+    )
+    
+    deadline_date = models.DateField()
+    year = models.IntegerField()
+    
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    
+    applies_to = models.CharField(
+        max_length=50,
+        choices=[
+            ('all', 'Všetci'),
+            ('szco', 'SZČO'),
+            ('employer', 'Zamestnávateľ'),
+            ('company', 'Firma'),
+        ],
+        default='all'
+    )
+    
+    reminder_days = models.JSONField(
+        default=list,
+        help_text="Days before deadline to send reminders [30, 14, 3]"
+    )
+    
+    checklist = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Checklist of documents/actions needed"
+    )
+    
+    class Meta:
+        ordering = ['deadline_date']
+        indexes = [
+            models.Index(fields=['year', 'deadline_date']),
+            models.Index(fields=['applies_to']),
+        ]
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 3.2 NOTIFICATION SYSTEM                                                  │
+└─────────────────────────────────────────────────────────────────────────┘
+
+# services/notification_service.py
+
+from django.core.mail import send_mail
+from django.conf import settings
+from datetime import datetime, timedelta
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class NotificationService:
+    """Service for sending notifications via multiple channels"""
+    
+    @staticmethod
+    def send_email(user, title, body, html_body=None):
+        """Send email notification"""
+        try:
+            send_mail(
+                subject=title,
+                message=body,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                html_message=html_body,
+                fail_silently=False,
+            )
+            return True
+        except Exception as e:
+            logger.error(f"Email send failed: {e}")
+            return False
+    
+    @staticmethod
+    def send_sms(user, message):
+        """Send SMS notification (via Twilio or similar)"""
+        # TODO: Implement SMS sending
+        pass
+    
+    @staticmethod
+    def send_push(user, title, body, data=None):
+        """Send push notification (via Firebase or similar)"""
+        # TODO: Implement push notifications
+        pass
+    
+    @staticmethod
+    def create_in_app_notification(user, title, body, notification_type):
+        """Create in-app notification"""
+        # TODO: Implement in-app notifications
+        pass
+
+
+# management/commands/send_scheduled_notifications.py
+
+from django.core.management.base import BaseCommand
+from django.utils import timezone
+from calculators.models import ScheduledNotification, NotificationHistory
+from calculators.services.notification_service import NotificationService
+
+
+class Command(BaseCommand):
+    help = 'Send scheduled notifications'
+    
+    def handle(self, *args, **options):
+        now = timezone.now()
+        today = now.date()
+        current_time = now.time()
+        
+        # Get notifications scheduled for today that haven't been sent
+        notifications = ScheduledNotification.objects.filter(
+            scheduled_date=today,
+            scheduled_time__lte=current_time,
+            sent=False
+        ).select_related('calculation', 'calculation__user')
+        
+        sent_count = 0
+        failed_count = 0
+        
+        for notification in notifications:
+            user = notification.calculation.user
+            preferences = user.userpreference
+            
+            success = False
+            
+            # Send via preferred channels
+            if preferences.email_notifications:
+                success = NotificationService.send_email(
+                    user,
+                    notification.message_title,
+                    notification.message_body
+                )
+                
+                if success:
+                    NotificationHistory.objects.create(
+                        user=user,
+                        notification=notification,
+                        notification_type=notification.notification_type,
+                        message_title=notification.message_title,
+                        message_body=notification.message_body,
+                        channel='email',
+                        status='sent'
+                    )
+            
+            if preferences.sms_notifications:
+                NotificationService.send_sms(user, notification.message_body)
+            
+            if preferences.push_notifications:
+                NotificationService.send_push(
+                    user,
+                    notification.message_title,
+                    notification.message_body
+                )
+            
+            # Mark as sent
+            notification.sent = True
+            notification.sent_at = now
+            notification.save()
+            
+            sent_count += 1 if success else 0
+            failed_count += 0 if success else 1
+        
+        self.stdout.write(
+            self.style.SUCCESS(
+                f'Sent {sent_count} notifications, {failed_count} failed'
+            )
+        )
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 3.3 FRONTEND - LOCAL STORAGE (No Login)                                 │
+└─────────────────────────────────────────────────────────────────────────┘
+
+// services/local-storage.service.ts
+
+export interface SavedCalculation {
+  id: string;
+  calculatorType: string;
+  name: string;
+  params: any;
+  result: any;
+  timestamp: number;
+  isFavorite: boolean;
+}
+
+export class LocalStorageService {
+  private static readonly STORAGE_KEY = 'kalkulacky_history';
+  private static readonly MAX_ITEMS = 10;
+  
+  static saveCalculation(
+    calculatorType: string,
+    name: string,
+    params: any,
+    result: any
+  ): void {
+    const calculations = this.getCalculations();
+    
+    const newCalculation: SavedCalculation = {
+      id: this.generateId(),
+      calculatorType,
+      name,
+      params,
+      result,
+      timestamp: Date.now(),
+      isFavorite: false
+    };
+    
+    calculations.unshift(newCalculation);
+    
+    // Keep only last 10 items (or favorites)
+    const filtered = calculations
+      .filter(c => c.isFavorite)
+      .concat(
+        calculations
+          .filter(c => !c.isFavorite)
+          .slice(0, this.MAX_ITEMS)
+      );
+    
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(filtered));
+  }
+  
+  static getCalculations(calculatorType?: string): SavedCalculation[] {
+    const data = localStorage.getItem(this.STORAGE_KEY);
+    if (!data) return [];
+    
+    const calculations = JSON.parse(data) as SavedCalculation[];
+    
+    if (calculatorType) {
+      return calculations.filter(c => c.calculatorType === calculatorType);
+    }
+    
+    return calculations;
+  }
+  
+  static deleteCalculation(id: string): void {
+    const calculations = this.getCalculations();
+    const filtered = calculations.filter(c => c.id !== id);
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(filtered));
+  }
+  
+  static toggleFavorite(id: string): void {
+    const calculations = this.getCalculations();
+    const calculation = calculations.find(c => c.id === id);
+    if (calculation) {
+      calculation.isFavorite = !calculation.isFavorite;
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(calculations));
+    }
+  }
+  
+  private static generateId(): string {
+    return `calc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+}
+
+
+================================================================================
+4. IMPLEMENTAČNÝ PLÁN - PRIORITY
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ FÁZA 1: QUICK WINS (2-3 týždne)                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Week 1:
+✓ localStorage history implementation (no backend)
+✓ "Save calculation" button na všetkých kalkulačkách
+✓ History dropdown v navbar
+✓ Názov výpočtu (user-defined)
+
+Week 2-3:
+✓ Tehotenstvo notifikácie - backend models
+✓ Weekly notification system
+✓ Milestone notifications
+✓ Email template design
+
+Deliverables:
+- Functional local history
+- Email notification system
+- Pregnancy weekly updates
+
+KPI:
+- Return user rate +20%
+- Average session time +30%
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ FÁZA 2: CORE FEATURES (3-4 týždne)                                       │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Week 4-5:
+✓ User accounts (email/password)
+✓ Social login (Google, Facebook)
+✓ User preferences
+✓ Saved calculations sync
+
+Week 6-7:
+✓ Dovolenka tracking + reminders
+✓ SZČO dane tracking + quarterly alerts
+✓ Notification management dashboard
+
+Deliverables:
+- User authentication
+- Cloud-synced calculations
+- Vacation + tax reminders
+
+KPI:
+- User signup rate 15%
+- Email open rate >40%
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ FÁZA 3: NOVÉ KALKULAČKY (4-6 týždňov)                                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Week 8-10:
+✓ Daňový kalendár (highest priority!)
+✓ 2026 Slovak tax deadlines database
+✓ Deadline notifications
+✓ Google Calendar integration
+
+Week 11-13:
+✓ Rodičovský príspevok calculator
+✓ Nemocenská tracker
+✓ Preddavky tracker (SZČO)
+
+Deliverables:
+- 3 nové high-value calculators
+- Tax calendar (mega sticky!)
+- Comprehensive notification system
+
+KPI:
+- Organic traffic +50%
+- Monthly active users +40%
+- Email list growth +200%
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ FÁZA 4: PREMIUM & MONETIZATION (2-3 mesiace)                             │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Month 4-5:
+✓ Premium subscription tier
+✓ SMS notifications
+✓ Export to PDF/Excel
+✓ API access
+✓ Priority support
+
+Month 6:
+✓ Výživné kalkulačka
+✓ Splátky centrálne hub
+✓ Preplácanie energie checker
+
+Deliverables:
+- Premium features
+- Payment integration (Stripe)
+- Additional calculators
+
+KPI:
+- Conversion to premium 3-5%
+- MRR target: €500-1000
+
+
+================================================================================
+5. MONETIZÁCIA
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 5.1 FREE TIER                                                            │
+└─────────────────────────────────────────────────────────────────────────┘
+
+✓ Všetky kalkulačky
+✓ 3 uložené výpočty
+✓ Email notifikácie (max 5/mesiac)
+✓ História 30 dní
+✓ Basic comparison (2 scenáre vedľa seba)
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 5.2 PREMIUM (€4.99/mesiac alebo €49/rok)                                │
+└─────────────────────────────────────────────────────────────────────────┘
+
+✓ Neobmedzené uložené výpočty
+✓ Unlimited email notifikácie
+✓ SMS alerts (max 10/mesiac)
+✓ Neobmedzená história
+✓ Export PDF/Excel
+✓ Multi-scenario comparison (až 5 scenárov)
+✓ Priority support
+✓ API access (100 calls/deň)
+✓ No ads
+✓ Custom notification schedule
+✓ Data backup & export
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 5.3 BUSINESS (€19.99/mesiac)                                            │
+└─────────────────────────────────────────────────────────────────────────┘
+
+✓ Všetko z Premium
+✓ Unlimited SMS
+✓ API unlimited
+✓ Multi-user support (až 5 účtov)
+✓ Bulk calculations
+✓ Dedicated support
+✓ Custom branding
+✓ Accountant collaboration features
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 5.4 PROJEKCIA PRÍJMOV                                                   │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Konzervatívny scenár (rok 1):
+- Mesačne 10,000 návštevníkov
+- Signup rate: 5% = 500 users
+- Premium conversion: 3% = 15 premium users
+- MRR: 15 × €4.99 = €75/mesiac
+- Year 1: €900
+
+Optimistický scenár (rok 1):
+- Mesačne 30,000 návštevníkov
+- Signup rate: 10% = 3,000 users
+- Premium conversion: 5% = 150 premium users
+- MRR: 150 × €4.99 = €750/mesiac
+- Year 1: €9,000
+
+Rok 2 projekcia:
+- 100,000 návštevníkov/mesiac
+- 10,000 registered users
+- 300-500 premium users
+- MRR: €1,500 - €2,500
+- Year 2: €18,000 - €30,000
+
+
+================================================================================
+6. TECHNICKÝ STACK
+================================================================================
+
+Backend:
+- Django 5.0
+- PostgreSQL
+- Redis (caching, queue)
+- Celery (scheduled tasks)
+- SendGrid/Mailgun (email)
+- Twilio (SMS)
+
+Frontend:
+- Angular 18
+- TypeScript
+- TailwindCSS
+- PWA support
+
+Infrastructure:
+- Docker
+- GitHub Actions (CI/CD)
+- DigitalOcean / AWS
+- Cloudflare (CDN + DDoS)
+
+Monitoring:
+- Sentry (error tracking)
+- Google Analytics
+- Mixpanel/PostHog (product analytics)
+
+
+================================================================================
+7. KONKURENČNÁ ANALÝZA - SLOVENSKO
+================================================================================
+
+Existujúce riešenia:
+1. Porovnaj.sk - zamerané na finančné produkty, žiadne notifikácie
+2. Kalkulacky.eu - jednoduché calculatory, žiadny tracking
+3. MojePeniaze.sk - blog + základné kalkulačky, bez personalizácie
+4. SuperFaktura.sk - fakturácia, ale drahé (€10-20/mes)
+
+GAP:
+→ Žiadna platforma nemá komplexný notification system
+→ Žiadna nesleduje lifecycle events (tehotenstvo, rodičovská, dovolenka)
+→ Žiadna neposkytuje personalizovaný daňový kalendár
+→ Všetky sú "one-off" calculatory bez storied state
+
+COMPETITIVE ADVANTAGE:
+✓ Jedinečný notification system
+✓ Lifecycle tracking (pregnancy → parental → childcare)
+✓ Daňový kalendár (nový nástroj)
+✓ Free tier generous (získanie users)
+✓ Modern UX (Angular, PWA)
+✓ Mobile-first
+
+
+================================================================================
+8. MARKETING & GROWTH
+================================================================================
+
+SEO Strategy:
+- Keyword targeting: "kalkulačka X", "výpočet X", "ako vypočítať X"
+- Blog content: daňové zmeny, tipy, tutoriály
+- FAQ stránky pre každú kalkulačku
+- Schema markup (Calculator, FAQPage)
+
+Content Marketing:
+- Mesačný blog post o legislatívnych zmenách
+- Email newsletter: "Čo sa mení v roku 2027"
+- Social media: Instagram (infografiky), Facebook (skupiny)
+
+Partnerships:
+- Účtovné firmy (referral fee)
+- Materské centrá (pregnancy calculator)
+- HR agentúry (salary, vacation calculators)
+- Financial advisors (mortgage, loan calculators)
+
+Paid Advertising (Phase 2):
+- Google Ads: "kalkulačka X" keywords
+- Facebook/Instagram: targeting parents, freelancers, homebuyers
+
+
+================================================================================
+9. METRIKY & KPI
+================================================================================
+
+Traffic Metrics:
+- Monthly visitors
+- Bounce rate (target <60%)
+- Pages per session (target >3)
+- Average session duration (target >2 min)
+
+Engagement Metrics:
+- Calculation completions
+- Saved calculations
+- Return user rate (target >30%)
+- Notification click-through rate (target >25%)
+
+Conversion Metrics:
+- Signup rate (target >8%)
+- Free to Premium conversion (target >3%)
+- Churn rate (target <5%)
+
+Revenue Metrics:
+- MRR (Monthly Recurring Revenue)
+- ARPU (Average Revenue Per User)
+- LTV (Lifetime Value)
+- CAC (Customer Acquisition Cost)
+
+
+================================================================================
+10. NEXT STEPS
+================================================================================
+
+Immediate (týždeň 1-2):
+☐ Implementovať localStorage history
+☐ Pridať "Save calculation" button
+☐ Navrhnúť email templates
+☐ Setup SendGrid/Mailgun account
+
+Short-term (mesiac 1):
+☐ User authentication system
+☐ Pregnancy notification logic
+☐ Vacation reminder system
+☐ Notification dashboard
+
+Mid-term (mesiac 2-3):
+☐ Daňový kalendár development
+☐ Rodičovský príspevok calculator
+☐ Nemocenská tracker
+☐ Premium tier implementation
+
+Long-term (mesiac 4-6):
+☐ SMS notifications
+☐ Mobile app (React Native)
+☐ API documentation
+☐ Partnership program
+
+
+================================================================================
+KONIEC DOKUMENTU
+================================================================================
+
+Posledná aktualizácia: 6. marca 2026
+Autor: AI Analysis
+Status: NÁVRH - čaká na implementáciu

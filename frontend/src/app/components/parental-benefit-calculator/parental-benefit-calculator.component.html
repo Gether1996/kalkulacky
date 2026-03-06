@@ -1,0 +1,412 @@
+<div class="calculator-container">
+  <!-- Header -->
+  <div class="calculator-header">
+    <h1>👶 Rodičovský príspevok kalkulačka</h1>
+    <p class="subtitle">Vypočítajte materské a rodičovské dávky, termíny a časovú os</p>
+    <div class="seo-keywords">
+      <span class="keyword">Materská</span>
+      <span class="keyword">Rodičovský príspevok</span>
+      <span class="keyword">Osnova vs alternatíva</span>
+    </div>
+  </div>
+
+  <!-- Calculator Grid -->
+  <div class="calculator-grid">
+    <!-- Input Card -->
+    <div class="card">
+      <h2>Základné údaje</h2>
+      
+      <!--Birth Date -->
+      <div class="input-group">
+        <label for="birthDate">
+          Dátum narodenia dieťaťa
+          <span class="tooltip" title="Dátum narodenia vášho dieťaťa">ⓘ</span>
+        </label>
+        <input 
+          type="date" 
+          id="birthDate"
+          [(ngModel)]="birthDate"
+          [max]="today"
+          class="input-field"
+          (change)="calculate()"
+        />
+      </div>
+
+      <!-- Gross Salary (optional for maternity calculation) -->
+      <div class="input-group">
+        <label for="grossSalary">
+          Hrubá mesačná mzda pred materskou (voliteľné)
+          <span class="tooltip" title="Pre výpočet materského - 70% denného vymeriavacieho základu">ⓘ</span>
+        </label>
+        <div class="input-with-unit">
+          <input 
+            type="number" 
+            id="grossSalary"
+            [(ngModel)]="grossSalary"
+            min="0"
+            max="10000"
+            step="10"
+            class="input-field"
+            (change)="calculate()"
+          />
+          <span class="unit">€/mes</span>
+        </div>
+      </div>
+
+      <!-- Benefit Type Selection -->
+      <div class="selection-group">
+        <label>Typ rodičovského príspevku</label>
+        <div class="benefit-type-selector">
+          <button 
+            type="button"
+            class="benefit-btn" 
+            [class.active]="benefitType === 'basic'"
+            (click)="benefitType = 'basic'; onBenefitTypeChange(); calculate()">
+            <div class="benefit-header">
+              <span class="benefit-icon">⭐</span>
+              <span class="benefit-name">Osnova</span>
+            </div>
+            <div class="benefit-details">
+              <span class="benefit-amount">€381.90/mes</span>
+              <span class="benefit-duration">3 roky</span>
+            </div>
+          </button>
+          
+          <button 
+            type="button"
+            class="benefit-btn" 
+            [class.active]="benefitType === 'alternative'"
+            (click)="benefitType = 'alternative'; onBenefitTypeChange(); calculate()">
+            <div class="benefit-header">
+              <span class="benefit-icon">⏰</span>
+              <span class="benefit-name">Alternatíva</span>
+            </div>
+            <div class="benefit-details">
+              <span class="benefit-amount">€270/mes</span>
+              <span class="benefit-duration">6 rokov</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Twins or More -->
+      <div class="checkbox-group">
+        <label>
+          <input 
+            type="checkbox"
+            [(ngModel)]="twinsOrMore"
+            (change)="calculate()"
+          />
+          <span>Dvojčatá alebo viacnásobné tehotenstvo</span>
+          <span class="tooltip" title="Materská trvá 43 týždňov namiesto 34">ⓘ</span>
+        </label>
+      </div>
+
+      <!-- Plan to Work -->
+      <div class="checkbox-group">
+        <label>
+          <input 
+            type="checkbox"
+            [(ngModel)]="planToWork"
+            (change)="calculate()"
+          />
+          <span>Plánujem pracovať počas rodičovskej</span>
+          <span class="tooltip" title="Musíte zarábať menej ako €635.70/mes">ⓘ</span>
+        </label>
+      </div>
+
+      <!-- Planned Monthly Income (if working) -->
+      <div class="input-group" *ngIf="planToWork">
+        <label for="plannedIncome">
+          Plánovaný mesačný príjem (hrubý)
+          <span class="tooltip" title="Limit je €635.70/mes pre zachovanie nároku">ⓘ</span>
+        </label>
+        <div class="input-with-unit">
+          <input 
+            type="number" 
+            id="plannedIncome"
+            [(ngModel)]="plannedMonthlyIncome"
+            min="0"
+            max="1000"
+            step="10"
+            class="input-field"
+            (change)="calculate()"
+          />
+          <span class="unit">€/mes</span>
+        </div>
+      </div>
+
+      <!-- Second Child (optional) -->
+      <div class="input-group">
+        <label for="secondChild">
+          Dátum narodenia druhého dieťaťa (voliteľné)
+          <span class="tooltip" title="Ak plánujete druhé dieťa - predĺži nárok">ⓘ</span>
+        </label>
+        <input 
+          type="date" 
+          id="secondChild"
+          [(ngModel)]="secondChildBirthDate"
+          [max]="today"
+          class="input-field"
+          (change)="calculate()"
+        />
+      </div>
+
+      <!-- Current Date (optional override) -->
+      <div class="input-group">
+        <label for="currentDate">
+          Aktuálny dátum (voliteľné)
+          <span class="tooltip" title="Dátum,  ktorému počítame (predvolene dnes)">ⓘ</span>
+        </label>
+        <input 
+          type="date" 
+          id="currentDate"
+          [(ngModel)]="currentDate"
+          [max]="today"
+          class="input-field"
+          (change)="calculate()"
+        />
+      </div>
+
+      <!-- Calculate Button -->
+      <button class="calculate-btn" (click)="calculate()">
+        Vypočítať rodičovský príspevok
+      </button>
+
+      <!-- Quick Info -->
+      <div class="info-box">
+        <h3>💡 Dôležité informácie</h3>
+        <p>
+          <strong>Materská:</strong> 70% denného vymeriavacieho základu, 34 týždňov (43 pri dvojčatách).
+        </p>
+        <p>
+          <strong>Rodičovská osnova:</strong> €381.90/mes do 3 rokov.
+        </p>
+        <p>
+          <strong>Rodičovská alternatíva:</strong> €270/mes do 6 rokov.
+        </p>
+      </div>
+    </div>
+
+    <!-- Results Card -->
+    <div class="card">
+      <h2>Výsledky</h2>
+      
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Počítam...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="error && !loading" class="error-message">
+        {{ error }}
+      </div>
+
+      <!-- Results -->
+      <div *ngIf="result && !loading && !error" class="results">
+        <!-- Child Info Highlight -->
+        <div class="result-highlight">
+          <div class="result-label">Vek dieťaťa</div>
+          <div class="result-value">{{ getChildAgeLabel(result.child_age_months, result.child_age_years) }}</div>
+          <div class="result-sublabel">Narodené: {{ formatDate(result.birth_date) }}</div>
+        </div>
+
+        <!-- Maternity Benefit (if salary provided) -->
+        <div class="maternity-card" *ngIf="result.maternity_benefit">
+          <h3>🤱 Materské (Materská dávka)</h3>
+          
+          <div class="benefit-amount-highlight">
+            <span class="amount">{{ formatCurrency(result.maternity_benefit.monthly_amount) }}</span>
+            <span class="period">/mesiac</span>
+          </div>
+
+          <div class="detail-grid">
+            <div class="detail-box">
+              <span class="detail-label">Denne:</span>
+              <span class="detail-value">{{ formatCurrency(result.maternity_benefit.daily_amount) }}</span>
+            </div>
+            <div class="detail-box">
+              <span class="detail-label">Týždenne:</span>
+              <span class="detail-value">{{ formatCurrency(result.maternity_benefit.weekly_amount) }}</span>
+            </div>
+            <div class="detail-box">
+              <span class="detail-label">Celkovo:</span>
+              <span class="detail-value">{{ formatCurrency(result.maternity_benefit.total_amount) }}</span>
+            </div>
+            <div class="detail-box">
+              <span class="detail-label">Trvanie:</span>
+              <span class="detail-value">{{ result.maternity_benefit.duration_weeks }} týždňov</span>
+            </div>
+          </div>
+
+          <p class="info-text">
+            Materská končí: <strong>{{ formatDate(result.maternity_end_date) }}</strong>
+          </p>
+          <p class="info-text small">
+            DVZ: {{ formatCurrency(result.maternity_benefit.daily_assessment_base) }}/deň (70%)
+          </p>
+        </div>
+
+        <!-- Parental Benefit Status -->
+        <div class="status-card" [class]="getBenefitStatusClass(result.benefit_status)">
+          <h3>👶 Rodičovský príspevok - {{ result.benefit_type_label }}</h3>
+          
+          <div class="status-badge">
+            {{ result.benefit_status }}
+          </div>
+
+          <div class="benefit-amount-highlight">
+            <span class="amount">{{ formatCurrency(result.monthly_benefit) }}</span>
+            <span class="period">/mesiac</span>
+          </div>
+
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="result.progress_percentage"></div>
+          </div>
+          <p class="progress-text">{{ result.progress_percentage }}% odpočítané</p>
+
+          <div class="detail-grid">
+            <div class="detail-box">
+              <span class="detail-icon">📅</span>
+              <span class="detail-value">{{ result.remaining_months }}</span>
+              <span class="detail-label">mesiacov zostáva</span>
+            </div>
+            <div class="detail-box">
+              <span class="detail-icon">💰</span>
+              <span class="detail-value">{{ formatCurrency(result.total_benefit) }}</span>
+              <span class="detail-label">celková suma</span>
+            </div>
+          </div>
+
+          <p class="info-text">
+            <strong>Začiatok:</strong> {{ formatDate(result.parental_start_date) }}<br>
+            <strong>Koniec:</strong> {{ formatDate(result.parental_end_date) }}
+          </p>
+        </div>
+
+        <!-- Work Compatibility -->
+        <div class="work-compatibility-card" *ngIf="planToWork">
+          <h3>💼 Možnosť pracovať</h3>
+          
+          <div class="compatibility-result" [class.compatible]="result.can_work_and_receive" [class.incompatible]="!result.can_work_and_receive">
+            <span class="icon">{{ result.can_work_and_receive ? '✅' : '⚠️' }}</span>
+            <p>{{ result.work_warning }}</p>
+          </div>
+
+          <p class="info-text">
+            Limit príjmu: <strong>{{ formatCurrency(result.work_income_limit) }}/mes</strong>
+          </p>
+        </div>
+
+        <!-- Comparison -->
+        <div class="comparison-card">
+          <h3>⚖️ Porovnanie osnovy a alternatívy</h3>
+          
+          <div class="comparison-grid">
+            <div class="comparison-option" [class.selected]="benefitType === 'basic'">
+              <h4>Osnova</h4>
+              <p class="comparison-label">Mesačne</p>
+              <p class="comparison-value">{{ formatCurrency(result.comparison.basic.monthly_amount) }}</p>
+              <p class="comparison-label">Trvanie</p>
+              <p class="comparison-value">{{ result.comparison.basic.duration_years }} roky</p>
+              <p class="comparison-label">Celkovo</p>
+              <p class="comparison-value-big">{{ formatCurrency(result.comparison.basic.total_amount) }}</p>
+              <p class="comparison-end">Do: {{ formatDate(result.comparison.basic.end_date) }}</p>
+            </div>
+
+            <div class="comparison-option" [class.selected]="benefitType === 'alternative'">
+              <h4>Alternatíva</h4>
+              <p class="comparison-label">Mesačne</p>
+              <p class="comparison-value">{{ formatCurrency(result.comparison.alternative.monthly_amount) }}</p>
+              <p class="comparison-label">Trvanie</p>
+              <p class="comparison-value">{{result.comparison.alternative.duration_years }} rokov</p>
+              <p class="comparison-label">Celkovo</p>
+              <p class="comparison-value-big">{{ formatCurrency(result.comparison.alternative.total_amount) }}</p>
+              <p class="comparison-end">Do: {{ formatDate(result.comparison.alternative.end_date) }}</p>
+            </div>
+          </div>
+
+          <div class="comparison-difference">
+            <p>Rozdiel: <strong>{{ formatCurrency(Math.abs(result.comparison.difference)) }}</strong></p>
+            <p class="recommendation">{{ result.comparison.recommendation }}</p>
+          </div>
+        </div>
+
+        <!-- Second Child Extension -->
+        <div class="second-child-card" *ngIf="result.second_child_extension">
+          <h3>👶👶 Predĺženie pri druhom dieťati</h3>
+          
+          <p>Narodenie druhého dieťaťa: <strong>{{ formatDate(result.second_child_extension.second_child_birth) }}</strong></p>
+          <p>Pôvodný koniec: {{ formatDate(result.second_child_extension.original_end_date) }}</p>
+          <p>Nový koniec: <strong>{{ formatDate(result.second_child_extension.new_end_date) }}</strong></p>
+          <p class="extension-highlight">
+            Predĺženie o <strong>{{ result.second_child_extension.extension_months }} mesiacov</strong><br>
+            Dodatočná suma: <strong>{{ formatCurrency(result.second_child_extension.additional_amount) }}</strong>
+          </p>
+        </div>
+
+        <!-- Notifications -->
+        <div class="notifications-card" *ngIf="result.notifications && result.notifications.length > 0">
+          <h3>🔔 Nadchádzajúce míľniky</h3>
+          
+          <div *ngFor="let notification of result.notifications" class="notification-item" [class]="getNotificationPriorityClass(notification.priority)">
+            <div class="notification-header">
+              <span class="notification-title">{{ notification.title }}</span>
+              <span class="notification-badge">{{ notification.days_until }} dní</span>
+            </div>
+            <p class="notification-message">{{ notification.message }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Additional Info Section -->
+  <div class="info-section">
+    <div class="info-card">
+      <h3>❓ Často kladené otázky</h3>
+      <details>
+        <summary>Ako si vybrať medzi osnovnou a alternatívou?</summary>
+        <p>
+          <strong>Osnova</strong> je lepšia, ak plánujete skorší návrat do práce (€381.90/mes 3 roky).<br>
+          <strong>Alternatíva</strong> je vhodná, ak chcete zostať doma dlhšie (€270/mes 6 rokov).<br>
+          Celková suma osnovy je vyššia, ale kratšie trvanie.
+        </p>
+      </details>
+      
+      <details>
+        <summary>Môžem pracovať a brať rodičovskú?</summary>
+        <p>
+          Áno, ale váš príjem nesmie presiahnuť €635.70/mes (hrubý). Nad tento limit stratíte nárok.
+        </p>
+      </details>
+      
+      <details>
+        <summary>Čo je materská dávka?</summary>
+        <p>
+          Materská je 70% denného vymeriavacieho základu (DVZ) na 34 týždňov (43 pri dvojčatách).
+          DVZ = (hrubá ročná mzda) / 365. Materská sa vypláca pred rodičovskou.
+        </p>
+      </details>
+      
+      <details>
+        <summary>Čo sa stane pri druhom dieťati?</summary>
+        <p>
+          Ak sa druhé dieťa narodí pred skončením rodičovskej na prvé, nárok sa predĺži
+          o ďalších 3/6 rokov (podľa typu) od narodenia druhého dieťaťa.
+        </p>
+      </details>
+    </div>
+
+    <div class="info-card">
+      <h3>📚 Užitočné odkazy</h3>
+      <ul>
+        <li><a href="https://www.upsvr.gov.sk/" target="_blank" rel="noopener">ÚPSVR - Úrad práce, sociálnych vecí a rodiny</a></li>
+        <li><a href="https://www.employment.gov.sk/" target="_blank" rel="noopener">Rodičovské dávky - oficiálne info</a></li>
+        <li><a routerLink="/pregnancy-calculator">Kalkulačka tehotenstva</a></li>
+        <li><a routerLink="/vacation-calculator">Kalkulačka dovolenky</a></li>
+      </ul>
+    </div>
+  </div>
+</div>

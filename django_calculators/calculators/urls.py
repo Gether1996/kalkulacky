@@ -44,6 +44,7 @@ from .views import (
     AreaVolumeShapesView,
     SplitBillCalculatorView,
     TipSuggestionsView,
+    ParentalBenefitCalculatorView,
     HealthCheckView,
     BlogCategoryListView,
     BlogPostListView,
@@ -94,6 +95,9 @@ urlpatterns = [
     # Split bill calculator
     path('split-bill/', SplitBillCalculatorView.as_view(), name='split-bill-calculator'),
     path('split-bill/tip-suggestions/', TipSuggestionsView.as_view(), name='tip-suggestions'),
+    
+    # Parental benefit calculator
+    path('parental-benefit/', ParentalBenefitCalculatorView.as_view(), name='parental-benefit-calculator'),
     
     # Health check
     path('health/', HealthCheckView.as_view(), name='health-check'),

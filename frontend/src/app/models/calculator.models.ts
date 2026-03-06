@@ -1019,3 +1019,76 @@ export interface TipSuggestionsResponse {
   suggestions: TipSuggestion[];
 }
 
+// Parental Benefit Calculator
+export interface ParentalBenefitCalculationRequest {
+  birth_date: string;  // ISO format YYYY-MM-DD
+  gross_salary?: number | null;
+  benefit_type: 'basic' | 'alternative';
+  twins_or_more?: boolean;
+  plan_to_work?: boolean;
+  planned_monthly_income?: number | null;
+  second_child_birth_date?: string | null;  // ISO format YYYY-MM-DD
+  current_date?: string | null;  // ISO format YYYY-MM-DD
+}
+
+export interface MaternityBenefit {
+  daily_assessment_base: number;
+  maternity_benefit_rate: number;
+  daily_amount: number;
+  weekly_amount: number;
+  monthly_amount: number;
+  duration_weeks: number;
+  total_amount: number;
+}
+
+export interface BenefitComparison {
+  monthly_amount: number;
+  duration_years: number;
+  total_amount: number;
+  end_date: string;  // ISO format YYYY-MM-DD
+}
+
+export interface SecondChildExtension {
+  second_child_birth: string;  // ISO format YYYY-MM-DD
+  original_end_date: string;
+  new_end_date: string;
+  extension_months: number;
+  additional_amount: number;
+}
+
+export interface ParentalNotification {
+  title: string;
+  message: string;
+  date: string;  // ISO format YYYY-MM-DD
+  days_until: number;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+}
+
+export interface ParentalBenefitCalculationResponse {
+  birth_date: string;  // ISO format YYYY-MM-DD
+  child_age_months: number;
+  child_age_years: number;
+  benefit_type: 'basic' | 'alternative';
+  benefit_type_label: string;
+  monthly_benefit: number;
+  total_benefit: number;
+  maternity_benefit: MaternityBenefit | null;
+  maternity_end_date: string | null;
+  parental_start_date: string;
+  parental_end_date: string;
+  benefit_status: string;
+  remaining_months: number;
+  progress_percentage: number;
+  can_work_and_receive: boolean;
+  work_income_limit: number;
+  work_warning: string;
+  comparison: {
+    basic: BenefitComparison;
+    alternative: BenefitComparison;
+    difference: number;
+    recommendation: string;
+  };
+  second_child_extension: SecondChildExtension | null;
+  notifications: ParentalNotification[];
+}
+

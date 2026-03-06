@@ -223,11 +223,36 @@ TYPICAL_CONSUMPTION_COMBINED = Decimal('7.0')  # liters/100km - Combined
 
 
 # ===========================
+# PARENTAL BENEFIT CALCULATOR (RODIČOVSKÝ PRÍSPEVOK)
+# ===========================
+
+# Maternity benefit (Materské)
+MATERNITY_BENEFIT_RATE = Decimal('0.70')  # 70% of daily assessment base
+MATERNITY_BENEFIT_WEEKS = 34  # 34 weeks for single child (43 for twins+)
+MATERNITY_BENEFIT_WEEKS_TWINS = 43  # 43 weeks for twins or more
+
+# Parental benefit - basic (osnova)
+PARENTAL_BENEFIT_BASIC_MONTHLY = Decimal('381.90')  # €381.90/month (2026)
+PARENTAL_BENEFIT_BASIC_YEARS = 3  # Until child is 3 years old
+
+# Parental benefit - alternative (alternatíva)
+PARENTAL_BENEFIT_ALT_MONTHLY = Decimal('270.00')  # €270.00/month (2026)
+PARENTAL_BENEFIT_ALT_YEARS = 6  # Until child is 6 years old
+
+# Work income limits while receiving parental benefit
+PARENTAL_WORK_INCOME_LIMIT_BASIC = Decimal('635.70')  # €635.70/month for osnova (2026)
+PARENTAL_WORK_INCOME_LIMIT_ALT = Decimal('635.70')  # €635.70/month for alternatíva (2026)
+
+# Minimum assessment base (Minimálny vymeriavací základ)
+PARENTAL_MIN_ASSESSMENT_BASE = Decimal('750.00')  # €750/month - Minimum wage 2026
+
+
+# ===========================
 # METADATA
 # ===========================
 
 CONFIG_VERSION = "2026.1.0"
-CONFIG_LAST_UPDATED = "2026-03-04"
+CONFIG_LAST_UPDATED = "2026-03-06"
 CONFIG_VALID_FROM = "2026-01-01"
 CONFIG_VALID_UNTIL = "2026-12-31"
 

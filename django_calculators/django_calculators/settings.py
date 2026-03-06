@@ -147,12 +147,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
-USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
@@ -163,3 +158,74 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ============================================================================
+# EMAIL CONFIGURATION
+# ============================================================================
+
+# Email backend (for development, use console backend)
+# For production, use SMTP backend
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# For production SMTP (uncomment and configure):
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'  # or your SMTP server
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your-email@gmail.com'
+# EMAIL_HOST_PASSWORD = 'your-app-password'
+
+DEFAULT_FROM_EMAIL = 'noreply@kalkulacky.sk'
+SERVER_EMAIL = 'server@kalkulacky.sk'
+
+# Email subject prefix
+EMAIL_SUBJECT_PREFIX = '[Kalkulačky.sk] '
+
+
+# ============================================================================
+# LOGGING CONFIGURATION
+# ============================================================================
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'django.log',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'calculators': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+
+
+# ============================================================================
+# TIMEZONE SETTINGS
+# ============================================================================
+
+# Use Europe/Bratislava for Slovak market
+TIME_ZONE = 'Europe/Bratislava'
+USE_TZ = False
+

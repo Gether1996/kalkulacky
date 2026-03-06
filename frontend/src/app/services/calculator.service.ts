@@ -51,7 +51,9 @@ import {
   AvailableShapes,
   SplitBillCalculationRequest,
   SplitBillCalculationResponse,
-  TipSuggestionsResponse
+  TipSuggestionsResponse,
+  ParentalBenefitCalculationRequest,
+  ParentalBenefitCalculationResponse
 } from '../models/calculator.models';
 
 @Injectable({
@@ -247,6 +249,13 @@ export class CalculatorService {
   getTipSuggestions(amount: number): Observable<TipSuggestionsResponse> {
     return this.http.get<{success: boolean, data: TipSuggestionsResponse}>(
       `${this.apiUrl}/calculators/split-bill/tip-suggestions/?amount=${amount}`
+    ).pipe(map(response => response.data));
+  }
+
+  // Parental Benefit Calculator
+  calculateParentalBenefit(data: ParentalBenefitCalculationRequest): Observable<ParentalBenefitCalculationResponse> {
+    return this.http.post<{success: boolean, data: ParentalBenefitCalculationResponse}>(
+      `${this.apiUrl}/calculators/parental-benefit/`, data
     ).pipe(map(response => response.data));
   }
 }

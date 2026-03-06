@@ -5,7 +5,7 @@ Run with: docker compose exec backend python manage.py shell < create_sample_blo
 """
 
 from calculators.models import BlogCategory, BlogPost
-from django.utils import timezone
+from datetime import datetime
 
 # Create categories
 categories_data = [
@@ -125,7 +125,7 @@ posts_data = [
         'related_calculator': 'salary',
         'tags': 'dane, 2026, progresívne zdanenie, mzda',
         'status': 'published',
-        'published_at': timezone.now()
+        'published_at': datetime.now()
     },
     {
         'title': 'Ako používať kalkulačku čistej mzdy',
@@ -184,7 +184,7 @@ Hrubá mzda:           2 000,00 EUR
         'related_calculator': 'salary',
         'tags': 'návod, kalkulačka, mzda, tutoriál',
         'status': 'published',
-        'published_at': timezone.now()
+        'published_at': datetime.now()
     },
     {
         'title': 'Ako ušetriť na daniach v roku 2026',
@@ -237,7 +237,7 @@ Hrubá mzda:           2 000,00 EUR
         'related_calculator': '',
         'tags': 'dane, úspory, tipy, slovensko, DDS',
         'status': 'published',
-        'published_at': timezone.now()
+        'published_at': datetime.now()
     }
 ]
 

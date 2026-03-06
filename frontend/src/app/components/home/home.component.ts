@@ -139,6 +139,15 @@ export class HomeComponent {
       color: 'from-pink-400 to-rose-500'
     },
     {
+      id: 'parental-benefit',
+      title: 'Rodičovský príspevok',
+      description: 'Vypočítajte materské a rodičovské dávky, porovnajte osnovu vs alternatívu, zistite možnosť pracovať pri rodičovskej.',
+      icon: '👶',
+      route: '/calculator/parental-benefit',
+      searchVolume: 6000,
+      color: 'from-purple-400 to-pink-500'
+    },
+    {
       id: 'pension',
       title: 'Kalkulačka dôchodku',
       description: 'Vypočítajte odhad dôchodku, dôchodké odvody a náhradový pomer podľa slovenskej legislatívy.',
