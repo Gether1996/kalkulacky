@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { VacationCalculationRequest, VacationCalculationResponse } from '../../models/calculator.models';
+import { DatePickerComponent } from '../date-picker/date-picker.component';
 
 @Component({
   selector: 'app-vacation-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, DatePickerComponent],
   templateUrl: './vacation-calculator.component.html',
   styleUrls: ['./vacation-calculator.component.css']
 })
@@ -20,8 +21,8 @@ export class VacationCalculatorComponent implements OnInit {
 
   // Input fields
   age: number = 35;
-  employmentStartDate: string = '';
-  currentDate: string = '';
+  employmentStartDate: Date | null = null;
+  currentDate: Date = new Date();
   vacationDaysUsed: number = 0;
   daysCarriedOver: number = 0;
   plannedVacationDays: number = 5;
@@ -32,18 +33,16 @@ export class VacationCalculatorComponent implements OnInit {
   error: string = '';
 
   // UI helpers
-  today: string = '';
+  today: Date = new Date();
 
   ngOnInit() {
     // Set today's date
-    const now = new Date();
-    this.today = this.formatDateForInput(now);
-    this.currentDate = this.today;
+    this.today = new Date();
+    this.currentDate = new Date();
     
     // Set default employment start date (3 years ago)
-    const defaultStart = new Date();
-    defaultStart.setFullYear(defaultStart.getFullYear() - 3);
-    this.employmentStartDate = this.formatDateForInput(defaultStart);
+    this.employmentStartDate = new Date();
+    this.employmentStartDate.setFullYear(this.employmentStartDate.getFullYear() - 3);
     
     this.calculate();
   }
@@ -73,8 +72,8 @@ export class VacationCalculatorComponent implements OnInit {
 
     const request: VacationCalculationRequest = {
       age: this.age,
-      employment_start_date: this.employmentStartDate,
-      current_date: this.currentDate || this.today,
+      employment_start_date: this.formatDateForInput(this.employmentStartDate || this.today),
+      current_date: this.formatDateForInput(this.currentDate),
       vacation_days_used: this.vacationDaysUsed,
       days_carried_over: this.daysCarriedOver,
       planned_vacation_days: this.plannedVacationDays

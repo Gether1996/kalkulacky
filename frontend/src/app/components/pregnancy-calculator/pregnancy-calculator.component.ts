@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { PregnancyCalculationRequest, PregnancyCalculationResponse } from '../../models/calculator.models';
+import { DatePickerComponent } from '../date-picker/date-picker.component';
 
 @Component({
   selector: 'app-pregnancy-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, DatePickerComponent],
   templateUrl: './pregnancy-calculator.component.html',
   styleUrls: ['./pregnancy-calculator.component.css']
 })
@@ -18,9 +19,9 @@ export class PregnancyCalculatorComponent implements OnInit {
 
   // Input fields
   calculationMethod: 'lmp' | 'conception' = 'lmp';
-  lmpDate: string = '';
-  conceptionDate: string = '';
-  currentDate: string = '';
+  lmpDate: Date | null = null;
+  conceptionDate: Date | null = null;
+  currentDate: Date = new Date();
   
   // Results
   result: PregnancyCalculationResponse | null = null;
@@ -28,24 +29,21 @@ export class PregnancyCalculatorComponent implements OnInit {
   error: string = '';
 
   // UI helpers
-  today: string = '';
-  maxDate: string = '';
+  today: Date = new Date();
+  maxDate: Date = new Date();
 
   ngOnInit() {
-    // Set today's date in local timezone
-    const now = new Date();
-    this.today = this.formatDateForInput(now);
-    this.currentDate = this.today;
+    // Set today's date
+    this.today = new Date();
+    this.currentDate = new Date();
     
     // Max date is 9 months ago (earliest possible LMP)
-    const maxLmpDate = new Date();
-    maxLmpDate.setMonth(maxLmpDate.getMonth() - 9);
-    this.maxDate = this.formatDateForInput(maxLmpDate);
+    this.maxDate = new Date();
+    this.maxDate.setMonth(this.maxDate.getMonth() - 9);
     
     // Set default LMP date to 8 weeks ago for demo
-    const defaultLmp = new Date();
-    defaultLmp.setDate(defaultLmp.getDate() - 56); // 8 weeks
-    this.lmpDate = this.formatDateForInput(defaultLmp);
+    this.lmpDate = new Date();
+    this.lmpDate.setDate(this.lmpDate.getDate() - 56); // 8 weeks
     
     this.calculate();
   }
@@ -81,13 +79,13 @@ export class PregnancyCalculatorComponent implements OnInit {
 
     const request: PregnancyCalculationRequest = {
       calculation_method: this.calculationMethod,
-      current_date: this.currentDate || this.today
+      current_date: this.formatDateForInput(this.currentDate)
     };
 
-    if (this.calculationMethod === 'lmp') {
-      request.lmp_date = this.lmpDate;
-    } else {
-      request.conception_date = this.conceptionDate;
+    if (this.calculationMethod === 'lmp' && this.lmpDate) {
+      request.lmp_date = this.formatDateForInput(this.lmpDate);
+    } else if (this.conceptionDate) {
+      request.conception_date = this.formatDateForInput(this.conceptionDate);
     }
 
     this.calculatorService.calculatePregnancy(request).subscribe({

@@ -30,26 +30,26 @@ class LoanCalculator(BaseCalculator):
         loan_years = kwargs.get('loan_years')
         
         if not all([loan_amount, interest_rate is not None, loan_years]):
-            raise ValueError("loan_amount, interest_rate, and loan_years are required")
+            raise ValueError("Výška pôžičky, úroková sadzba a doba splatnosti sú povinné")
         
         try:
             amount = self.to_decimal(loan_amount)
             rate = self.to_decimal(interest_rate)
             years = self.to_decimal(loan_years)
         except (ValueError, TypeError):
-            raise ValueError("All inputs must be valid numbers")
+            raise ValueError("Všetky vstupy musia byť platné čísla")
         
         if amount <= 0:
-            raise ValueError("loan_amount must be greater than 0")
+            raise ValueError("Výška pôžičky musí byť väčšia ako 0")
         
         if amount > 1000000:
-            raise ValueError("loan_amount seems unrealistically high (>€1,000,000)")
+            raise ValueError("Výška pôžičky sa zdá byť nereálne vysoká (>1 000 000 €)")
         
         if rate < 0 or rate > 30:
-            raise ValueError("interest_rate must be between 0 and 30")
+            raise ValueError("Úroková sadzba musí byť medzi 0 a 30")
         
         if years <= 0 or years > 50:
-            raise ValueError("loan_years must be between 1 and 50")
+            raise ValueError("Doba splatnosti musí byť medzi 1 a 50 rokmi")
         
         return True
     

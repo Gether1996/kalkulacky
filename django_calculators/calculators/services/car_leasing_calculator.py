@@ -62,20 +62,14 @@ class CarLeasingCalculator:
         total_interest = total_paid - price_with_vat
         
         return {
-            'lease_type': 'financial',
-            'lease_type_label': 'Finančný lízing',
-            'car_price': float(price_with_vat),
-            'car_price_without_vat': float(car_price),
-            'down_payment': float(down_payment),
-            'down_payment_percent': float(down_payment / price_with_vat * 100),
-            'financed_amount': float(financed_amount),
-            'lease_term_months': lease_term_months,
-            'interest_rate': float(interest_rate * 100),
+            'option_type': 'financial_leasing',
+            'option_name': 'Finančný lízing',
+            'initial_cost': round(float(down_payment), 2),
             'monthly_payment': round(float(monthly_payment), 2),
-            'total_paid': round(float(total_paid), 2),
-            'total_interest': round(float(total_interest), 2),
-            'ownership_at_end': True,
-            'residual_value': 0
+            'final_payment': 0,
+            'total_cost': round(float(total_paid), 2),
+            'ownership': 'Auto sa stáva vaším vlastníctvom na konci lízingu',
+            'explanation': f'Finančný lízing s {lease_term_months} mesiacmi, úrok {float(interest_rate * 100):.1f}%. Celkový úrok: {round(float(total_interest), 2)} €.'
         }
     
     @classmethod
@@ -135,23 +129,14 @@ class CarLeasingCalculator:
         total_paid_buyout = total_paid_leasing + residual_value
         
         return {
-            'lease_type': 'operational',
-            'lease_type_label': 'Operatívny lízing',
-            'car_price': float(price_with_vat),
-            'car_price_without_vat': float(car_price),
-            'down_payment': float(down_payment),
-            'down_payment_percent': float(down_payment / price_with_vat * 100),
-            'residual_value': round(float(residual_value), 2),
-            'residual_value_percent': float(residual_value_percent * 100),
-            'financed_amount': float(financed_amount),
-            'lease_term_months': lease_term_months,
-            'interest_rate': float(interest_rate * 100),
+            'option_type': 'operational_leasing',
+            'option_name': 'Operatívny lízing',
+            'initial_cost': round(float(down_payment), 2),
             'monthly_payment': round(float(monthly_payment), 2),
-            'total_monthly_payments': round(float(total_monthly_payments), 2),
-            'total_paid_return': round(float(total_paid_return), 2),
-            'total_paid_buyout': round(float(total_paid_buyout), 2),
-            'ownership_at_end': False,
-            'buyout_option': True
+            'final_payment': round(float(residual_value), 2),
+            'total_cost': round(float(total_paid_buyout), 2),
+            'ownership': f'Auto môžete odkúpiť za {round(float(residual_value), 2)} € alebo vrátiť',
+            'explanation': f'Operatívny lízing s {lease_term_months} mesiacmi. Reziduálna hodnota {float(residual_value_percent * 100):.0f}%. Pri vrátení zaplatíte celkom {round(float(total_paid_return), 2)} €.'
         }
     
     @classmethod
@@ -196,18 +181,14 @@ class CarLeasingCalculator:
         total_interest = total_paid - price_with_vat
         
         return {
-            'type': 'loan',
-            'type_label': 'Úver',
-            'car_price': float(price_with_vat),
-            'down_payment': float(down_payment),
-            'down_payment_percent': float(down_payment / price_with_vat * 100),
-            'loan_amount': float(loan_amount),
-            'loan_term_months': loan_term_months,
-            'interest_rate': float(interest_rate * 100),
+            'option_type': 'loan',
+            'option_name': 'Úver',
+            'initial_cost': round(float(down_payment), 2),
             'monthly_payment': round(float(monthly_payment), 2),
-            'total_paid': round(float(total_paid), 2),
-            'total_interest': round(float(total_interest), 2),
-            'ownership_at_end': True
+            'final_payment': 0,
+            'total_cost': round(float(total_paid), 2),
+            'ownership': 'Auto je vo vašom vlastníctve od začiatku',
+            'explanation': f'Bankový úver na {loan_term_months} mesiacov s úrokom {float(interest_rate * 100):.1f}%. Celkový úrok: {round(float(total_interest), 2)} €.'
         }
     
     @classmethod
@@ -228,13 +209,14 @@ class CarLeasingCalculator:
             price_with_vat = car_price
         
         return {
-            'type': 'cash',
-            'type_label': 'Kúpa na hotovosti',
-            'car_price': float(price_with_vat),
-            'total_paid': float(price_with_vat),
+            'option_type': 'cash',
+            'option_name': 'Hotovosť',
+            'initial_cost': round(float(price_with_vat), 2),
             'monthly_payment': 0,
-            'total_interest': 0,
-            'ownership_at_end': True
+            'final_payment': 0,
+            'total_cost': round(float(price_with_vat), 2),
+            'ownership': 'Auto je okamžite vo vašom vlastníctve',
+            'explanation': 'Kúpa za hotovosť bez úrokov a poplatkov. Najlacnejšia možnosť ak máte dostatok financií.'
         }
     
     @classmethod
@@ -265,25 +247,45 @@ class CarLeasingCalculator:
             car_price, down_payment, term_months, leasing_rate, residual_value_percent, include_vat
         )
         
+        # Determine cheapest options
+        monthly_payments = {
+            'Finančný lízing': financial_leasing['monthly_payment'],
+            'Operatívny lízing': operational_leasing['monthly_payment'],
+            'Úver': loan['monthly_payment']
+        }
+        
+        total_costs = {
+            'Finančný lízing': financial_leasing['total_cost'],
+            'Operatívny lízing': operational_leasing['total_cost'],
+            'Úver': loan['total_cost'],
+            'Hotovosť': cash['total_cost']
+        }
+        
+        cheapest_monthly = min(monthly_payments, key=monthly_payments.get)
+        cheapest_total = min(total_costs, key=total_costs.get)
+        most_expensive = max(total_costs, key=total_costs.get)
+        
+        # Get car price with VAT
+        if include_vat:
+            price_with_vat = car_price
+        else:
+            price_with_vat = car_price * (1 + cls.VAT_RATE)
+        
         return {
-            'car_price': cash['car_price'],
+            'car_price': float(price_with_vat),
             'down_payment': float(down_payment),
             'term_months': term_months,
-            'cash_purchase': cash,
-            'loan': loan,
-            'financial_leasing': financial_leasing,
-            'operational_leasing': operational_leasing,
+            'include_vat': include_vat,
+            'options': {
+                'financial_leasing': financial_leasing,
+                'operational_leasing': operational_leasing,
+                'loan': loan,
+                'cash': cash
+            },
             'comparison': {
-                'lowest_monthly_payment': min(
-                    loan['monthly_payment'],
-                    financial_leasing['monthly_payment'],
-                    operational_leasing['monthly_payment']
-                ),
-                'lowest_total_cost': min(
-                    cash['total_paid'],
-                    loan['total_paid'],
-                    financial_leasing['total_paid'],
-                    operational_leasing['total_paid_buyout']
-                )
+                'cheapest': cheapest_total,
+                'most_expensive': most_expensive,
+                'cheapest_monthly': cheapest_monthly,
+                'ownership_options': ['Finančný lízing', 'Úver', 'Hotovosť']
             }
         }

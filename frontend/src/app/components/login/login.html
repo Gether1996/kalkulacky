@@ -1,0 +1,69 @@
+<div class="login-container">
+  <div class="login-card">
+    <h2>Prihlásenie</h2>
+    
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <!-- Email Field -->
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          class="form-control"
+          [class.is-invalid]="email?.invalid && email?.touched"
+          placeholder="vas@email.com"
+        />
+        <div class="invalid-feedback" *ngIf="email?.invalid && email?.touched">
+          <span *ngIf="email?.errors?.['required']">Email je povinný</span>
+          <span *ngIf="email?.errors?.['email']">Neplatný email formát</span>
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="password">Heslo</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          class="form-control"
+          [class.is-invalid]="password?.invalid && password?.touched"
+          placeholder="Vaše heslo"
+        />
+        <div class="invalid-feedback" *ngIf="password?.invalid && password?.touched">
+          <span *ngIf="password?.errors?.['required']">Heslo je povinné</span>
+          <span *ngIf="password?.errors?.['minlength']">Heslo musí mať aspoň 8 znakov</span>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div class="alert alert-danger" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="btn btn-primary btn-block"
+        [disabled]="loading || loginForm.invalid"
+      >
+        <span *ngIf="loading">Prihlasovanie...</span>
+        <span *ngIf="!loading">Prihlásiť sa</span>
+      </button>
+    </form>
+
+    <!-- Divider -->
+    <div class="divider">
+      <span>alebo</span>
+    </div>
+
+    <!-- Google Sign-In Button (rendered by Google SDK) -->
+    <div id="googleSignInButton" style="display: flex; justify-content: center; margin-bottom: 1rem;"></div>
+
+    <!-- Register Link -->
+    <div class="text-center mt-3">
+      <p>Nemáte účet? <a routerLink="/register">Registrujte sa</a></p>
+    </div>
+  </div>
+</div>

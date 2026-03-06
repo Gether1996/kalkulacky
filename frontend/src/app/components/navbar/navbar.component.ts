@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { User } from '../../models/auth.models';
 
 interface Category {
   id: string;
@@ -23,9 +25,11 @@ interface Calculator {
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css']
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit {
   isMenuOpen = false;
   openCategory: string | null = null;
+  isUserMenuOpen = false;
+  currentUser: User | null = null;
 
   categories: Category[] = [
     {
@@ -53,7 +57,8 @@ export class NavbarComponent {
       calculators: [
         { id: 'bmi', name: 'BMI Kalkulačka', route: '/calculator/bmi', icon: '⚖️' },
         { id: 'bmr', name: 'BMR Kalkulačka', route: '/calculator/bmr', icon: '🔥' },
-        { id: 'pregnancy', name: 'Tehotenstvo', route: '/calculator/pregnancy', icon: '🤰' }
+        { id: 'pregnancy', name: 'Tehotenstvo', route: '/calculator/pregnancy', icon: '🤰' },
+        { id: 'parental-benefit', name: 'Rodičovský príspevok', route: '/calculator/parental-benefit', icon: '👶' }
       ]
     },
     {
@@ -73,7 +78,17 @@ export class NavbarComponent {
     }
   ];
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    public authService: AuthService
+  ) {}
+
+  ngOnInit() {
+    // Subscribe to current user
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+    });
+  }
 
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
@@ -83,9 +98,48 @@ export class NavbarComponent {
     this.openCategory = this.openCategory === categoryId ? null : categoryId;
   }
 
+  toggleMobileCategory(categoryId: string) {
+    this.openCategory = this.openCategory === categoryId ? null : categoryId;
+  }
+
   closeMenu() {
     this.isMenuOpen = false;
     this.openCategory = null;
+    this.isUserMenuOpen = false;
+  }
+
+  toggleUserMenu() {
+    this.isUserMenuOpen = !this.isUserMenuOpen;
+  }
+
+  logout() {
+    this.authService.logout().subscribe({
+      next: () => {
+        this.isMenuOpen = false;
+        this.isUserMenuOpen = false;
+      },
+      error: (err) => {
+        console.error('Logout failed', err);
+        this.isMenuOpen = false;
+        this.isUserMenuOpen = false;
+      }
+    });
+  }
+
+  getUserInitials(): string {
+    if (!this.currentUser) return '?';
+    if (this.currentUser.first_name && this.currentUser.last_name) {
+      return (this.currentUser.first_name[0] + this.currentUser.last_name[0]).toUpperCase();
+    }
+    return this.currentUser.email[0].toUpperCase();
+  }
+
+  getUserDisplayName(): string {
+    if (!this.currentUser) return '';
+    if (this.currentUser.first_name && this.currentUser.last_name) {
+      return `${this.currentUser.first_name} ${this.currentUser.last_name}`;
+    }
+    return this.currentUser.email;
   }
 
   getCurrentCategory(): string | null {

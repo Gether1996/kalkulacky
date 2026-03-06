@@ -1,0 +1,268 @@
+.date-picker {
+  position: relative;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.date-picker-label {
+  display: block;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.required {
+  color: #e74c3c;
+  margin-left: 0.25rem;
+}
+
+.date-picker-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.date-picker-input {
+  flex: 1;
+  padding: 0.75rem 3rem 0.75rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.date-picker-input:hover {
+  border-color: #667eea;
+}
+
+.date-picker-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.date-picker-icon {
+  position: absolute;
+  right: 1rem;
+  font-size: 1.2rem;
+  pointer-events: none;
+}
+
+.clear-btn {
+  position: absolute;
+  right: 2.5rem;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: #95a5a6;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.clear-btn:hover {
+  background: #e74c3c;
+  color: white;
+}
+
+.date-picker-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 1000;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  padding: 1rem;
+  min-width: 320px;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  font-size: 1rem;
+  color: #667eea;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+
+.nav-btn:hover {
+  background: #667eea15;
+}
+
+.current-month {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #2c3e50;
+}
+
+.today-btn {
+  width: 100%;
+  padding: 0.5rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+  transition: transform 0.2s ease;
+}
+
+.today-btn:hover {
+  transform: translateY(-1px);
+}
+
+.calendar-grid {
+  width: 100%;
+}
+
+.calendar-header-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.day-name {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #6c757d;
+  padding: 0.5rem 0;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #2c3e50;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.calendar-day:hover:not(.disabled) {
+  background: #667eea15;
+  color: #667eea;
+}
+
+.calendar-day.other-month {
+  color: #bdc3c7;
+}
+
+.calendar-day.today {
+  background: #fff3cd;
+  color: #856404;
+  font-weight: 700;
+}
+
+.calendar-day.selected {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  font-weight: 700;
+}
+
+.calendar-day.selected:hover {
+  background: linear-gradient(135deg, #5568d3, #653a8b);
+}
+
+.calendar-day.disabled {
+  color: #e0e0e0;
+  cursor: not-allowed;
+  background: none;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .date-picker-dropdown {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 350px;
+    animation: scaleIn 0.2s ease;
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  .calendar-day {
+    font-size: 0.85rem;
+  }
+
+  .day-name {
+    font-size: 0.8rem;
+  }
+}
+
+/* Dark overlay for mobile */
+@media (max-width: 768px) {
+  .date-picker-dropdown::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: -1;
+  }
+}

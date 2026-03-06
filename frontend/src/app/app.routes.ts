@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './components/home/home.component';
+import { authGuard, guestGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -109,6 +110,26 @@ export const routes: Routes = [
   {
     path: 'blog/:slug',
     loadComponent: () => import('./components/blog-detail/blog-detail.component').then(m => m.BlogDetailComponent)
+  },
+  {
+    path: 'login',
+    loadComponent: () => import('./components/login/login').then(m => m.Login),
+    canActivate: [guestGuard]
+  },
+  {
+    path: 'register',
+    loadComponent: () => import('./components/register/register').then(m => m.Register),
+    canActivate: [guestGuard]
+  },
+  {
+    path: 'dashboard',
+    loadComponent: () => import('./components/user-dashboard/user-dashboard').then(m => m.UserDashboard),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'profile',
+    loadComponent: () => import('./components/user-profile/user-profile').then(m => m.UserProfile),
+    canActivate: [authGuard]
   },
   {
     path: '**',

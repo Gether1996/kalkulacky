@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { ParentalBenefitCalculationRequest, ParentalBenefitCalculationResponse } from '../../models/calculator.models';
+import { DatePickerComponent } from '../date-picker/date-picker.component';
 
 @Component({
   selector: 'app-parental-benefit-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, DatePickerComponent],
   templateUrl: './parental-benefit-calculator.component.html',
   styleUrls: ['./parental-benefit-calculator.component.css']
 })
@@ -32,19 +33,16 @@ export class ParentalBenefitCalculatorComponent implements OnInit {
   error: string = '';
 
   // UI helpers
-  today: string = '';
-  maxDate: string = '';
+  today: Date = new Date();
+  maxDate: Date | null = null;
 
   ngOnInit() {
     // Set today's date
     const now = new Date();
-    this.today = this.formatDateForInput(now);
-    this.currentDate = this.today;
+    this.today = now;
+    this.currentDate = this.formatDateForInput(now);
     
-    // Max date is 6 years ago (oldest child still eligible)
-    const maxBirthDate = new Date();
-    maxBirthDate.setFullYear(maxBirthDate.getFullYear() - 6);
-    this.maxDate = this.formatDateForInput(maxBirthDate);
+    // Note: Not setting maxDate as we want to allow any date in the past for birth date
     
     // Set default birth date (6 months ago)
     const defaultBirth = new Date();
@@ -88,7 +86,7 @@ export class ParentalBenefitCalculatorComponent implements OnInit {
       plan_to_work: this.planToWork,
       planned_monthly_income: this.plannedMonthlyIncome,
       second_child_birth_date: this.secondChildBirthDate || undefined,
-      current_date: this.currentDate || this.today
+      current_date: this.currentDate || this.formatDateForInput(this.today)
     };
 
     this.calculatorService.calculateParentalBenefit(request).subscribe({
@@ -106,7 +104,7 @@ export class ParentalBenefitCalculatorComponent implements OnInit {
     });
   }
 
-  formatDate(dateString: string): string {
+  formatDate(dateString: string | null): string {
     if (!dateString) return '';
     const date = new Date(dateString);
     const options: Intl.DateTimeFormatOptions = { 

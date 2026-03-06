@@ -209,7 +209,7 @@
       </div>
 
       <!-- Comparison Cards -->
-      <div class="comparison-grid" *ngIf="!loading && !error">
+      <div class="comparison-grid" *ngIf="result && !loading && !error">
         <!-- Financial Leasing -->
         <div class="option-card" [class]="getOptionClass(result.options.financial_leasing)">
           <div class="option-header">
@@ -328,7 +328,7 @@
       </div>
 
       <!-- Summary -->
-      <div class="summary-box" *ngIf="result.comparison">
+      <div class="summary-box" *ngIf="result && result.comparison">
         <h3 class="summary-title">📊 Zhrnutie</h3>
         <ul class="summary-list">
           <li><strong>Najlacnejšie celkovo:</strong> {{ result.comparison.cheapest }}</li>

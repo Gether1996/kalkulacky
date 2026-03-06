@@ -1,0 +1,68 @@
+<div class="date-picker">
+  <label *ngIf="label" class="date-picker-label">
+    {{ label }}
+    <span *ngIf="required" class="required">*</span>
+  </label>
+  
+  <div class="date-picker-input-wrapper" (click)="toggleCalendar()">
+    <input
+      type="text"
+      class="date-picker-input"
+      [value]="displayValue"
+      [placeholder]="placeholder"
+      readonly
+    />
+    <span class="date-picker-icon">📅</span>
+    <button
+      *ngIf="selectedDate"
+      type="button"
+      class="clear-btn"
+      (click)="clearDate(); $event.stopPropagation()"
+      title="Vymazať dátum"
+    >
+      ✕
+    </button>
+  </div>
+
+  <div class="date-picker-dropdown" *ngIf="isOpen">
+    <div class="calendar-header">
+      <button type="button" class="nav-btn" (click)="previousMonth(); $event.stopPropagation()">
+        <span>◀</span>
+      </button>
+      <div class="current-month">
+        {{ getCurrentMonthYear() }}
+      </div>
+      <button type="button" class="nav-btn" (click)="nextMonth(); $event.stopPropagation()">
+        <span>▶</span>
+      </button>
+    </div>
+
+    <button type="button" class="today-btn" (click)="goToToday(); $event.stopPropagation()">
+      Dnes
+    </button>
+
+    <div class="calendar-grid">
+      <div class="calendar-header-days">
+        <div class="day-name" *ngFor="let dayName of dayNames">
+          {{ dayName }}
+        </div>
+      </div>
+
+      <div class="calendar-days">
+        <button
+          type="button"
+          *ngFor="let day of calendarDays"
+          class="calendar-day"
+          [class.other-month]="!day.isCurrentMonth"
+          [class.today]="day.isToday"
+          [class.selected]="day.isSelected"
+          [class.disabled]="day.isDisabled"
+          [disabled]="day.isDisabled"
+          (click)="selectDate(day); $event.stopPropagation()"
+        >
+          {{ day.day }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

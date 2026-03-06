@@ -203,15 +203,109 @@
 
       <!-- Info Card -->
       <div class="info-card">
-        <h3>ℹ️ Dôležité informácie</h3>
+        <h2>📈 Kalkulačka ROI 2026 - Výpočet návratnosti investície (Return on Investment)</h2>
+        
+        <h3>💡 Ako sa počíta ROI?</h3>
+        <p>
+          <strong>ROI (Return on Investment)</strong> je kľúčová finančná metrika, ktorá meria ziskovosť investície. 
+          Vzorec je jednoduchý: <strong>ROI = (Konečná hodnota - Celková investícia) / Celková investícia × 100%</strong>. 
+          Napríklad: investovali ste 10 000 € a po roku máte 12 000 €, váš ROI je (12 000 - 10 000) / 10 000 = <strong>20%</strong>.
+        </p>
+        <p>
+          <strong>Ročný ROI (Annualized ROI)</strong> zohľadňuje čas trvania investície a umožňuje porovnávať investície 
+          rôznej dĺžky. Investícia s ROI 30% za 3 roky má ročný ROI približne 9,1% (nie 10%), pretože zohľadňuje zložené úročenie.
+        </p>
+        
+        <h3>📊 Typické ROI hodnoty v rôznych odvetviach</h3>
         <ul>
-          <li>ROI = (Konečná hodnota - Celková investícia) / Celková investícia × 100%</li>
-          <li>Ročný ROI zohľadňuje čas a umožňuje porovnávať investície rôznej dĺžky.</li>
-          <li>Nezabudnite zahrnúť všetky náklady (poplatky, dane, provízie).</li>
-          <li>Výkonnost príemernéakciového trhu je historicky ~10% ročne.</li>
-          <li>Minulá výkonnosť nezaručuje budúce výnosy.</li>
-          <li>Zvážte aj riziko investície, nie len ROI.</li>
+          <li><strong>Akciový trh (globálne indexy):</strong> 8-10% ročne (historický priemer S&P 500, MSCI World)</li>
+          <li><strong>Nehnuteľnosti na prenájom:</strong> 5-8% ročne (Slovensko) + potenciálne zhodnotenie nehnuteľnosti</li>
+          <li><strong>Kryptomeny:</strong> Veľmi volatilné, -50% až +200% ročne (vysoké riziko!)</li>
+          <li><strong>Startup investície (angel investing):</strong> 20-40% ročne pri úspešných startupoch, ale 70% startupov skrachuje</li>
+          <li><strong>Podnikanie (malé firmy):</strong> 15-30% ročne, závisí od odvetvia a manažmentu</li>
+          <li><strong>Dlhopisy a termínované vklady:</strong> 2-4% ročne (nízke riziko, nízky výnos)</li>
         </ul>
+        
+        <h3>💡 Praktické tipy pre výpočet ROI</h3>
+        <ul>
+          <li>
+            <strong>Započítajte všetky náklady:</strong> ROI musí zohľadniť všetky investované prostriedky - nákup, poplatky, 
+            dane, provízie, údržba. Napríklad pri nehnuteľnosti: kúpna cena + advokát + kataster + renovácia + daň z nadobudnutia.
+          </li>
+          <li>
+            <strong>Nezabudnite na infláciu:</strong> Nominálny ROI 10% ročne pri inflácii 5% znamená reálny výnos len 5%. 
+            Pri dlhodobých investíciách (10+ rokov) má inflácia masívny vplyv na skutočné zhodnotenie.
+          </li>
+          <li>
+            <strong>ROI nie je všetko - zvážte riziko:</strong> Investícia s ROI 20% a vysokým rizikom môže byť horšia 
+            ako investícia s ROI 8% a nízkym rizikom. Používajte <strong>Sharpe Ratio</strong> (výnos vzhl'adom k riziku) 
+            pre lepšie porovnanie.
+          </li>
+          <li>
+            <strong>Porovnávajte ročný ROI, nie celkový:</strong> Investícia A: 50% ROI za 5 rokov (ročne ~8,4%), 
+            Investícia B: 30% ROI za 2 roky (ročne ~14%). B je výhodnejšia, hoci má nižší celkový ROI!
+          </li>
+          <li>
+            <strong>Minulé výnosy ≠ budúce výnosy:</strong> Historický ROI 15% ročne nezaručuje, že nasledujúci rok 
+            bude rovnaký. Trhy sú volatilné - rok môže byť +30%, ďalší rok -10%.
+          </li>
+          <li>
+            <strong>Diverzifikácia znižuje riziko:</strong> Lepšie mať portfólio s priemerným ROI 10% a nízkym rizikom, 
+            než všetko vsadiť na jednu investíciu s ROI 20% a vysokým rizikom straty.
+          </li>
+        </ul>
+        
+        <h3>❓ Často kladené otázky (FAQ)</h3>
+        <div class="faq-item">
+          <strong>Aký je dobrý ROI pre investíciu?</strong>
+          <p>
+            Záleží od odvetvia a rizika. Pre <strong>akciový trh</strong> je dobrý ROI 8-12% ročne (historický priemer). 
+            Pre <strong>podnikanie</strong> je štandard 15-30% ročne. <strong>Nehnuteľnosti</strong> typicky 5-10% ročne 
+            (nájom + zhodnotenie). Startup investície cieľajú na 20-40% ročne, ale s vysokým rizikom neúspechu. 
+            Ak váš ROI prevyšuje infláciu o aspoň 3-5%, zhodnocujete reálne.
+          </p>
+        </div>
+        <div class="faq-item">
+          <strong>Ako vypočítať ROI pri viacerých príspevkoch v čase?</strong>
+          <p>
+            Pri pravidelných príspevkoch (napr. mesačné investovanie 200 €) je potrebné použiť <strong>XIRR (Internal Rate of Return)</strong>, 
+            nie jednoduchý ROI. Napríklad: investovali ste celkom 12 000 € (1 000 € mesačne za rok) a po roku máte 13 000 €, 
+            váš skutočný ročný výnos je cca 10-12% (nie 8,3%), pretože prvé príspevky mali dlhší čas na zhodnotenie.
+          </p>
+        </div>
+        <div class="faq-item">
+          <strong>Čo je lepšie: vysoký ROI za krátky čas alebo nižší ROI dlhodobo?</strong>
+          <p>
+            Záleží na <strong>ročnom ROI</strong> a riziku. Investícia s ROI 100% za 1 rok môže byť lákavá, ale veľmi riziková. 
+            Investícia s ročným ROI 10% každý rok počas 10 rokov je stabilná a vďaka zloženému úročeniu dosiahnete celkový ROI 
+            159% (nie 100%). Pri dlhodobom investovaní vždy vyhráva <strong>zložené úročenie</strong> (compound interest).
+          </p>
+        </div>
+        <div class="faq-item">
+          <strong>Platí sa daň z ROI na Slovensku?</strong>
+          <p>
+            Áno, <strong>daň z kapitálových príjmov</strong> je 19% (alebo 25% pri vysokých príjmoch). Platíte daň z rozdielu 
+            medzi predajnou a nákupnou cenou pri predaji akcií, nehnuteľností, kryptomien. Výnimky: nehnuteľnosť vo vlastníctve 
+            viac ako 5 rokov je oslobodená, dlhopisy EÚ štátov majú 0% daň. Pri pravidelnom investovaní cez ETF na Slovensku 
+            platíte 19% až pri predaji (nie každý rok).
+          </p>
+        </div>
+        <div class="faq-item">
+          <strong>Aký je rozdiel medzi ROI a ROE (Return on Equity)?</strong>
+          <p>
+            <strong>ROI</strong> meria výnos z celkovej investície (vlastné peniaze + pôžička). <strong>ROE</strong> meria výnos 
+            len z vlastných peňazí. Príklad: kúpili ste nehnuteľnosť za 100 000 € (30 000 € vlastné + 70 000 € hypotéka). Po roku 
+            predáte za 110 000 €. <strong>ROI = 10%</strong> (zisk 10 000 € / investícia 100 000 €), ale <strong>ROE = 33%</strong> 
+            (zisk 10 000 € / vlastné peniaze 30 000 €). ROE ukazuje efektivitu využitia vlastných zdrojov.
+          </p>
+        </div>
+        
+        <p style="margin-top: 2rem;">
+          💼 <a routerLink="/loan-calculator" style="color: var(--text-link);">Kalkulačka úveru</a> vám pomôže 
+          porovnať náklady na financovanie investície úverom.<br>
+          🏠 <a routerLink="/mortgage-calculator" style="color: var(--text-link);">Kalkulačka hypotéky</a> je 
+          užitočná pre výpočet ROI pri investícii do nehnuteľnosti.
+        </p>
       </div>
     </div>
   </div>

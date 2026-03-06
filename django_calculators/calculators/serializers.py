@@ -44,19 +44,19 @@ class SalaryCalculatorSerializer(serializers.Serializer):
     def validate_gross_salary(self, value):
         """Custom validation for gross salary"""
         if value <= 0:
-            raise serializers.ValidationError("Gross salary must be greater than 0")
+            raise serializers.ValidationError("Hrubá mzda musí byť väčšia ako 0")
         return value
     
     def validate_children_under_15(self, value):
         """Custom validation for number of children under 15"""
         if value < 0:
-            raise serializers.ValidationError("Number of children cannot be negative")
+            raise serializers.ValidationError("Počet detí nemôže byť záporný")
         return value
     
     def validate_children_15_to_18(self, value):
         """Custom validation for number of children 15-18"""
         if value < 0:
-            raise serializers.ValidationError("Number of children cannot be negative")
+            raise serializers.ValidationError("Počet detí nemôže byť záporný")
         return value
 
 

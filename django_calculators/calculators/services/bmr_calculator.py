@@ -137,8 +137,8 @@ class BMRCalculator(BaseCalculator):
         if weight_goal != 'maintain':
             # Assuming 7700 calories = 1kg of body weight
             calories_per_kg = Decimal('7700')
-            weekly_calorie_deficit = abs(calorie_adjustment) * Decimal('7')
-            kg_per_week = weekly_calorie_deficit / calories_per_kg
+            weekly_calorie_change = calorie_adjustment * Decimal('7')
+            kg_per_week = weekly_calorie_change / calories_per_kg
         else:
             kg_per_week = Decimal('0')
         

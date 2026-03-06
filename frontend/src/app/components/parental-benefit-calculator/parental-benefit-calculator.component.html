@@ -17,20 +17,14 @@
       <h2>Základné údaje</h2>
       
       <!--Birth Date -->
-      <div class="input-group">
-        <label for="birthDate">
-          Dátum narodenia dieťaťa
-          <span class="tooltip" title="Dátum narodenia vášho dieťaťa">ⓘ</span>
-        </label>
-        <input 
-          type="date" 
-          id="birthDate"
-          [(ngModel)]="birthDate"
-          [max]="today"
-          class="input-field"
-          (change)="calculate()"
-        />
-      </div>
+      <app-date-picker
+        label="Dátum narodenia dieťaťa"
+        [(ngModel)]="birthDate"
+        [maxDate]="today"
+        [required]="true"
+        (dateChange)="calculate()"
+      >
+      </app-date-picker>
 
       <!-- Gross Salary (optional for maternity calculation) -->
       <div class="input-group">
@@ -137,36 +131,22 @@
       </div>
 
       <!-- Second Child (optional) -->
-      <div class="input-group">
-        <label for="secondChild">
-          Dátum narodenia druhého dieťaťa (voliteľné)
-          <span class="tooltip" title="Ak plánujete druhé dieťa - predĺži nárok">ⓘ</span>
-        </label>
-        <input 
-          type="date" 
-          id="secondChild"
-          [(ngModel)]="secondChildBirthDate"
-          [max]="today"
-          class="input-field"
-          (change)="calculate()"
-        />
-      </div>
+      <app-date-picker
+        label="Dátum narodenia druhého dieťaťa (voliteľné)"
+        [(ngModel)]="secondChildBirthDate"
+        [maxDate]="today"
+        (dateChange)="calculate()"
+      >
+      </app-date-picker>
 
       <!-- Current Date (optional override) -->
-      <div class="input-group">
-        <label for="currentDate">
-          Aktuálny dátum (voliteľné)
-          <span class="tooltip" title="Dátum,  ktorému počítame (predvolene dnes)">ⓘ</span>
-        </label>
-        <input 
-          type="date" 
-          id="currentDate"
-          [(ngModel)]="currentDate"
-          [max]="today"
-          class="input-field"
-          (change)="calculate()"
-        />
-      </div>
+      <app-date-picker
+        label="Aktuálny dátum (voliteľné)"
+        [(ngModel)]="currentDate"
+        [maxDate]="today"
+        (dateChange)="calculate()"
+      >
+      </app-date-picker>
 
       <!-- Calculate Button -->
       <button class="calculate-btn" (click)="calculate()">
@@ -364,48 +344,108 @@
 
   <!-- Additional Info Section -->
   <div class="info-section">
+    <h2>👶 Kalkulačka rodičovského príspevku 2026 - Výpočet materské a rodičovskej dávky na Slovensku</h2>
+    
+    <h3>📊 Ako funguje rodičovský príspevok na Slovensku?</h3>
+    <p>
+      <strong>Rodičovská dávka</strong> je štátna podpora, ktorú poberáte pri starostlivosti o dieťa do 3 alebo 6 rokov. 
+      Na Slovensku existujú dve varianty: <strong>osnova</strong> (vyššia suma 381,90 € mesačne na 3 roky) a 
+      <strong>alternatíva</strong> (nižšia suma 270 € mesačne na 6 rokov). Celková suma je podobná, líšia sa len 
+      trvanie a mesačná výška. Rodičovská dávka naväzuje na <strong>materskú dávku</strong>, ktorá sa vypláca 
+      34 týždňov (alebo 37 týždňov pri znížení výšky) a predstavuje 75% vášho denného vymeriavacieho základu (DVZ).
+    </p>
+    
+    <h3>💡 Praktické tipy pre rodičovskú dávku</h3>
+    <ul>
+      <li>
+        <strong>Osnova vs. alternatíva - kalkulácia:</strong> Celková suma osnovy je približne 13 748 € (381,90 € × 36 mesiacov), 
+        alternatíva je 19 440 € (270 € × 72 mesiacov). Alternatíva je výhodnejšia finančne (+5 692 €), ale musíte ostať doma 
+        6 rokov namiesto 3. Ak plánujete rýchly návrat do práce, osnova je lepšia.
+      </li>
+      <li>
+        <strong>Materská pred rodičovskou:</strong> Pred rodičovskou vyčerpáte materskú dávku (34 týždňov = ~8 mesiacov, 
+        43 týždňov pri dvojčatách). Materská je 75% DVZ, čo pri hrubej mzde 1 500 € znamená približne 1 100-1 200 € mesačne. 
+        Po materckej automaticky nasleduje rodičovská.
+      </li>
+      <li>
+        <strong>Prilepšiť si prácou:</strong> Môžete pracovať a súčasne poberať rodičovskú, ale váš hrubý príjem nesmie 
+        presiahnúť <strong>635,70 € mesačne</strong> (v roku 2026). To znamená maximálne part-time 15-20 hodín týždenne 
+        pri minimálnej mzde. Nad limit stratíte rodičovskú celú!
+      </li>
+      <li>
+        <strong>Predĺženie pri druhom dieťati:</strong> Ak sa druhé dieťa narodí ešte počas rodičovskej na prvé, 
+        rodičovská sa predĺži o ďalších 3 alebo 6 rokov od narodenia druhého dieťaťa. Môžete tak poberať až 9-12 rokov 
+        rodičovskú pri viacerých deťoch!
+      </li>
+      <li>
+        <strong>Striedanie rodičov:</strong> Rodičovskú môže poberať otec alebo matka, alebo sa môžu striedať. 
+        Napríklad prvé 2 roky matka, ďalší rok otec. Stačí odhlásiť jedného rodiča a prihlásiť druhého na Úrade práce.
+      </li>
+      <li>
+        <strong>Nárok na rodičovskú bez materské:</strong> Ak ste neboli zamestnaná/zamestnaný pred narodením dieťaťa 
+        (študent, SZČO bez odvodov), nemáte nárok na materskú, ale rodičovskú dostanete! Suma je štandardná 270 € mesačne 
+        (alternatíva) alebo 381,90 € (osnova).
+      </li>
+    </ul>
+    
     <div class="info-card">
       <h3>❓ Často kladené otázky</h3>
       <details>
         <summary>Ako si vybrať medzi osnovnou a alternatívou?</summary>
         <p>
-          <strong>Osnova</strong> je lepšia, ak plánujete skorší návrat do práce (€381.90/mes 3 roky).<br>
-          <strong>Alternatíva</strong> je vhodná, ak chcete zostať doma dlhšie (€270/mes 6 rokov).<br>
-          Celková suma osnovy je vyššia, ale kratšie trvanie.
+          <strong>Osnova</strong> je lepšia, ak plánujete skorší návrat do práce (381,90 €/mes 3 roky, celkom 13 748 €).<br>
+          <strong>Alternatíva</strong> je vhodná, ak chcete zostať doma dlhšie (270 €/mes 6 rokov, celkom 19 440 €).<br>
+          Celková suma alternatívy je o 5 692 € vyššia, ale musíte ostať doma dvakrát tak dlho. 
+          Ak máte možnosť zarábať viac ako cca 1 000 € čistého mesačne (po návrate do práce), osnova sa viac oplatí.
         </p>
       </details>
       
       <details>
         <summary>Môžem pracovať a brať rodičovskú?</summary>
         <p>
-          Áno, ale váš príjem nesmie presiahnuť €635.70/mes (hrubý). Nad tento limit stratíte nárok.
+          Áno, ale váš <strong>hrubý príjem nesmie presiahnuť 635,70 €/mes</strong> (v roku 2026). To znamená približne 
+          part-time 15-20 hodín týždenne pri minimálnej mzde 6 € na hodinu. Ak prekročíte limit, Úrad práce vám zastaví 
+          rodičovskú dávku a bude vymáhať už vyplatené sumy späť! Pracujte len do limitu alebo vôbec.
         </p>
       </details>
       
       <details>
         <summary>Čo je materská dávka?</summary>
         <p>
-          Materská je 70% denného vymeriavacieho základu (DVZ) na 34 týždňov (43 pri dvojčatách).
-          DVZ = (hrubá ročná mzda) / 365. Materská sa vypláca pred rodičovskou.
+          <strong>Materská</strong> je dávka z nemocenského poistenia, ktorú poberáte pred nástupom na rodičovskú. 
+          Trvá 34 týždňov (cca 8 mesiacov) alebo 43 týždňov pri dvojčatách. Výška je 75% denného vymeriavacieho základu (DVZ). 
+          DVZ = (hrubá ročná mzda za posledných 12 mesiacov) / 365. Pri mzde 1 500 € je materská približne 1 100 € mesačne. 
+          Materská sa vypláca pred rodičovskou, nie súčasne.
         </p>
       </details>
       
       <details>
         <summary>Čo sa stane pri druhom dieťati?</summary>
         <p>
-          Ak sa druhé dieťa narodí pred skončením rodičovskej na prvé, nárok sa predĺži
-          o ďalších 3/6 rokov (podľa typu) od narodenia druhého dieťaťa.
+          Ak sa druhé dieťa narodí pred skončením rodičovskej na prvé, nárok sa <strong>predĺži o ďalších 3 alebo 6 rokov</strong> 
+          (podľa typu osnova/altertatíva) od narodenia druhého dieťaťa. To znamená, že pri troch deťoch narodených s rozostupom 
+          2-3 roky môžete poberať rodičovskú až 9-15 rokov! Výška dávky zostáva rovnaká (381,90 € alebo 270 € mesačne).
+        </p>
+      </details>
+      
+      <details>
+        <summary>Mám nárok na rodičovskú, aj keď som nepracovala pred pôrodom?</summary>
+        <p>
+          <strong>Áno!</strong> Rodičovskú dostanete aj bez predchádzajúceho zamestnania (študentky, SZČO bez odvodov, nezamestnaní). 
+          Nebudete mať nárok na materskú (tá vyžaduje nemocenské poistenie), ale rodičovská sa vypláca všetkým rodičom. 
+          Suma je štandardná 270 € mesačne (alternatíva) alebo 381,90 € (osnova).
         </p>
       </details>
     </div>
+
 
     <div class="info-card">
       <h3>📚 Užitočné odkazy</h3>
       <ul>
         <li><a href="https://www.upsvr.gov.sk/" target="_blank" rel="noopener">ÚPSVR - Úrad práce, sociálnych vecí a rodiny</a></li>
         <li><a href="https://www.employment.gov.sk/" target="_blank" rel="noopener">Rodičovské dávky - oficiálne info</a></li>
-        <li><a routerLink="/pregnancy-calculator">Kalkulačka tehotenstva</a></li>
-        <li><a routerLink="/vacation-calculator">Kalkulačka dovolenky</a></li>
+        <li><a routerLink="/pregnancy-calculator">🤰 Kalkulačka tehotenstva - Výpočet termínu pôrodu</a></li>
+        <li><a routerLink="/salary-calculator">💼 Kalkulačka čistej mzdy - Výpočet DVZ pre materskú</a></li>
       </ul>
     </div>
   </div>

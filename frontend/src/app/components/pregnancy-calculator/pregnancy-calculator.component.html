@@ -45,14 +45,13 @@
             Prvý deň poslednej menštruácie
             <span class="tooltip" title="Prvý deň vašej poslednej menštruácie">ⓘ</span>
           </label>
-          <input 
-            type="date" 
-            id="lmpDate"
+          <app-date-picker
+            label=""
             [(ngModel)]="lmpDate"
-            [max]="today"
-            class="input-field"
-            (change)="calculate()"
-          />
+            [maxDate]="today"
+            [required]="true"
+            (ngModelChange)="calculate()">
+          </app-date-picker>
         </div>
 
         <!-- Conception Date Input -->
@@ -61,14 +60,13 @@
             Dátum počatia (ovulácie)
             <span class="tooltip" title="Približný dátum počatia alebo ovulácie">ⓘ</span>
           </label>
-          <input 
-            type="date" 
-            id="conceptionDate"
+          <app-date-picker
+            label=""
             [(ngModel)]="conceptionDate"
-            [max]="today"
-            class="input-field"
-            (change)="calculate()"
-          />
+            [maxDate]="today"
+            [required]="true"
+            (ngModelChange)="calculate()">
+          </app-date-picker>
         </div>
 
         <!-- Current Date (optional override) -->
@@ -77,14 +75,12 @@
             Aktuálny dátum
             <span class="tooltip" title="Dátum, ku ktorému počítame (predvolene dnes)">ⓘ</span>
           </label>
-          <input 
-            type="date" 
-            id="currentDate"
+          <app-date-picker
+            label=""
             [(ngModel)]="currentDate"
-            [max]="today"
-            class="input-field"
-            (change)="calculate()"
-          />
+            [maxDate]="today"
+            (ngModelChange)="calculate()">
+          </app-date-picker>
         </div>
       </div>
 
@@ -212,43 +208,124 @@
 
   <!-- SEO Content -->
   <div class="seo-content">
-    <h2>O kalkulačke tehotenstva</h2>
+    <h2>🤰 Kalkulačka tehotenstva 2026 - Výpočet termínu pôrodu a trimestrov</h2>
     
-    <h3>Ako vypočítať termín pôrodu?</h3>
+    <h3>📅 Ako vypočítať termín pôrodu?</h3>
     <p>
       Najpresnejšou metódou výpočtu termínu pôrodu je <strong>Naegelovo pravidlo</strong>, ktoré 
       používajú lekári na celom svete. Tento výpočet pridá 280 dní (40 týždňov) k prvému dňu 
-      vašej poslednej menštruácie. Hoci iba 5% žien porodí presne v termíne, väčšina žien 
-      porodí v rozmedzí 2 týždňov pred alebo po tomto dátume.
+      vašej poslednej menštruácie (LMP - Last Menstrual Period). Hoci iba 5% žien porodí presne v termíne, 
+      väčšina žien porodí v rozmedzí <strong>2 týždňov pred alebo po tomto dátume</strong> (tzv. fyziologický termín).
+    </p>
+    <p>
+      Prvý deň poslednej menštruácie je kľúčový údaj - gynekológ ho používa na celé sledovanie tehotenstva. 
+      Alternatívne môžete počítať od dátumu počatia (približně 14 dní po LMP pri 28-dňovom cykle), 
+      vtedy sa pridáva 266 dní namiesto 280.
     </p>
 
-    <h3>Trimestre tehotenstva</h3>
+    <h3>📊 Tri trimestre tehotenstva</h3>
     <p>
-      Tehotenstvo je rozdelené na tri trimestre, každý s vlastnými míľnikmi:
+      Tehotenstvo je rozdelené na tri trimestre, každý s vlastnými míľnikmi a fyzickými zmenami:
     </p>
     <ul>
-      <li><strong>Prvý trimester (1-12 týždňov):</strong> Embryo sa vyvíja, tvoria sa základné orgány a systémy</li>
-      <li><strong>Druhý trimester (13-26 týždňov):</strong> Plod rastie, začínajú sa pohyby a vyvíjajú sa zmysly</li>
-      <li><strong>Tretí trimester (27-40 týždňov):</strong> Plod dozrieva a pripravuje sa na narodenie</li>
+      <li>
+        <strong>Prvý trimester (1-12 týždňov):</strong> Embryo sa vyvíja, tvoria sa základné orgány a systémy. 
+        Časté symptómy: ranná nevoľnosť, únava, časté močenie. Riziko potratu je najvyššie v tomto období (10-20%).
+      </li>
+      <li>
+        <strong>Druhý trimester (13-26 týždňov):</strong> Plod rastie, začínajú sa pohyby (kopance cca v 18.-20. týždni) 
+        a vyvíjajú sa zmysly. Brušo sa zväčšuje, ale žena sa zvyčajne cíti lepšie než v 1. trimestri. Ultrazvuk odhalí pohlavie.
+      </li>
+      <li>
+        <strong>Tretí trimester (27-40 týždňov):</strong> Plod dozrieva a pripravuje sa na narodenie. Pľúca dozrievajú, 
+        pribratie je najvýraznejšie (cca 5-7 kg v posledných 3 mesiacoch). Časté problémy: bolesť chrbta, pálenie záhy, dýchavičnosť.
+      </li>
     </ul>
 
-    <h3>Presnosť výpočtu</h3>
+    <h3>💡 Praktické tipy pre budúce mamičky</h3>
+    <ul>
+      <li>
+        <strong>Kyselina listová (folát) je kľúčová:</strong> Užívajte 400-800 µg denne už pred počatím a počas prvého trimestra. 
+        Znižuje riziko rozštepov chrbtice (spina bifida) až o 70%. Doplnok stojí 5-10 € mesačne.
+      </li>
+      <li>
+        <strong>Prvá prenatálna prehliadka do 10. týždňa:</strong> Gynekológ potvrdí tehotenstvo, stanoví presný termín podľa 
+        UZ (ultrazvuku), predpíše vitamíny a kyselinu listovú. Prvé UZ je kľúčové pre korekciu termínu pôrodu.
+      </li>
+      <li>
+        <strong>Pravidelné kontroly:</strong> Štandard na Slovensku je 1x mesačne do 28. týždňa, potom 1x za 2 týždne do 36. týždňa, 
+        potom každý týždeň až do pôrodu. Celkovo cca 10-12 návštev gynekológa počas tehotenstva.
+      </li>
+      <li>
+        <strong>Materská dovolenka na Slovensku:</strong> Môžete nastúpiť 6-8 týždňov pred termínom (34.-37. týždeň tehotenstva). 
+        Materské je 75% denného vymeriavacieho základu, trvá 34 týždňov (môžete predĺžiť na 37 týždňov za cenu zníženia dávky).
+      </li>
+      <li>
+        <strong>Pozor na zakázané potraviny:</strong> Surové mäso/ryby, nespasterizované mlieko/syry (riziko listeriózy), 
+        alkohol, nadmerná kofeín (max. 200 mg denne = 2 espressa). Toxoplazmóza z mäsa môže poškodiť plod!
+      </li>
+      <li>
+        <strong>Pripravte sa finančne:</strong> Pôrod na Slovensku je zdarma (verejné nemocnice), ale počítajte s nákladmi: 
+        detská výbava 1 000-3 000 €, kočík 300-800 €, autosedačka 100-300 €, nábytok 500-1 500 €. Spolu približne 3 000-6 000 €.
+      </li>
+    </ul>
+    
+    <h3>❓ Často kladené otázky (FAQ)</h3>
+    <div class="faq-item">
+      <strong>Koľko žien porodí presne v termíne?</strong>
+      <p>
+        Iba približne <strong>5% žien</strong> porodí presne v vypočítanom termíne. Väčšina (60-70%) porodí v rozmedzí 
+        <strong>1-2 týždňov pred alebo po termíne</strong>. Celkovo sa ako fyziologické (normálne) považuje obdobie 37.-42. týždeň 
+        tehotenstva. Po 42. týždni sa jedná o prenesené tehotenstvo a lekári zvyčajne indikujú umelý pôrod.
+      </p>
+    </div>
+    <div class="faq-item">
+      <strong>Kedy je ultrazvuk najpresnejší pre určenie termínu?</strong>
+      <p>
+        Najpresnejší je <strong>ultrazvuk v prvom trimestri</strong> (8.-13. týždeň), kedy sú rozdiely medzi embryami minimálne. 
+        UZ v tomto období určí termín s presnosťou ±3-5 dní. Ultrazvuk v druhom trimestri (20. týždeň) má presnosť ±7-10 dní, 
+        v treťom trimestri je už menej presný (±2-3 týždne), pretože plody rastú rôznym tempom.
+      </p>
+    </div>
+    <div class="faq-item">
+      <strong>Ako sa počíta tehotenstvo - od počatia alebo menštruácie?</strong>
+      <p>
+        Lekári počítajú od <strong>prvého dňa poslednej menštruácie</strong> (LMP), aj keď počatie nastalo približně 14 dní 
+        neskôr (pri ovulácii). Táto metóda je štandardom, lebo deň menštruácie si pamätá každá žena presne, zatiaľ čo deň 
+        počatia nie. Takže keď lekár hovorí "8. týždeň tehotenstva", plod má v skutočnosti len 6 týždňov od počatia.
+      </p>
+    </div>
+    <div class="faq-item">
+      <strong>Kedy môžem nastúpiť na materskú dovolenku?</strong>
+      <p>
+        Na Slovensku máte nárok nastúpiť na materskú dovolenku najskôr <strong>6 týždňov pred termínom</strong> (34. týždeň), 
+        neskôr <strong>8 týždňov pred termínom</strong> (32. týždeň). Môžete pracovať až do pôrodu, ale väčšina žien nastupuje 
+        6-8 týždňov pred termínom. Materské trvá 34 týždňov (môžete predĺžiť na 37 týždňov), dávka je 75% denného vymeriavacieho základu.
+      </p>
+    </div>
+    <div class="faq-item">
+      <strong>Je bezpečné lietať lietadlom počas tehotenstva?</strong>
+      <p>
+        Áno, lietanie je bezpečné v <strong>druhom trimestri</strong> (14.-28. týždeň), kedy je minimálne riziko komplikácii. 
+        Prvý trimester môže byť nepríjemný kvôli nevoľnosti, tretí trimester je problematický kvôli veľkému bruchu a riziku 
+        predčasného pôrodu. Väčšina aerolínií zakazuje lietať po 36. týždni tehotenstva (alebo po 32. týždni pri viacnásobných 
+        tehotenstvách). Nie zabudnite cestovné poistenie pokrývajúce tehotenstvo!
+      </p>
+    </div>
+
+
+    <h3>⚠️ Presnosť výpočtu</h3>
     <p>
       Je dôležité si uvedomiť, že termín pôrodu je <strong>len odhad</strong>. Mnoho faktorov môže 
       ovplyvniť skutočný dátum pôrodu, vrátane dĺžky vášho menštruačného cyklu, času ovulácie, 
       a individuálnych charakteristík tehotenstva. Ultrazvuk v prvom trimestri môže poskytnúť 
-      presnejší odhad termínu pôrodu.
-    </p>
-
-    <h3>Kedy kontaktovať lekára?</h3>
-    <p>
-      Hneď ako zistíte, že ste tehotná, mali by ste sa objednať na prvú prenatálnu prehliadku. 
-      Pravidelné lekárske kontroly sú kľúčové pre zdravie vás aj vášho dieťaťa.
+      presnejší odhad termínu pôrodu. Pre akékoľvek otázky alebo obavy kontaktujte svojho gynekológa.
     </p>
   </div>
 
   <!-- Navigation -->
   <div class="navigation-links">
-    <a routerLink="/calculator/bmi" class="nav-link">BMI kalkulačka →</a>
+    <a routerLink="/bmi-calculator" class="nav-link">📊 BMI kalkulačka →</a>
+    <a routerLink="/parental-benefit-calculator" class="nav-link">👶 Rodičovský príspevok →</a>
   </div>
 </div>

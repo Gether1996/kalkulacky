@@ -39,14 +39,13 @@
           Dátum nástupu do zamestnania
           <span class="tooltip" title="Kedy ste nastúpili do súčasného zamestnania">ⓘ</span>
         </label>
-        <input 
-          type="date" 
-          id="employmentStartDate"
+        <app-date-picker
+          label=""
           [(ngModel)]="employmentStartDate"
-          [max]="today"
-          class="input-field"
-          (change)="calculate()"
-        />
+          [maxDate]="today"
+          [required]="true"
+          (ngModelChange)="calculate()">
+        </app-date-picker>
       </div>
 
       <!-- Current Date -->
@@ -55,14 +54,12 @@
           Aktuálny dátum
           <span class="tooltip" title="Dátum výpočtu (predvolene dnes)">ⓘ</span>
         </label>
-        <input 
-          type="date" 
-          id="currentDate"
+        <app-date-picker
+          label=""
           [(ngModel)]="currentDate"
-          [max]="today"
-          class="input-field"
-          (change)="calculate()"
-        />
+          [maxDate]="today"
+          (ngModelChange)="calculate()">
+        </app-date-picker>
       </div>
 
       <!-- Vacation Days Used -->
@@ -282,48 +279,184 @@
 
   <!-- SEO Content -->
   <div class="seo-content">
-    <h2>O kalkulačke dovolenky</h2>
+    <h2>🏖️ Kalkulačka dovolenky 2026 - Nárok na dovolenku na Slovensku</h2>
     
-    <h3>Nárok na dovolenku na Slovensku</h3>
     <p>
-      Podľa slovenského zákonníka práce (zákon č. 311/2001 Z. z.) má každý zamestnanec  
-      nárok na <strong>4 týždne dovolenky</strong> (20 pracovných dní) ročne. Od veku  
-      <strong>33 rokov</strong> sa tento nárok zvyšuje o <strong>1 týždeň</strong> (5 pracovných dní).
+      Naša <strong>kalkulačka dovolenky</strong> je najpresnejší nástroj na výpočet vášho nároku na dovolenku podľa 
+      slovenského zákonníka práce (zákon č. 311/2001 Z. z.). V roku 2026 platia rovnaké pravidlá ako v predchádzajúcich 
+      rokoch – základný nárok je 4 týždne (20 pracovných dní) ročne, od veku 33 rokov sa zvyšuje na 5 týždňov (25 dní). 
+      Kalkulačka automaticky vypočíta váš nárok na základe veku, dátumu nástupu do zamestnania, čerpanej dovolenky 
+      a prenesených dní z minulého roka. Ideálna pre zamestnancov aj personalistov pri plánovaní dovoleniek.
     </p>
 
-    <h3>Ako sa počíta dovolenka?</h3>
+    <h3>📋 Nárok na dovolenku na Slovensku – Zákonník práce 2026</h3>
+    <p>
+      Podľa slovenského zákonníka práce (zákon č. 311/2001 Z. z., § 100-110) má každý zamestnanec nárok na platenú 
+      dovolenku. Výška nároku závisí od veku a dĺžky pracovného pomeru:
+    </p>
     <ul>
-      <li><strong>Základný nárok:</strong> 4 týždne = 20 pracovných dní</li>
-      <li><strong>Od 33 rokov:</strong> 5 týždňov = 25 pracovných dní</li>
-      <li><strong>Prvý rok:</strong> Nárok sa počíta pomerne podľa odpracovaných mesiacov</li>
-      <li><strong>Prenesenie:</strong> Nevyčerpaná dovolenka sa môže preniesť do nasledujúceho roka</li>
+      <li><strong>Základný nárok:</strong> 4 týždne = 20 pracovných dní ročne (pre zamestnancov do 33 rokov veku)</li>
+      <li><strong>Zvýšený nárok od 33 rokov:</strong> 5 týždňov = 25 pracovných dní ročne (od veku 33 rokov, pričom vek 
+      sa počíta k 31. decembru kalendárneho roka)</li>
+      <li><strong>Prvý rok zamestnania:</strong> Nárok sa počíta pomerne – za každý odpracovaný mesiac vzniká nárok na 
+      1/12 z ročného nároku (t. j. 1,67 dňa/mesiac pri 20 dňoch, alebo 2,08 dňa/mesiac pri 25 dňoch)</li>
+      <li><strong>Dodatočná dovolenka:</strong> Niektoré profesie majú nárok na dodatočnú dovolenku – učitelia (8 týždňov), 
+      zdravotnícki pracovníci (1 týždeň), zamestnanci v 3-zmennej prevádzke (1 týždeň), zamestnanci so zdravotným 
+      postihnutím (3-5 pracovných dní navyše)</li>
+    </ul>
+    <p>
+      V roku 2026 neboli zavedené žiadne legislatívne zmeny týkajúce sa dĺžky dovolenky. Nárok zostáva 4-5 týždňov 
+      podľa veku. Zamestnávateľ môže zamestnancom poskytnúť viac dovolenky, ale menej než 4 týždne nie je prípustné 
+      (s výnimkou prvého roka).
+    </p>
+
+    <h3>🗓️ Ako sa počíta dovolenka v prvom roku zamestnania?</h3>
+    <p>
+      V prvom roku zamestnania vzniká nárok na dovolenku pomerne podľa odpracovaných mesiacov. Zamestnanec získava 
+      nárok na 1/12 z ročného nároku za každý kalendárny mesiac, v ktorom odpracoval aspoň 15 dní (alebo 100 hodín 
+      pri krátkodobých pracovných pomeroch).
+    </p>
+    <ul>
+      <li><strong>Príklad 1:</strong> Nastúpili ste 1. apríla 2026. Do konca roka odpracujete 9 mesiacov (apríl–december). 
+      Váš nárok: 9/12 × 20 dní = 15 dní dovolenky (ak máte menej ako 33 rokov).</li>
+      <li><strong>Príklad 2:</strong> Nastúpili ste 15. júna 2026 a máte 35 rokov. Odpracujete 7 mesiacov (jún–december). 
+      Váš nárok: 7/12 × 25 dní = 14,58 dní ≈ 15 dní dovolenky.</li>
+      <li><strong>Pozor na deň nástupu:</strong> Ak nastúpite napr. 20. januára, mesiac január sa nezapočítava (menej než 
+      15 dní odpracovaných). Nárok vzniká až od februára.</li>
+    </ul>
+    <p>
+      Od druhého roka zamestnania vzniká nárok na celých 4 alebo 5 týždňov dovolenky automaticky k 1. januáru, 
+      bez ohľadu na to, koľko dní ste odpracovali.
+    </p>
+
+    <h3>🔄 Čerpanie a prenesenie dovolenky</h3>
+    <p>
+      <strong>Čerpanie dovolenky</strong> určuje zamestnávateľ po dohode so zamestnancom. Zákonník práce stanovuje 
+      niekoľko povinností a obmedzení:
+    </p>
+    <ul>
+      <li><strong>Povinné 2 týždne neprerušene:</strong> Zamestnávateľ je povinný poskytnúť minimálne 2 týždne dovolenky 
+      v jednom súvislom bloku (t. j. 10 pracovných dní). Ostatnú dovolenku možno rozdeliť na kratšie časti.</li>
+      <li><strong>Povinnosť vyčerpať dovolenku v kalendárnom roku:</strong> Dovolenka by sa mala vyčerpať v календárnom 
+      roku, na ktorý vznikol nárok. Zamestnávateľ je povinný poskytovať dovolenku tak, aby zamestnanec mohol čerpať 
+      aspoň 2 týždne do konca roka.</li>
+      <li><strong>Prenesienie dovolenky:</strong> Ak zamestnanec nevyčerpá celú dovolenku do 31. decembra, môže 
+      sa preniesť do nasledujúceho kalendárneho roka. Nevyčerpaná dovolenka musí byť vyčerpaná do <strong>30. júna 
+      nasledujúceho roka</strong>, prípadne do 31. decembra nasledujúceho roka, ak sa zamestnávateľ a zamestnanec 
+      dohodnú (alebo ak existovali objektívne dôvody – choroba, materská, rodičovská).</li>
+      <li><strong>Zánik nároku:</strong> Nárok na dovolenku zaniká, ak nebola vyčerpaná do konca nasledujúceho 
+      kalendárneho roka (t. j. dovolenka z roku 2024 musí byť vyčerpaná do 31. decembra 2025, inak zaniká).</li>
+      <li><strong>Výnimky:</strong> Ak zamestnanec nemohol čerpať dovolenku z objektívnych dôvodov (PN, materská, 
+      rodičovská dovolenka, pracovný úraz), nárok nezaniká a možno ho čerpať aj neskôr.</li>
     </ul>
 
-    <h3>Čerpanie dovolenky</h3>
+    <h3>💡 Praktické tipy pre čerpanie dovolenky</h3>
+    <ul>
+      <li>
+        <strong>Plánujte vopred:</strong> Dovolenku žiadajte aspoň 2-4 týždne vopred, aby ste dali zamestnávateľovi 
+        dostatok času na organizáciu náhrady. V letných mesiacoch (jún–august) je dovolenková sezóna, plánujte 
+        1-2 mesiace vopred.
+      </li>
+      <li>
+        <strong>Kombinujte s víkendami a sviatkami:</strong> Ak vezmete 3 dni dovolenky + 2 dni víkend + pondelok 
+        sviatok, máte 6 dní voľna za cenu 3 dní dovolenky. V roku 2026 ideálne termíny: okolo 1. mája (štvrtok), 
+        5. júla (sobota – kresťanský sviatok), 29. augusta (sobota – SNP), 1. septembra (utorok – Deň Ústavy).
+      </li>
+      <li>
+        <strong>Nevyčerpaná dovolenka nie je automaticky stratená:</strong> Ak vám zamestnávateľ neumožnil čerpať 
+        dovolenku do konca roka (napr. odmietol žiadosť), máte nárok na finančnú kompenzáciu alebo prenesenie 
+        dovolenky. Dovolenka zaniká iba v prípade, že ste ju nečerpali z vlastnej vôle.
+      </li>
+      <li>
+        <strong>Dovolenka počas výpovednej lehoty:</strong> Ak ste vo výpovednej lehote, zamestnávateľ môže nariadiť 
+        čerpanie nevyčerpanej dovolenky. Ak dovolenka nestačí pokryť celú výpovednú lehotu, pracujete ako obvykle. 
+        Ak máte viac dovolenky, než je dlhá výpovedná lehota, prebytok vám zamestnávateľ vyplatí.
+      </li>
+      <li>
+        <strong>Dovolenka a PN:</strong> Ak ste na dovolenke a ochoriete, dovolenka sa automaticky neprerušuje. 
+        Prerušenie dovolenky kvôli PN je možné iba po dohode so zamestnávateľom (§ 110 Zákonníka práce). Prax: 
+        ak ste na dovolenke doma a ochoriete, môžete požiadať o prerušenie dovolenky a predložiť ePN. Pokiaľ ste 
+        v zahraničí, v praxi sa dovolenka neprerušuje.
+      </li>
+      <li>
+        <strong>Dovolenka pri skončení pracovného pomeru:</strong> Pri ukončení pracovného pomeru máte nárok na 
+        vyplatenie nevyčerpanej dovolenky (náhradné voľno). Výška odmeny zodpovedá priemernému zárobku.
+      </li>
+    </ul>
+
+    <h3>⚖️ Dodatočná dovolenka pre špeciálne kategórie</h3>
     <p>
-      Zamestnávateľ je povinný poskytnúť najmenej <strong>2 týždne neprerušenej dovolenky</strong>  
-      v kalendárnom roku. Zvyšnú časť dovolenky možno poskytnúť aj po častiach. Dovolenku  
-      určuje zamestnávateľ po dohode so zamestnancom.
+      Okrem základného nároku 4-5 týždňov niektoré kategórie zamestnancov majú nárok na dodatočnú dovolenku:
+    </p>
+    <ul>
+      <li><strong>Pedagogickí zamestnanci (učitelia, vysokoškolskí pedagógovia):</strong> 8 týždňov dovolenky 
+      ročne (40 pracovných dní). Dovolenka sa čerpá najmä počas školských prázdnin.</li>
+      <li><strong>Zdravotnícki pracovníci:</strong> +1 týždeň (5 dní) navyše = 5-6 týždňov celkom. Platí pre lekárov, 
+      zdravotné sestry, záchranárov pracujúcich v nemocniciach, poliklinikách, ZZS.</li>
+      <li><strong>Zamestnanci v 3-zmennej prevádzke:</strong> +1 týždeň (5 dní) navyše = 5-6 týždňov celkom. 
+      Týka sa zamestnancov pracujúcich v nepretržitej prevádzke (24/7 striedanie rannej, odpoludňajšej, nočnej zmeny).</li>
+      <li><strong>Zamestnanci so zdravotným postihnutím (ZŤP/ŤZP):</strong> +3-5 dní navyše podľa stupňa postihnutia.</li>
+      <li><strong>Mladiství zamestnanci (do 18 rokov):</strong> 4 týždne + max. 1 týždeň dodatočne (nie povinné, 
+      závisí od zamestnávateľa).</li>
+    </ul>
+    <p>
+      Ak spadáte do viacerých kategórií (napr. učiteľ nad 33 rokov), nároky sa nesčítavajú – platí najvyšší nárok 
+      (8 týždňov pre učiteľa).
     </p>
 
-    <h3>Premlčanie nároku</h3>
+    <h3>❓ Často kladené otázky (FAQ)</h3>
+    
+    <h4>1. Koľko dní dovolenky mám nárok, ak mám 32 rokov?</h4>
     <p>
-      Nárok na dovolenku zaniká, ak ju zamestnanec nevyčerpá do <strong>31. decembra  
-      nasledujúceho kalendárneho roka</strong>. Výnimkou sú prípady, keď zamestnanec nemohol  
-      čerpať dovolenku z vážnych dôvodov (choroba, rodičovská dovolenka).
+      Základný nárok je 4 týždne = 20 pracovných dní ročne. Zvýšený nárok na 5 týždňov vzniká až od veku 33 rokov 
+      (počítaného k 31. decembru kalendárneho roka). Ak dovŕšite 33 rokov v priebehu roka 2026, váš nárok na rok 
+      2026 je 20 dní. Na rok 2027 už budete mať nárok na 25 dní.
     </p>
 
-    <h3>Dodatočná dovolenka</h3>
+    <h4>2. Môže mi zamestnávateľ odmietnuť žiadosť o dovolenku?</h4>
     <p>
-      Niektoré kategórie zamestnancov majú nárok na dodatočnú dovolenku (napr. učitelia,  
-      pracovníci v rizikových profesiách). Táto kalkulačka počíta základný nárok podľa  
-      zákonníka práce.
+      Áno, zamestnávateľ určuje termín dovolenky po dohode so zamestnancom. Ak existujú prevádzkové dôvody 
+      (nedostatok zamestnancov, dôležitý projekt, špička v sezóne), môže zamestnávateľ odmietnuť žiadosť alebo 
+      navrhnúť iný termín. Zamestnávateľ je však povinný poskytnúť aspoň 2 týždne dovolenky v kalendárnom roku 
+      a umožniť čerpanie celého nároku.
     </p>
+
+    <h4>3. Môžem si vziať dovolenku mimo plánovaného termínu (neplánovaná dovolenka)?</h4>
+    <p>
+      Áno, ale iba po dohode so zamestnávateľom. Zákon nevyžaduje písomné schvaľovanie s dlhou lehotou. Ak máte 
+      dobrý vzťah so zamestnávateľom, môžete požiadať o dovolenku aj krátko vopred (napr. 1-2 dni). V praxi však 
+      väčšina firiem vyžaduje žiadosť minimálne 7-14 dní vopred.
+    </p>
+
+    <h4>4. Čo sa stane s nevyčerpanou dovolenkou pri skončení pracovného pomeru?</h4>
+    <p>
+      Nevyčerpaná dovolenka sa vyplatí ako finančná náhrada (náhradné voľno). Výška náhrady zodpovedá priemernému 
+      zárobku. Príklad: Máte nevyčerpaných 5 dní dovolenky, váš priemerný denný zárobok je 50 EUR. Dostanete 
+      250 EUR náhrady za dovolenku pri výplate mzdy (alebo v deň skončenia pracovného pomeru).
+    </p>
+
+    <h4>5. Môže mi zamestnávateľ nariadiť, kedy si mám vziať dovolenku?</h4>
+    <p>
+      Áno, zamestnávateľ môže určiť kolektívnu dovolenku (napr. zatvorenie prevádzky počas vianočných sviatkov, 
+      v stavebníctve počas letných prázdnin). Túto prax však musí oznámiť dopredu (ideálne v pracovnej zmluve 
+      alebo vnútornom predpise). Zamestnávateľ nemôže nariadiť dovolenku svojvoľne bez akejkoľvek dohody – 
+      dovolenka je síce právom zamestnanca, ale termín určuje zamestnávateľ po vzájomnej dohode.
+    </p>
+
+    <h3>🔗 Súvisiace kalkulačky</h3>
+    <p>
+      Ak plánujete dovolenku alebo riešite pracovné a osobné financie, vyskúšajte naše ďalšie kalkulačky:
+    </p>
+
+    <div class="navigation-links">
+      <a href="/calculator/salary" class="related-link">💼 Kalkulačka čistej mzdy →</a>
+      <a href="/calculator/sick-leave" class="related-link">🏥 Kalkulačka nemocenskej →</a>
+      <a href="/calculator/parental-benefit" class="related-link">👶 Kalkulačka rodičovského príspevku →</a>
+    </div>
   </div>
 
-  <!-- Navigation -->
-  <div class="navigation-links">
-
+  <!-- Original Navigation retained for compatibility -->
+  <div class="navigation-links" style="margin-top: 2rem;">
     <a routerLink="/calculator/salary" class="nav-link">Čistá mzda kalkulačka →</a>
   </div>
 </div>

@@ -1,0 +1,124 @@
+<div class="profile-container" *ngIf="user">
+  <div class="profile-header">
+    <h2>Môj profil</h2>
+    <button class="btn btn-danger" (click)="logout()">Odhlásiť sa</button>
+  </div>
+
+  <!-- Profile Information -->
+  <div class="profile-card">
+    <h3>Základné informácie</h3>
+    
+    <div class="info-group">
+      <label>Email:</label>
+      <span>{{ user.email }}</span>
+    </div>
+
+    <div class="info-group" *ngIf="user.oauth_provider">
+      <label>Prihlásený cez:</label>
+      <span class="badge">{{ user.oauth_provider }}</span>
+    </div>
+
+    <div class="info-group">
+      <label>Člen od:</label>
+      <span>{{ user.date_joined | date:'dd.MM.yyyy' }}</span>
+    </div>
+
+    <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+      <div class="form-group">
+        <label for="first_name">Meno</label>
+        <input
+          type="text"
+          id="first_name"
+          formControlName="first_name"
+          class="form-control"
+          placeholder="Vaše meno"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="last_name">Priezvisko</label>
+        <input
+          type="text"
+          id="last_name"
+          formControlName="last_name"
+          class="form-control"
+          placeholder="Vaše priezvisko"
+        />
+      </div>
+
+      <div class="alert alert-success" *ngIf="profileMessage">
+        {{ profileMessage }}
+      </div>
+
+      <div class="alert alert-danger" *ngIf="profileError">
+        {{ profileError }}
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="loading || profileForm.invalid"
+      >
+        <span *ngIf="loading">Aktualizujem...</span>
+        <span *ngIf="!loading">Aktualizovať profil</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- Change Password Section (only for non-OAuth users) -->
+  <div class="profile-card" *ngIf="!user.oauth_provider">
+    <h3>Zmeniť heslo</h3>
+    
+    <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+      <div class="form-group">
+        <label for="old_password">Súčasné heslo</label>
+        <input
+          type="password"
+          id="old_password"
+          formControlName="old_password"
+          class="form-control"
+          placeholder="Vaše súčasné heslo"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="new_password">Nové heslo</label>
+        <input
+          type="password"
+          id="new_password"
+          formControlName="new_password"
+          class="form-control"
+          placeholder="Minimálne 8 znakov"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="new_password_confirm">Potvrdenie nového hesla</label>
+        <input
+          type="password"
+          id="new_password_confirm"
+          formControlName="new_password_confirm"
+          class="form-control"
+          placeholder="Zopakujte nové heslo"
+        />
+      </div>
+
+      <div class="alert alert-success" *ngIf="passwordMessage">
+        {{ passwordMessage }}
+      </div>
+
+      <div class="alert alert-danger" *ngIf="passwordError">
+        {{ passwordError }}
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="passwordLoading || passwordForm.invalid"
+      >
+        <span *ngIf="passwordLoading">Menim heslo...</span>
+        <span *ngIf="!passwordLoading">Zmeniť heslo</span>
+      </button>
+    </form>
+  </div>
+</div>
