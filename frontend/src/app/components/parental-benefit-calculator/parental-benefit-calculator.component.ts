@@ -1,21 +1,23 @@
-import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { ParentalBenefitCalculationRequest, ParentalBenefitCalculationResponse } from '../../models/calculator.models';
 import { DatePickerComponent } from '../date-picker/date-picker.component';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-parental-benefit-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, DatePickerComponent],
+  imports: [CommonModule, FormsModule, RouterLink, DatePickerComponent, TranslatePipe],
   templateUrl: './parental-benefit-calculator.component.html',
   styleUrls: ['./parental-benefit-calculator.component.css']
 })
 export class ParentalBenefitCalculatorComponent implements OnInit {
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
+  private platformId = inject(PLATFORM_ID);
 
   // Input fields
   birthDate: string = '';
@@ -51,8 +53,10 @@ export class ParentalBenefitCalculatorComponent implements OnInit {
     
     // Default salary
     this.grossSalary = 1400;
-    
-    this.calculate();
+
+    if (isPlatformBrowser(this.platformId)) {
+      this.calculate();
+    }
   }
 
   formatDateForInput(date: Date): string {

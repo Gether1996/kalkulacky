@@ -53,8 +53,11 @@ import {
   SplitBillCalculationResponse,
   TipSuggestionsResponse,
   ParentalBenefitCalculationRequest,
-  ParentalBenefitCalculationResponse
+  ParentalBenefitCalculationResponse,
+  SolarSubsidyCalculationRequest,
+  SolarSubsidyCalculationResponse
 } from '../models/calculator.models';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -64,16 +67,12 @@ export class CalculatorService {
   private apiUrl: string;
 
   constructor(private http: HttpClient) {
-    // Use different API URL based on environment
-    // In Docker SSR context, use 'backend', otherwise use 'localhost'
+    // Browser uses the configured public API URL (env-specific, correct in prod);
+    // SSR uses the internal Docker service name.
     if (isPlatformBrowser(this.platformId)) {
-      // Browser: use localhost
-      this.apiUrl = 'http://localhost:8000/api';
-      console.log('🌐 CalculatorService: Using browser API URL:', this.apiUrl);
+      this.apiUrl = environment.apiUrl;
     } else {
-      // SSR: use Docker service name
       this.apiUrl = 'http://backend:8000/api';
-      console.log('🖥️ CalculatorService: Using SSR API URL:', this.apiUrl);
     }
   }
 
@@ -256,6 +255,13 @@ export class CalculatorService {
   calculateParentalBenefit(data: ParentalBenefitCalculationRequest): Observable<ParentalBenefitCalculationResponse> {
     return this.http.post<{success: boolean, data: ParentalBenefitCalculationResponse}>(
       `${this.apiUrl}/calculators/parental-benefit/`, data
+    ).pipe(map(response => response.data));
+  }
+
+  // Solar / PV Subsidy & Payback Calculator
+  calculateSolarSubsidy(data: SolarSubsidyCalculationRequest): Observable<SolarSubsidyCalculationResponse> {
+    return this.http.post<{success: boolean, data: SolarSubsidyCalculationResponse}>(
+      `${this.apiUrl}/calculators/solar/`, data
     ).pipe(map(response => response.data));
   }
 }

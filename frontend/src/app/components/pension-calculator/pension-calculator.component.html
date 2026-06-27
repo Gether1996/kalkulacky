@@ -1,8 +1,8 @@
 <div class="calculator-container">
   <!-- Header -->
   <div class="calculator-header">
-    <h1>💼 Kalkulačka dôchodku</h1>
-    <p class="subtitle">Vypočítajte odhad dôchodku a dôchodkové odvody</p>
+    <h1>{{ 'pension.title' | t }}</h1>
+    <p class="subtitle">{{ 'calc.pension.desc' | t }}</p>
     <div class="seo-keywords">
       <span class="keyword">Dôchodok</span>
       <span class="keyword">Starobný dôchodok</span>
@@ -266,6 +266,12 @@
     </div>
   </div>
 
+  <!-- Monetization: partner offers + display ad -->
+  <div class="monetization-zone" *ngIf="result && !loading">
+    <app-affiliate-cta calculatorType="pension"></app-affiliate-cta>
+    <app-ad-slot slot="pension-after-result"></app-ad-slot>
+  </div>
+
   <!-- SEO Content -->
   <div class="seo-content">
     <h2>📊 Kalkulačka dôchodku 2026 - Výpočet starobného dôchodku na Slovensku</h2>
@@ -386,7 +392,7 @@
 
   <!-- Navigation -->
   <div class="navigation-links">
-    <a routerLink="/salary-calculator" class="nav-link">💼 Kalkulačka čistej mzdy →</a>
-    <a routerLink="/freelancer-tax-calculator" class="nav-link">💰 Odvody SZČO →</a>
+    <a routerLink="/calculator/salary" class="nav-link">💼 Kalkulačka čistej mzdy →</a>
+    <a routerLink="/calculator/freelancer-tax" class="nav-link">💰 Odvody SZČO →</a>
   </div>
 </div>

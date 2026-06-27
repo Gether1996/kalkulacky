@@ -96,7 +96,7 @@
 
 .input-field:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--calc-accent);
 }
 
 .currency-symbol {
@@ -117,7 +117,7 @@
   width: 100%;
   height: 8px;
   border-radius: 5px;
-  background: linear-gradient(to right, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(to right, var(--calc-accent) 0%, var(--calc-accent-2) 100%);
   outline: none;
   opacity: 0.8;
   transition: opacity 0.2s;
@@ -132,7 +132,7 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #667eea;
+  background: var(--calc-accent);
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
@@ -141,7 +141,7 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #667eea;
+  background: var(--calc-accent);
   cursor: pointer;
   border: none;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -185,14 +185,14 @@
 }
 
 .benchmark-button:hover {
-  border-color: #667eea;
+  border-color: var(--calc-accent);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
 }
 
 .benchmark-button.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-color: #667eea;
+  background: linear-gradient(135deg, var(--calc-accent) 0%, var(--calc-accent-2) 100%);
+  border-color: var(--calc-accent);
   color: white;
 }
 
@@ -230,12 +230,12 @@
 }
 
 .term-button:hover {
-  border-color: #667eea;
+  border-color: var(--calc-accent);
 }
 
 .term-button.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-color: #667eea;
+  background: linear-gradient(135deg, var(--calc-accent) 0%, var(--calc-accent-2) 100%);
+  border-color: var(--calc-accent);
   color: white;
 }
 
@@ -287,7 +287,7 @@
 
 .input-field-compact:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--calc-accent);
 }
 
 /* Checkbox */
@@ -370,7 +370,7 @@
   height: 50px;
   margin: 0 auto 1rem;
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #667eea;
+  border-top: 4px solid var(--calc-accent);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -518,7 +518,7 @@
 /* Summary Box */
 .summary-box {
   padding: 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--calc-accent) 0%, var(--calc-accent-2) 100%);
   border-radius: 12px;
   color: white;
 }

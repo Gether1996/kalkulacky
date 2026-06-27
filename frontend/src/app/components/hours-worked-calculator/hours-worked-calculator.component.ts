@@ -6,11 +6,12 @@ import {
   HoursWorkedCalculationRequest, 
   HoursWorkedCalculationResponse 
 } from '../../models/calculator.models';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-hours-worked-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './hours-worked-calculator.component.html',
   styleUrl: './hours-worked-calculator.component.css'
 })

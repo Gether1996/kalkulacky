@@ -31,7 +31,7 @@
 
 .keyword {
   background: #e8f4f8;
-  color: #3498db;
+  color: var(--calc-accent);
   padding: 0.4rem 1rem;
   border-radius: 20px;
   font-size: 0.9rem;
@@ -87,7 +87,7 @@
 .tooltip {
   cursor: help;
   margin-left: 0.3rem;
-  color: #3498db;
+  color: var(--calc-accent);
 }
 
 .input-field {
@@ -102,7 +102,7 @@
 
 .input-field:focus {
   outline: none;
-  border-color: #3498db;
+  border-color: var(--calc-accent);
 }
 
 .slider {
@@ -123,11 +123,11 @@
   padding: 1.5rem;
   border-radius: 8px;
   margin-top: 2rem;
-  border-left: 4px solid #3498db;
+  border-left: 4px solid var(--calc-accent);
 }
 
 .info-card h3 {
-  color: #3498db;
+  color: var(--calc-accent);
   margin-bottom: 1rem;
   font-size: 1.1rem;
 }
@@ -155,7 +155,7 @@
 
 .spinner {
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #3498db;
+  border-top: 4px solid var(--calc-accent);
   border-radius: 50%;
   width: 50px;
   height: 50px;
@@ -232,7 +232,7 @@
 }
 
 .scale-segment.underweight {
-  background: #3498db;
+  background: var(--calc-accent);
 }
 
 .scale-segment.normal {
@@ -300,11 +300,11 @@
   padding: 1.5rem;
   border-radius: 8px;
   margin-bottom: 1.5rem;
-  border-left: 4px solid #3498db;
+  border-left: 4px solid var(--calc-accent);
 }
 
 .category-info.underweight {
-  border-left-color: #3498db;
+  border-left-color: var(--calc-accent);
 }
 
 .category-info.normal {
@@ -520,7 +520,7 @@
 }
 
 .nav-link:hover {
-  background: #3498db;
+  background: var(--calc-accent);
   color: white;
   transform: translateY(-2px);
 }

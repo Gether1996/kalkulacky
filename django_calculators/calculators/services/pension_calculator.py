@@ -120,9 +120,9 @@ class PensionCalculator(BaseCalculator):
         # Based on average salary and years worked
         total_years_at_retirement = years_worked + years_to_retirement
         
-        # Pension points based on years worked and salary level
-        # Simplified: 1 point per year at average salary
-        salary_ratio = gross_salary / self.AVERAGE_PENSION_SK
+        # Pension points based on years worked and salary level.
+        # ~1 point per year earned at the AVERAGE WAGE (not the average pension).
+        salary_ratio = gross_salary / Decimal(str(cfg.AVERAGE_WAGE_MONTHLY))
         pension_points = Decimal(str(total_years_at_retirement)) * salary_ratio
         
         # Calculate estimated monthly pension

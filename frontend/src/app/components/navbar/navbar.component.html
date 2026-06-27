@@ -1,6 +1,6 @@
 <!-- Two-Tier Navbar -->
 <nav class="navbar-wrapper">
-  
+
   <!-- Top Bar: Logo + Auth -->
   <div class="top-bar">
     <div class="top-bar-container">
@@ -10,15 +10,18 @@
         <span class="brand-text">Kalkulačky<span class="brand-accent">.sk</span></span>
       </a>
 
+      <!-- Language switcher -->
+      <app-language-switcher class="navbar-lang"></app-language-switcher>
+
       <!-- Desktop Auth Section -->
       <div class="auth-section" *ngIf="!authService.isAuthenticated()">
         <a routerLink="/login" class="auth-btn auth-btn-login">
           <span class="auth-icon">🔐</span>
-          Prihlásenie
+          {{ 'nav.login' | t }}
         </a>
         <a routerLink="/register" class="auth-btn auth-btn-register">
           <span class="auth-icon">✨</span>
-          Registrácia
+          {{ 'nav.register' | t }}
         </a>
       </div>
 
@@ -41,22 +44,22 @@
           <div class="divider"></div>
           <a routerLink="/dashboard" class="menu-item" (click)="toggleUserMenu()">
             <span class="menu-icon">📊</span>
-            Dashboard
+            {{ 'nav.dashboard' | t }}
           </a>
           <a routerLink="/profile" class="menu-item" (click)="toggleUserMenu()">
             <span class="menu-icon">👤</span>
-            Profil
+            {{ 'nav.profile' | t }}
           </a>
           <div class="divider"></div>
           <button class="menu-item logout-btn" (click)="logout()">
             <span class="menu-icon">🚪</span>
-            Odhlásiť sa
+            {{ 'nav.logout' | t }}
           </button>
         </div>
       </div>
 
       <!-- Mobile Menu Toggle -->
-      <button class="mobile-menu-btn" (click)="isMenuOpen = !isMenuOpen">
+      <button class="mobile-menu-btn" (click)="isMenuOpen = !isMenuOpen" aria-label="Menu">
         <span class="hamburger" [class.active]="isMenuOpen">
           <span></span>
           <span></span>
@@ -69,23 +72,23 @@
   <!-- Category Bar: Main Navigation -->
   <div class="category-bar">
     <div class="category-bar-container">
-      
+
       <!-- Home -->
-      <a routerLink="/" 
-         routerLinkActive="active" 
+      <a routerLink="/"
+         routerLinkActive="active"
          [routerLinkActiveOptions]="{exact: true}"
          class="category-link">
         <span class="cat-icon">🏠</span>
-        <span>Domov</span>
+        <span>{{ 'nav.home' | t }}</span>
       </a>
 
       <!-- Basic Calculator -->
-      <a routerLink="/calculator/basic" 
+      <a routerLink="/calculator/basic"
          routerLinkActive="active"
          [routerLinkActiveOptions]="{exact: true}"
          class="category-link">
         <span class="cat-icon">🧮</span>
-        <span>Kalkulačka</span>
+        <span>{{ 'calc.basic.name' | t }}</span>
       </a>
 
       <!-- Financial Dropdown -->
@@ -95,7 +98,7 @@
            (mouseleave)="openCategory = null">
         <button class="category-link">
           <span class="cat-icon">💰</span>
-          <span>Finančné</span>
+          <span>{{ 'nav.cat.financial' | t }}</span>
           <span class="arrow">▼</span>
         </button>
         <div class="mega-menu">
@@ -105,7 +108,7 @@
                routerLinkActive="active"
                class="mega-item">
               <span class="mega-icon">{{ calc.icon }}</span>
-              <span>{{ calc.name }}</span>
+              <span>{{ ('calc.' + calc.id + '.name') | t }}</span>
             </a>
           </div>
         </div>
@@ -118,7 +121,7 @@
            (mouseleave)="openCategory = null">
         <button class="category-link">
           <span class="cat-icon">⚕️</span>
-          <span>Zdravie</span>
+          <span>{{ 'nav.cat.health' | t }}</span>
           <span class="arrow">▼</span>
         </button>
         <div class="mega-menu">
@@ -128,7 +131,7 @@
                routerLinkActive="active"
                class="mega-item">
               <span class="mega-icon">{{ calc.icon }}</span>
-              <span>{{ calc.name }}</span>
+              <span>{{ ('calc.' + calc.id + '.name') | t }}</span>
             </a>
           </div>
         </div>
@@ -141,7 +144,7 @@
            (mouseleave)="openCategory = null">
         <button class="category-link">
           <span class="cat-icon">🌟</span>
-          <span>Životný štýl</span>
+          <span>{{ 'nav.cat.lifestyle' | t }}</span>
           <span class="arrow">▼</span>
         </button>
         <div class="mega-menu">
@@ -151,18 +154,18 @@
                routerLinkActive="active"
                class="mega-item">
               <span class="mega-icon">{{ calc.icon }}</span>
-              <span>{{ calc.name }}</span>
+              <span>{{ ('calc.' + calc.id + '.name') | t }}</span>
             </a>
           </div>
         </div>
       </div>
 
       <!-- Blog -->
-      <a routerLink="/blog" 
+      <a routerLink="/blog"
          routerLinkActive="active"
          class="category-link">
         <span class="cat-icon">📝</span>
-        <span>Blog</span>
+        <span>{{ 'nav.blog' | t }}</span>
       </a>
 
     </div>
@@ -171,16 +174,16 @@
   <!-- Mobile Menu Overlay -->
   <div class="mobile-menu" [class.open]="isMenuOpen">
     <div class="mobile-menu-content">
-      
+
       <!-- Mobile Auth/User Section -->
       <div class="mobile-auth-section" *ngIf="!authService.isAuthenticated()">
         <a routerLink="/login" class="mobile-auth-btn" (click)="isMenuOpen = false">
           <span class="auth-icon">🔐</span>
-          Prihlásenie
+          {{ 'nav.login' | t }}
         </a>
         <a routerLink="/register" class="mobile-auth-btn mobile-auth-register" (click)="isMenuOpen = false">
           <span class="auth-icon">✨</span>
-          Registrácia
+          {{ 'nav.register' | t }}
         </a>
       </div>
 
@@ -194,24 +197,24 @@
         </div>
         <a routerLink="/dashboard" class="mobile-menu-link" (click)="isMenuOpen = false">
           <span class="menu-icon">📊</span>
-          Dashboard
+          {{ 'nav.dashboard' | t }}
         </a>
         <a routerLink="/profile" class="mobile-menu-link" (click)="isMenuOpen = false">
           <span class="menu-icon">👤</span>
-          Profil
+          {{ 'nav.profile' | t }}
         </a>
       </div>
 
       <div class="mobile-divider"></div>
 
       <!-- Mobile Navigation Links -->
-      <a routerLink="/" 
+      <a routerLink="/"
          routerLinkActive="active"
          [routerLinkActiveOptions]="{exact: true}"
          class="mobile-menu-link"
          (click)="isMenuOpen = false">
         <span class="menu-icon">🏠</span>
-        Domov
+        {{ 'nav.home' | t }}
       </a>
 
       <a routerLink="/calculator/basic"
@@ -219,14 +222,14 @@
          class="mobile-menu-link mobile-menu-featured"
          (click)="isMenuOpen = false">
         <span class="menu-icon">🧮</span>
-        Kalkulačka
+        {{ 'calc.basic.name' | t }}
       </a>
 
       <!-- Mobile Categories -->
       <div *ngFor="let category of categories" class="mobile-category">
         <button class="mobile-category-header" (click)="toggleMobileCategory(category.id)">
           <span class="cat-icon">{{ category.icon }}</span>
-          <span>{{ category.name }}</span>
+          <span>{{ ('nav.cat.' + category.id) | t }}</span>
           <span class="expand-icon" [class.expanded]="openCategory === category.id">
             {{ openCategory === category.id ? '−' : '+' }}
           </span>
@@ -238,7 +241,7 @@
              class="mobile-calc-link"
              (click)="isMenuOpen = false">
             <span class="calc-icon">{{ calc.icon }}</span>
-            <span>{{ calc.name }}</span>
+            <span>{{ ('calc.' + calc.id + '.name') | t }}</span>
           </a>
         </div>
       </div>
@@ -248,15 +251,15 @@
          class="mobile-menu-link"
          (click)="isMenuOpen = false">
         <span class="menu-icon">📝</span>
-        Blog
+        {{ 'nav.blog' | t }}
       </a>
 
       <!-- Mobile Logout -->
-      <button *ngIf="authService.isAuthenticated()" 
+      <button *ngIf="authService.isAuthenticated()"
               class="mobile-logout-btn"
               (click)="logout()">
         <span class="menu-icon">🚪</span>
-        Odhlásiť sa
+        {{ 'nav.logout' | t }}
       </button>
 
     </div>

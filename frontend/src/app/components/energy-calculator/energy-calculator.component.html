@@ -1,7 +1,7 @@
 <div class="calculator-container">
   <div class="calculator-header">
-    <h1>⚡ Kalkulačka nákladov na energiu</h1>
-    <p class="subtitle">Vypočítajte mesačné a ročné náklady na elektrinu a plyn</p>
+    <h1>{{ 'energy.title' | t }}</h1>
+    <p class="subtitle">{{ 'calc.energy.desc' | t }}</p>
     <div class="keywords">
       <span class="keyword-badge">Náklady na energiu</span>
       <span class="keyword-badge">Výpočet spotreby</span>
@@ -326,6 +326,13 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Monetization: solar/installer lead capture + partner offers -->
+  <div class="monetization-zone" *ngIf="result && !isLoading">
+    <app-lead-form calculatorType="energy" [context]="leadContext"></app-lead-form>
+    <app-affiliate-cta calculatorType="energy"></app-affiliate-cta>
+    <app-ad-slot slot="energy-after-result"></app-ad-slot>
   </div>
 
   <div class="seo-content">

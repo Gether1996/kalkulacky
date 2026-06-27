@@ -35,6 +35,8 @@ from .serializers import (
     AreaVolumeCalculatorSerializer,
     SplitBillCalculatorSerializer,
     ParentalBenefitCalculatorSerializer,
+    SavedCalculationSerializer,
+    ScheduledNotificationSerializer,
 )
 from .services import (
     SalaryCalculator,
@@ -1253,7 +1255,7 @@ class UnitConverterUnitsView(APIView):
 
 class SickLeaveCalculatorView(APIView):
     """
-    Sick Leave Calculator API - Kalkulačka nemocenskej
+    Sick Leave Calculator API - Kalkulačka pracovnej neschopnosti (PN)
     
     POST /api/calculators/sick-leave/
     Body: {
@@ -1758,3 +1760,123 @@ class NotificationListView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
+
+
+# ============================================================================
+# MONETIZATION VIEWS (lead-gen capture + affiliate click tracking)
+# ============================================================================
+
+from .serializers import LeadSerializer, AffiliateClickSerializer
+
+
+def _client_ip(request):
+    """Best-effort client IP, honouring a single proxy hop."""
+    xff = request.META.get('HTTP_X_FORWARDED_FOR')
+    if xff:
+        return xff.split(',')[0].strip()
+    return request.META.get('REMOTE_ADDR')
+
+
+class LeadCreateView(APIView):
+    """
+    Capture a qualified lead from a calculator and persist it for routing/selling.
+
+    POST /api/calculators/leads/
+    Body: { vertical, calculator_type, name, email, phone, region, message,
+            context, consent, source_url }
+
+    This is the core of the highest-value monetization model (lead-gen).
+    Stored leads are routed/sold to partners (brokers, installers, etc.).
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []  # anonymous, public — avoid session/CSRF enforcement
+
+    def post(self, request):
+        serializer = LeadSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {'success': False, 'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not request.session.session_key:
+            request.session.save()
+
+        serializer.save(
+            session_key=request.session.session_key or '',
+            ip_address=_client_ip(request),
+            user_agent=request.META.get('HTTP_USER_AGENT', '')[:300],
+        )
+        return Response(
+            {
+                'success': True,
+                'message': 'Ďakujeme! Ozveme sa vám čo najskôr s nezáväznou ponukou.',
+                'lead_id': serializer.data.get('id'),
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class AffiliateClickView(APIView):
+    """
+    Record an outbound click on a partner/affiliate CTA (for EPC reconciliation).
+
+    POST /api/calculators/affiliate-click/
+    Body: { partner, offer_id, calculator_type, target_url, source_url }
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []  # anonymous, public — avoid session/CSRF enforcement
+
+    def post(self, request):
+        serializer = AffiliateClickSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {'success': False, 'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not request.session.session_key:
+            request.session.save()
+
+        serializer.save(
+            session_key=request.session.session_key or '',
+            ip_address=_client_ip(request),
+            user_agent=request.META.get('HTTP_USER_AGENT', '')[:300],
+        )
+        return Response({'success': True}, status=status.HTTP_201_CREATED)
+
+
+class SolarSubsidyCalculatorView(APIView):
+    """
+    Solar / Photovoltaic Subsidy & Payback Calculator.
+
+    POST /api/calculators/solar/
+    Body: { annual_consumption_kwh, electricity_rate?, system_size_kwp?,
+            include_battery?, battery_capacity_kwh? }
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        from .serializers import SolarSubsidyCalculatorSerializer
+        from .services import SolarSubsidyCalculator
+
+        serializer = SolarSubsidyCalculatorSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            calculator = SolarSubsidyCalculator()
+            result = calculator.calculate(**serializer.validated_data)
+            return Response(
+                {'success': True, 'data': result, 'calculator': 'solar',
+                 'version': '2026'},
+                status=status.HTTP_200_OK,
+            )
+        except ValueError as e:
+            return Response({'success': False, 'error': str(e)},
+                            status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'success': False, 'error': str(e)},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)

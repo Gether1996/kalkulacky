@@ -97,7 +97,7 @@
 
 .input-field:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--calc-accent);
 }
 
 .currency-symbol {
@@ -155,13 +155,13 @@
 }
 
 .benchmark-button:hover {
-  border-color: #667eea;
+  border-color: var(--calc-accent);
   background: #f8f9ff;
 }
 
 .benchmark-button.active {
-  border-color: #667eea;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: var(--calc-accent);
+  background: linear-gradient(135deg, var(--calc-accent) 0%, var(--calc-accent-2) 100%);
   color: white;
 }
 
@@ -255,7 +255,7 @@
 
 .input-field-compact:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--calc-accent);
 }
 
 .input-hint-compact {
@@ -274,11 +274,11 @@
   padding: 1.5rem;
   border-radius: 8px;
   margin-top: 1rem;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid var(--calc-accent);
 }
 
 .info-title {
-  color: #667eea;
+  color: var(--calc-accent);
   margin-bottom: 1rem;
   font-size: 1.1rem;
 }
@@ -308,7 +308,7 @@
 
 .spinner {
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #667eea;
+  border-top: 4px solid var(--calc-accent);
   border-radius: 50%;
   width: 50px;
   height: 50px;
@@ -332,13 +332,13 @@
 
 /* Big Result Card */
 .big-result-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--calc-accent) 0%, var(--calc-accent-2) 100%);
   color: white;
   padding: 2rem;
   border-radius: 12px;
   text-align: center;
   margin-bottom: 2rem;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px var(--calc-accent-shadow);
 }
 
 .result-label {
@@ -393,7 +393,7 @@
 }
 
 .breakdown-card:hover {
-  border-color: #667eea;
+  border-color: var(--calc-accent);
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
 }
 

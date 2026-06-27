@@ -162,13 +162,14 @@ LIFE_EXPECTANCY_AFTER_RETIREMENT = 20  # years - Average years in retirement
 
 
 # ===========================
-# SICK LEAVE CALCULATOR (NEMOCENSKÁ)
+# SICK LEAVE CALCULATOR (PRACOVNÁ NESCHOPNOSŤ / PN)
 # ===========================
 
-# Payment periods and rates
-SICK_LEAVE_EMPLOYER_PAYMENT_DAYS = 3  # First 3 days paid by employer
-SICK_LEAVE_EMPLOYER_RATE = Decimal('0.25')  # 25% of daily assessment base
-SICK_LEAVE_INSURANCE_RATE_ILLNESS = Decimal('0.55')  # 55% from day 4 onwards (illness)
+# Payment periods and rates (SK: employer pays days 1-10, Sociálna poisťovňa 11+)
+SICK_LEAVE_EMPLOYER_PAYMENT_DAYS = 10  # Employer pays the first 10 days
+SICK_LEAVE_EMPLOYER_TIER1_DAYS = 3  # Days 1-3 at the lower 25% rate
+SICK_LEAVE_EMPLOYER_RATE = Decimal('0.25')  # 25% of DVZ (days 1-3)
+SICK_LEAVE_INSURANCE_RATE_ILLNESS = Decimal('0.55')  # 55% of DVZ (days 4-10 employer, 11+ insurer)
 SICK_LEAVE_INSURANCE_RATE_CARE = Decimal('0.55')  # 55% for family member care
 
 # Assessment base limits for sick leave (2026)
@@ -182,10 +183,18 @@ SICK_LEAVE_MIN_WAGE_DAILY = SICK_LEAVE_MIN_WAGE_MONTHLY * 12 / 365  # Daily mini
 # FREELANCER TAX CALCULATOR (SZČO)
 # ===========================
 
-# Income tax rates for freelancers (same as employees)
-FREELANCER_TAX_RATE_LOW = Decimal('0.19')  # 19% - First bracket
-FREELANCER_TAX_RATE_HIGH = Decimal('0.25')  # 25% - Second bracket
-FREELANCER_TAX_THRESHOLD = Decimal('44863')  # €44,863/year - Threshold for higher rate
+# Income tax rates for freelancers - Progressive 5-bracket system (2026)
+FREELANCER_TAX_RATE_1 = Decimal('0.15')  # 15% - First bracket (low incomes)
+FREELANCER_TAX_RATE_2 = Decimal('0.19')  # 19% - Second bracket
+FREELANCER_TAX_RATE_3 = Decimal('0.25')  # 25% - Third bracket
+FREELANCER_TAX_RATE_4 = Decimal('0.30')  # 30% - Fourth bracket
+FREELANCER_TAX_RATE_5 = Decimal('0.35')  # 35% - Fifth bracket (high incomes)
+
+# Tax thresholds (annual income) - 2026
+FREELANCER_TAX_THRESHOLD_1 = Decimal('20000')  # €20,000/year - Threshold for 15% rate (low income SZČO)
+FREELANCER_TAX_THRESHOLD_2 = TAX_THRESHOLD_1_YEARLY  # €43,983.32/year - Same as employees
+FREELANCER_TAX_THRESHOLD_3 = TAX_THRESHOLD_2_YEARLY  # €76,553.08/year
+FREELANCER_TAX_THRESHOLD_4 = TAX_THRESHOLD_3_YEARLY  # €165,005.40/year
 
 # Health insurance for freelancers
 FREELANCER_HEALTH_INSURANCE_RATE = Decimal('0.14')  # 14% - Total health insurance rate for SZČO
@@ -227,7 +236,7 @@ TYPICAL_CONSUMPTION_COMBINED = Decimal('7.0')  # liters/100km - Combined
 # ===========================
 
 # Maternity benefit (Materské)
-MATERNITY_BENEFIT_RATE = Decimal('0.70')  # 70% of daily assessment base
+MATERNITY_BENEFIT_RATE = Decimal('0.75')  # 75% of daily assessment base (SK materské)
 MATERNITY_BENEFIT_WEEKS = 34  # 34 weeks for single child (43 for twins+)
 MATERNITY_BENEFIT_WEEKS_TWINS = 43  # 43 weeks for twins or more
 

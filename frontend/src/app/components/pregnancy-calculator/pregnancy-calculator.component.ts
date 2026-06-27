@@ -1,21 +1,23 @@
-import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { PregnancyCalculationRequest, PregnancyCalculationResponse } from '../../models/calculator.models';
 import { DatePickerComponent } from '../date-picker/date-picker.component';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-pregnancy-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, DatePickerComponent],
+  imports: [CommonModule, FormsModule, RouterLink, DatePickerComponent, TranslatePipe],
   templateUrl: './pregnancy-calculator.component.html',
   styleUrls: ['./pregnancy-calculator.component.css']
 })
 export class PregnancyCalculatorComponent implements OnInit {
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
+  private platformId = inject(PLATFORM_ID);
 
   // Input fields
   calculationMethod: 'lmp' | 'conception' = 'lmp';
@@ -44,8 +46,10 @@ export class PregnancyCalculatorComponent implements OnInit {
     // Set default LMP date to 8 weeks ago for demo
     this.lmpDate = new Date();
     this.lmpDate.setDate(this.lmpDate.getDate() - 56); // 8 weeks
-    
-    this.calculate();
+
+    if (isPlatformBrowser(this.platformId)) {
+      this.calculate();
+    }
   }
 
   formatDateForInput(date: Date): string {

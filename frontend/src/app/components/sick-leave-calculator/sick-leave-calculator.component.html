@@ -1,7 +1,7 @@
 <div class="calculator-container">
   <div class="calculator-header">
-    <h1>🏥 Kalkulačka nemocenskej</h1>
-    <p class="subtitle">Vypočítajte si výšku nemocenského príspevku podľa slovenskej legislatívy (2026)</p>
+    <h1>{{ 'sickleave.title' | t }}</h1>
+    <p class="subtitle">{{ 'calc.sick-leave.desc' | t }}</p>
   </div>
 
   <!-- Input Section -->
@@ -103,7 +103,7 @@
 
   <!-- Loading State -->
   <div *ngIf="isLoading" class="loading">
-    Vypočítavam nemocenskú...
+    Vypočítavam pracovnú neschopnosť...
   </div>
 
   <!-- Result Section -->
@@ -227,7 +227,7 @@
 
   <!-- Information Section -->
   <div class="info-section">
-    <h2>💡 Ako funguje nemocenská na Slovensku?</h2>
+    <h2>💡 Ako funguje pracovná neschopnosť (PN) na Slovensku?</h2>
     <div class="info-content">
       <div class="info-card">
         <h3>📌 Prvé 3 dni (25% DVZ)</h3>
@@ -307,7 +307,7 @@
 
   <!-- SEO Content -->
   <div class="seo-content">
-    <h2>🔍 Kalkulačka nemocenskej 2026 - Výpočet práceneschopnosti (PN) na Slovensku</h2>
+    <h2>🔍 Kalkulačka pracovnej neschopnosti (PN) 2026 - Výpočet nemocenských dávok na Slovensku</h2>
     <p>
       <strong>Nemocenská</strong> je dávka sociálneho poistenia, ktorú dostávate počas pracovnej neschopnosti (PN). 
       Na Slovensku funguje systém, kde <strong>prvé tri dni platí zamestnávateľ</strong> (25% denného vymeriavacieho základu) 
@@ -412,7 +412,7 @@
     
 
     <p style="margin-top: 2rem;">
-      💼 <a routerLink="/salary-calculator" style="color: var(--text-link);">Kalkulačka čistej mzdy</a> vám pomôže 
+      💼 <a routerLink="/calculator/salary" style="color: var(--text-link);">Kalkulačka čistej mzdy</a> vám pomôže 
       zistiť váš hrubý a denný vymeriavací základ pre výpočet nemocenskej.
     </p>
   </div>

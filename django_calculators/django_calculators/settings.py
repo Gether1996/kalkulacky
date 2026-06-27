@@ -28,6 +28,19 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,backend', cast=Csv())
 
+# Production security — auto-activates when DEBUG=False (set via .env on deploy).
+if not DEBUG:
+    # Respect the X-Forwarded-Proto header from a reverse proxy (nginx/traefik).
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000, cast=int)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+
 
 # Application definition
 
@@ -73,14 +86,21 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',  # Required by django-allauth
 ]
 
-# CORS Settings (allow Angular frontend)
-# For development, allow all origins
-CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=True, cast=bool)
+# CORS Settings (allow Angular frontend).
+# Allow-all is insecure with credentials and is ignored by the browser anyway,
+# so default to an explicit allow-list (dev origins below; set real origins in prod).
+CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=False, cast=bool)
 
-# Alternative: Specify allowed origins (comma-separated in .env)
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
     default='http://localhost:4200,http://127.0.0.1:4200,http://frontend:4200',
+    cast=Csv()
+)
+
+# Trusted origins for CSRF (must include the frontend origin/scheme in prod).
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='http://localhost:4200,http://127.0.0.1:4200',
     cast=Csv()
 )
 

@@ -729,7 +729,7 @@ class UnitConverterSerializer(serializers.Serializer):
 
 
 class SickLeaveCalculatorSerializer(serializers.Serializer):
-    """Serializer for Sick Leave (Nemocenská) Calculator API"""
+    """Serializer for Sick Leave (Pracovná neschopnosť / PN) Calculator API"""
     gross_salary = serializers.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -1039,3 +1039,67 @@ class ScheduledNotificationSerializer(serializers.Serializer):
     sent_at = serializers.DateTimeField(read_only=True)
     created_at = serializers.DateTimeField(read_only=True)
 
+
+
+# ============================================================================
+# MONETIZATION SERIALIZERS
+# ============================================================================
+
+from .models import Lead, AffiliateClick
+
+
+class LeadSerializer(serializers.ModelSerializer):
+    """Validates an incoming lead-gen submission from a calculator."""
+
+    class Meta:
+        model = Lead
+        fields = [
+            'id', 'vertical', 'calculator_type', 'name', 'email', 'phone',
+            'region', 'message', 'context', 'consent', 'source_url', 'created_at',
+        ]
+        read_only_fields = ['id', 'created_at']
+
+    def validate(self, attrs):
+        # A lead is worthless without a way to contact the person.
+        if not attrs.get('email') and not attrs.get('phone'):
+            raise serializers.ValidationError(
+                'Zadajte e-mail alebo telefónne číslo, aby sme vás mohli kontaktovať.'
+            )
+        if not attrs.get('consent'):
+            raise serializers.ValidationError(
+                'Bez súhlasu so spracovaním údajov vás, žiaľ, nevieme prepojiť s partnerom.'
+            )
+        return attrs
+
+
+class AffiliateClickSerializer(serializers.ModelSerializer):
+    """Records an outbound click on a partner/affiliate CTA."""
+
+    class Meta:
+        model = AffiliateClick
+        fields = [
+            'id', 'partner', 'offer_id', 'calculator_type',
+            'target_url', 'source_url', 'created_at',
+        ]
+        read_only_fields = ['id', 'created_at']
+
+
+class SolarSubsidyCalculatorSerializer(serializers.Serializer):
+    """Serializer for Solar/PV Subsidy & Payback Calculator API"""
+    annual_consumption_kwh = serializers.DecimalField(
+        max_digits=10, decimal_places=2, min_value=0,
+        help_text="Annual electricity consumption in kWh"
+    )
+    electricity_rate = serializers.DecimalField(
+        max_digits=6, decimal_places=4, required=False,
+        help_text="Electricity rate in EUR/kWh (default 0.20)"
+    )
+    system_size_kwp = serializers.DecimalField(
+        max_digits=5, decimal_places=2, required=False,
+        help_text="Optional desired system size in kWp (auto-sized if omitted)"
+    )
+    include_battery = serializers.BooleanField(default=False, required=False)
+    battery_capacity_kwh = serializers.DecimalField(
+        max_digits=5, decimal_places=2, required=False, default=0,
+        help_text="Battery capacity in kWh (auto-sized if battery enabled)"
+    )

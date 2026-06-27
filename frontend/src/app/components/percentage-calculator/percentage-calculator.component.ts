@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { PercentageCalculationResponse } from '../../models/calculator.models';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 interface CalculationType {
   id: string;
@@ -15,7 +16,7 @@ interface CalculationType {
 @Component({
   selector: 'app-percentage-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe],
   templateUrl: './percentage-calculator.component.html',
   styleUrls: ['./percentage-calculator.component.css']
 })

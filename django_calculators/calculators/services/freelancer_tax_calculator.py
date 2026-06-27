@@ -20,9 +20,16 @@ class FreelancerTaxCalculator(BaseCalculator):
     """
     
     # 2026 Slovak tax rates and limits - imported from config_variables
-    TAX_RATE_LOW = cfg.FREELANCER_TAX_RATE_LOW  # 19% tax rate
-    TAX_RATE_HIGH = cfg.FREELANCER_TAX_RATE_HIGH  # 25% tax rate for higher incomes
-    TAX_THRESHOLD = cfg.FREELANCER_TAX_THRESHOLD  # Annual income threshold for higher tax rate (2026)
+    TAX_RATE_1 = cfg.FREELANCER_TAX_RATE_1  # 15% tax rate (low incomes)
+    TAX_RATE_2 = cfg.FREELANCER_TAX_RATE_2  # 19% tax rate
+    TAX_RATE_3 = cfg.FREELANCER_TAX_RATE_3  # 25% tax rate
+    TAX_RATE_4 = cfg.FREELANCER_TAX_RATE_4  # 30% tax rate
+    TAX_RATE_5 = cfg.FREELANCER_TAX_RATE_5  # 35% tax rate (high incomes)
+    
+    TAX_THRESHOLD_1 = cfg.FREELANCER_TAX_THRESHOLD_1  # €20,000/year
+    TAX_THRESHOLD_2 = cfg.FREELANCER_TAX_THRESHOLD_2  # €43,983.32/year
+    TAX_THRESHOLD_3 = cfg.FREELANCER_TAX_THRESHOLD_3  # €76,553.08/year
+    TAX_THRESHOLD_4 = cfg.FREELANCER_TAX_THRESHOLD_4  # €165,005.40/year
     
     # Health insurance
     HEALTH_INSURANCE_RATE = cfg.FREELANCER_HEALTH_INSURANCE_RATE  # 14%
@@ -80,9 +87,11 @@ class FreelancerTaxCalculator(BaseCalculator):
         
         # Calculate expenses
         if use_flat_expenses:
-            # Use 60% flat expense rate
-            annual_expenses = annual_revenue * self.FLAT_EXPENSE_RATE
-            expenses_note = "Paušálne výdavky (60%)"
+            # 60% flat expenses, capped at the statutory €20,000/year maximum.
+            annual_expenses = min(
+                annual_revenue * self.FLAT_EXPENSE_RATE, Decimal('20000')
+            )
+            expenses_note = "Paušálne výdavky (60 %, max. 20 000 €)"
         else:
             annual_expenses = Decimal(str(annual_expenses))
             expenses_note = "Skutočné výdavky"
@@ -100,16 +109,31 @@ class FreelancerTaxCalculator(BaseCalculator):
         if taxable_income < 0:
             taxable_income = Decimal('0')
         
-        # Calculate income tax (progressive)
-        if taxable_income <= self.TAX_THRESHOLD:
-            income_tax = taxable_income * self.TAX_RATE_LOW
-            tax_rate_applied = self.TAX_RATE_LOW
+        # Income tax for a sole trader (SZČO):
+        #  • 15% if annual taxable income (turnover) ≤ €100,000,
+        #  • otherwise the standard 19% / 25% progression (25% on the part of the
+        #    base above €43,983.32). The 30%/35% rates do not exist.
+        TURNOVER_15_LIMIT = Decimal('100000')
+        income_tax = Decimal('0')
+        tax_rate_applied = Decimal('0')
+
+        if taxable_income <= Decimal('0'):
+            income_tax = Decimal('0')
+            tax_rate_applied = Decimal('0')
+        elif annual_revenue <= TURNOVER_15_LIMIT:
+            # Reduced 15% rate for small sole traders.
+            income_tax = taxable_income * self.TAX_RATE_1
+            tax_rate_applied = self.TAX_RATE_1
+        elif taxable_income <= self.TAX_THRESHOLD_2:
+            # 19% up to €43,983.32.
+            income_tax = taxable_income * self.TAX_RATE_2
+            tax_rate_applied = self.TAX_RATE_2
         else:
-            # Split into two brackets
-            tax_low_bracket = self.TAX_THRESHOLD * self.TAX_RATE_LOW
-            tax_high_bracket = (taxable_income - self.TAX_THRESHOLD) * self.TAX_RATE_HIGH
-            income_tax = tax_low_bracket + tax_high_bracket
-            tax_rate_applied = self.TAX_RATE_HIGH
+            # 19% up to the threshold, 25% above it.
+            bracket_1 = self.TAX_THRESHOLD_2 * self.TAX_RATE_2
+            bracket_2 = (taxable_income - self.TAX_THRESHOLD_2) * self.TAX_RATE_3
+            income_tax = bracket_1 + bracket_2
+            tax_rate_applied = self.TAX_RATE_3
         
         # Calculate assessment base for contributions (half-year delay rule simplified)
         # In reality, it's based on previous year's income, but we'll use current year for simplicity

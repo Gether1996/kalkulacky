@@ -9,7 +9,7 @@
   text-align: center;
   margin-bottom: 3rem;
   padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--calc-accent) 0%, var(--calc-accent-2) 100%);
   border-radius: 16px;
   color: white;
 }
@@ -78,7 +78,7 @@
 
 .input-group input[type="number"]:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--calc-accent);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -98,7 +98,7 @@
 .calculate-button {
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--calc-accent) 0%, var(--calc-accent-2) 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -111,7 +111,7 @@
 
 .calculate-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 6px 12px var(--calc-accent-shadow);
 }
 
 .calculate-button:disabled {
@@ -194,7 +194,7 @@
   background: #f8f9fa;
   padding: 1.25rem;
   border-radius: 8px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid var(--calc-accent);
 }
 
 .summary-card.profit {
@@ -287,7 +287,7 @@
 
 .detail-value.strong {
   font-size: 1.2rem;
-  color: #667eea;
+  color: var(--calc-accent);
 }
 
 /* Benchmarks */

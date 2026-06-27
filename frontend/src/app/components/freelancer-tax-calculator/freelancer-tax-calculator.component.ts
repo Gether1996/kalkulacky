@@ -1,16 +1,22 @@
 import { Component, ChangeDetectorRef, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
-import { 
-  FreelancerTaxCalculationRequest, 
-  FreelancerTaxCalculationResponse 
+import {
+  FreelancerTaxCalculationRequest,
+  FreelancerTaxCalculationResponse
 } from '../../models/calculator.models';
+import { SeoService } from '../../services/seo.service';
+import { LeadFormComponent } from '../shared/lead-form/lead-form.component';
+import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.component';
+import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-freelancer-tax-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink, LeadFormComponent, AffiliateCtaComponent, AdSlotComponent, TranslatePipe],
   templateUrl: './freelancer-tax-calculator.component.html',
   styleUrl: './freelancer-tax-calculator.component.css'
 })
@@ -18,6 +24,7 @@ export class FreelancerTaxCalculatorComponent implements OnInit {
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
+  private seo = inject(SeoService);
 
   // Input values
   annualRevenue: number = 30000;
@@ -32,9 +39,35 @@ export class FreelancerTaxCalculatorComponent implements OnInit {
   error: string | null = null;
 
   ngOnInit() {
+    this.seo.apply({
+      title: 'Kalkulačka daní a odvodov SZČO 2026 (živnostník)',
+      description: 'Vypočítajte daň z príjmu, zdravotné a sociálne odvody pre SZČO/živnostníka v roku 2026. Paušálne vs. skutočné výdavky a čistý príjem.',
+      path: '/calculator/freelancer-tax',
+      keywords: 'odvody SZČO 2026 kalkulačka, daň živnostník, paušálne výdavky, čistý príjem živnostník',
+      isCalculator: true,
+      faq: [
+        {
+          question: 'Aké sú minimálne odvody SZČO v roku 2026?',
+          answer: 'Živnostník platí minimálne zdravotné aj sociálne odvody odvodené od minimálneho vymeriavacieho základu. Kalkulačka zohľadní aktuálne sadzby pre rok 2026.',
+        },
+        {
+          question: 'Kedy sa oplatia paušálne výdavky 60 %?',
+          answer: 'Paušálne výdavky (60 % z príjmu, do zákonného limitu) sa oplatia, ak sú vaše skutočné náklady nižšie. Pri vysokých reálnych nákladoch je výhodnejšie účtovať skutočné výdavky.',
+        },
+      ],
+    });
     if (isPlatformBrowser(this.platformId)) {
       this.calculate();
     }
+  }
+
+  /** Calculation snapshot attached to an accounting lead. */
+  get leadContext(): Record<string, any> {
+    return {
+      annual_revenue: this.annualRevenue,
+      use_flat_expenses: this.useFlatExpenses,
+      net_income: this.result?.summary?.net_income ?? null,
+    };
   }
 
   calculate() {

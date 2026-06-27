@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:8000/api',
-  googleClientId: '' // Add your Google OAuth Client ID here
+  googleClientId: '', // Add your Google OAuth Client ID here
+  adsensePublisherId: '' // e.g. 'ca-pub-XXXXXXXXXXXXXXXX' — empty = ads off
 };

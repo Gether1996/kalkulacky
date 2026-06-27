@@ -2,10 +2,10 @@
   <!-- Header -->
   <header class="calculator-header">
     <h1 class="calculator-title">
-      🚗 Kalkulačka lízingu auta
+      {{ 'carleasing.title' | t }}
     </h1>
     <p class="calculator-subtitle">
-      Porovnanie finančného lízingu, operatívneho lízingu, úveru a nákupu na hotovosti. Nájdite najlepší spôsob financovania vášho auta.
+      {{ 'calc.car-leasing.desc' | t }}
     </p>
   </header>
 
@@ -338,6 +338,12 @@
         </ul>
       </div>
     </div>
+  </div>
+
+  <!-- Monetization: partner offers + display ad -->
+  <div class="monetization-zone" *ngIf="result && !loading">
+    <app-affiliate-cta calculatorType="car-leasing"></app-affiliate-cta>
+    <app-ad-slot slot="car-leasing-after-result"></app-ad-slot>
   </div>
 
   <!-- SEO Content -->

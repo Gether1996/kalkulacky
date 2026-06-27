@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models/auth.models';
+import { LanguageSwitcherComponent } from '../shared/language-switcher/language-switcher.component';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 interface Category {
   id: string;
@@ -21,7 +23,7 @@ interface Calculator {
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, LanguageSwitcherComponent, TranslatePipe],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css']
 })
@@ -47,7 +49,7 @@ export class NavbarComponent implements OnInit {
         { id: 'inflation', name: 'Inflácia', route: '/calculator/inflation', icon: '📉' },
         { id: 'roi', name: 'ROI Kalkulačka', route: '/calculator/roi', icon: '📊' },
         { id: 'car-leasing', name: 'Lízing auta', route: '/calculator/car-leasing', icon: '🚗' },
-        { id: 'sick-leave', name: 'Nemocenská', route: '/calculator/sick-leave', icon: '🏥' }
+        { id: 'sick-leave', name: 'Pracovná neschopnosť (PN)', route: '/calculator/sick-leave', icon: '🏥' }
       ]
     },
     {
@@ -69,6 +71,7 @@ export class NavbarComponent implements OnInit {
         { id: 'fuel-cost', name: 'Spotreba auta', route: '/calculator/fuel-cost', icon: '⛽' },
         { id: 'percentage', name: 'Percentá', route: '/calculator/percentage', icon: '➗' },
         { id: 'vacation', name: 'Dovolenka', route: '/calculator/vacation', icon: '🏖️' },
+        { id: 'solar', name: 'Fotovoltika (dotácia)', route: '/calculator/solar', icon: '☀️' },
         { id: 'energy', name: 'Náklady na energiu', route: '/calculator/energy', icon: '⚡' },
         { id: 'hours-worked', name: 'Odpracované hodiny', route: '/calculator/hours-worked', icon: '⏰' },
         { id: 'split-bill', name: 'Rozdelenie účtu', route: '/calculator/split-bill', icon: '🧾' },

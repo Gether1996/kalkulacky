@@ -3,11 +3,12 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
 import { SplitBillCalculationResponse, TipSuggestionsResponse, BillItem, CustomAmount } from '../../models/calculator.models';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-split-bill-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './split-bill-calculator.component.html',
   styleUrls: ['./split-bill-calculator.component.css']
 })

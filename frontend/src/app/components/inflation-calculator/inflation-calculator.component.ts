@@ -6,11 +6,12 @@ import {
   InflationCalculationRequest, 
   InflationCalculationResponse 
 } from '../../models/calculator.models';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-inflation-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './inflation-calculator.component.html',
   styleUrl: './inflation-calculator.component.css'
 })

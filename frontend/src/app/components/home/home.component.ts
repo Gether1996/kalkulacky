@@ -2,11 +2,12 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CalculatorCard } from '../../models/calculator.models';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslatePipe],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
@@ -59,8 +60,8 @@ export class HomeComponent {
     },
     {
       id: 'sick-leave',
-      title: 'Nemocenská',
-      description: 'Vypočítajte výšku nemocenského príspevku pri pracovnej neschopnosti alebo ošetrovaní člena rodiny podľa SK legislatívy.',
+      title: 'Pracovná neschopnosť (PN)',
+      description: 'Vypočítajte výšku nemocenských dávok pri pracovnej neschopnosti alebo ošetrovaní člena rodiny podľa SK legislatívy.',
       icon: '🏥',
       route: '/calculator/sick-leave',
       searchVolume: 6000,
@@ -164,6 +165,15 @@ export class HomeComponent {
       route: '/calculator/vacation',
       searchVolume: 2000,
       color: 'from-green-400 to-emerald-500'
+    },
+    {
+      id: 'solar',
+      title: '☀️ Fotovoltika – dotácia a návratnosť',
+      description: 'Vypočítajte dotáciu Zelená domácnostiam, náklady, úsporu a návratnosť fotovoltiky. Získajte nezáväznú ponuku od montážnej firmy.',
+      icon: '☀️',
+      route: '/calculator/solar',
+      searchVolume: 9000,
+      color: 'from-amber-400 to-yellow-500'
     },
     {
       id: 'energy',

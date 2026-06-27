@@ -1,6 +1,6 @@
 <div class="calculator-container">
   <div class="calculator-header">
-    <h1>💼 Kalkulačka daní SZČO</h1>
+    <h1>{{ 'freelancer.title' | t }}</h1>
     <p class="calculator-description">
       Vypočítajte dane a odvody pre samostatne zárobkovo činné osoby (SZČO) na Slovensku.
       Zahŕňa daň z príjmu, zdravotné poistenie a sociálne odvody.
@@ -321,7 +321,14 @@
       </div>
     </div>
   </div>
-  
+
+  <!-- Monetization: accounting lead capture + partner offers -->
+  <div class="monetization-zone" *ngIf="result && !loading">
+    <app-lead-form calculatorType="freelancer-tax" [context]="leadContext"></app-lead-form>
+    <app-affiliate-cta calculatorType="freelancer-tax"></app-affiliate-cta>
+    <app-ad-slot slot="freelancer-after-result"></app-ad-slot>
+  </div>
+
   <!-- SEO Section -->
   <section class="info-section" style="margin-top: 2rem;">
     <h2>💼 Kalkulačka daní pre SZČO 2026 - Výpočet daní a odvodov pre živnostníkov a freelancerov na Slovensku</h2>
@@ -331,23 +338,39 @@
       <strong>SZČO (samostatne zárobkovo činná osoba)</strong> na Slovensku platí dane a odvody na základe svojho 
       <strong>čiastkového základu dane</strong>. Ten sa vypočíta ako príjmy mínus výdavky. Väčšina živnostníkov 
       používa <strong>paušálne výdavky 60%</strong>, čo znamená, že sa odpočíta 60% z príjmu bez potreby preukazovania 
-      skutočných výdavkov. Výsledný základ dane podlieha <strong>progresívnemu zdaneniu</strong> (19%, 25%, 30%, 35%) 
-      a zároveň <strong>sociálnym a zdravotným odvodom</strong>.
+      skutočných výdavkov. Výsledný základ dane podlieha <strong>progresívnemu zdaneniu</strong> 
+      (15%, 19%, 25%, 30%, 35% - od roku 2026) a zároveň <strong>sociálnym a zdravotným odvodom</strong>.
     </p>
     <p>
-      <strong>Odvody SZČO</strong> pozostávajú z troch hlavných častí:
+      <strong>Odvody SZČO v roku 2026</strong> pozostávajú z troch hlavných častí:
     </p>
     <ul>
       <li><strong>Zdravotné poistenie:</strong> 14% z vymeriavacieho základu (minimálne 91,63 €/mesiac v 2026)</li>
-      <li><strong>Sociálne poistenie:</strong> Starobné (18%), invalidné (6%), rezervný fond solidarity (4,75%), úrazové (0,8%), nezamestnanosti (1%), garančné (0,25%) - spolu približne 31% z vymeriavacieho základu</li>
-      <li><strong>Nemocenské poistenie:</strong> Dobrovoľné, 4,4% z vymeriavacieho základu - poskytuje nemocenské dávky a ošetrovné</li>
+      <li><strong>Sociálne poistenie:</strong> Starobné (18%), invalidné (6%), rezervný fond solidarity (4,75%), úrazové (0,8%), garančné (0,25%) - spolu približne 30,8% z vymeriavacieho základu</li>
+      <li><strong>Nemocenské poistenie:</strong> Dobrovoľné, 1,4% z vymeriavacieho základu - poskytuje nemocenské dávky a ošetrovné</li>
     </ul>
+    
+    <h3>⚖️ Daňové sadzby SZČO v roku 2026 (progresívne zdanenie)</h3>
+    <p>
+      Od roku 2026 platí pre SZČO <strong>päťstupňový progresívny systém</strong> dane z príjmov:
+    </p>
+    <ul>
+      <li><strong>15%</strong> - z príjmov do 20 000 € ročne (nižšia sadzba pre menších podnikateľov)</li>
+      <li><strong>19%</strong> - z časti základu dane do 43 983,32 € ročne</li>
+      <li><strong>25%</strong> - z časti základu dane od 43 983,32 € do 76 553,08 €</li>
+      <li><strong>30%</strong> - z časti základu dane od 76 553,08 € do 165 005,40 €</li>
+      <li><strong>35%</strong> - z časti základu dane presahujúcej 165 005,40 € (najvyššia sadzba)</li>
+    </ul>
+    <p class="info-note">
+      <strong>Dôležité:</strong> Od roku 2026 živnostníci s ročnými príjmami do 20 000 € profitujú 
+      zo zníženej 15% sadzby dane, čo predstavuje významné daňové zvýhodnenie oproti predchádzajúcim rokom.
+    </p>
     
     <h3>💡 Praktické tipy pre SZČO a živnostníkov</h3>
     <ul>
       <li>
         <strong>Paušál vs. skutočné výdavky:</strong> Pri paušálnych výdavkoch 60% nemusíte dokladovať faktúry, 
-        ale maximálny odpočet je obmedzený (v 2026 približne 30 000 € výdavkov). Ak máte vyššie skutočné výdavky 
+        ale maximálny odpočet je obmedzený. Ak máte vyššie skutočné výdavky 
         (kancel, auto, notebook, nájom), výhodnejšie je účtovať skutočné náklady.
       </li>
       <li>
@@ -380,9 +403,10 @@
       <strong>Koľko platí SZČO na odvodoch pri príjme 2 000 €/mesiac?</strong>
       <p>
         Pri mesačnom príjme 2 000 € (ročne 24 000 €) a paušálnych výdavkoch 60% je základ dane 9 600 €. 
-        Daň z príjmu cca 1 824 € (19%). Zdravotné poistenie minimálne 1 100 €/rok, sociálne poistenie cca 
-        3 500 €/rok (závisí od vymeriavacieho základu z predchádzajúceho roka). Celková ročná záťaž približne 
-        6 400 €, čo je 27% z príjmu. V realite je to komplikovanejšie, pretože odvody závisia od minuloročného príjmu.
+        Daň z príjmu cca 1 440 € (15% - nová nižšia sadzba od 2026). Zdravotné poistenie minimálne 1 100 €/rok, 
+        sociálne poistenie cca 3 500 €/rok (závisí od vymeriavacieho základu z predchádzajúceho roka). 
+        Celková ročná záťaž približne 6 000 €, čo je 25% z príjmu. V realite je to komplikovanejšie, 
+        pretože odvody závisia od minuloročného príjmu.
       </p>
     </div>
     <div class="faq-item">
@@ -420,12 +444,66 @@
         platenia odvodov pri prerušení činnosti (musíte preukázať, že ste nepodnikali).
       </p>
     </div>
+
+    <h3>🆕 Novinky pre SZČO v roku 2026</h3>
+    <p>
+      Rok 2026 prináša významné zmeny v zdaňovaní živnostníkov, ktoré vychádzajú z konsolidačného balíka 
+      schváleného koncom roka 2025:
+    </p>
+    <div class="info-box" style="margin: 1.5rem 0; padding: 1.5rem; background: #f0f9ff; border-left: 4px solid #0ea5e9;">
+      <h4 style="margin-top: 0; color: #0369a1;">📊 Progresívne zdanenie SZČO (nové sadzby 2026)</h4>
+      <ul style="margin-bottom: 0;">
+        <li><strong>15%</strong> sadzba ostáva pre živnostníkov s ročným zdaniteľným príjmom <strong>do 20 000 €</strong> 
+        (po odpočítaní výdavkov). Táto zvýhodnená sadzba podporuje menších podnikateľov a začínajúce SZČO.</li>
+        <li><strong>19%</strong> sa uplatňuje na časť základu dane do <strong>43 983 €</strong> ročne.</li>
+        <li><strong>25%</strong> sa uplatňuje na časť základu dane od 43 983 € do <strong>76 553 €</strong>.</li>
+        <li><strong>30%</strong> sa uplatňuje na časť základu dane od 76 553 € do <strong>165 005 €</strong>.</li>
+        <li><strong>35%</strong> je najvyššia sadzba pre časť základu dane presahujúcu 165 005 € ročne.</li>
+      </ul>
+    </div>
     
+    <div class="info-box" style="margin: 1.5rem 0; padding: 1.5rem; background: #fef3c7; border-left: 4px solid #f59e0b;">
+      <h4 style="margin-top: 0; color: #92400e;">💰 Zvýšené minimálne odvody</h4>
+      <p style="margin-bottom: 0.5rem;">
+        Minimálny vymeriavací základ pre sociálne a zdravotné odvody sa zvyšuje na základe priemernej mzdy 
+        spred dvoch rokov:
+      </p>
+      <ul style="margin-bottom: 0;">
+        <li><strong>Minimálne sociálne odvody:</strong> Odhadovaná mesačná platba je približne 180-200 € 
+        (podľa konkrétneho vymeriavacieho základu). Toto zvýšenie sa dotýka hlavne nových SZČO a tých s nízkymi príjmami.</li>
+        <li><strong>Minimálne zdravotné odvody:</strong> Mesačne približne 90-100 € (14% z minimálneho základu).</li>
+        <li>Pravidlo platí od 1. januára 2026 a odvody sa automaticky upravia podľa nových minimálnych základov.</li>
+      </ul>
+    </div>
+    
+    <div class="info-box" style="margin: 1.5rem 0; padding: 1.5rem; background: #ede9fe; border-left: 4px solid #9333ea;">
+      <h4 style="margin-top: 0; color: #6b21a8;">🎁 Novinka: Poukázanie 2% dane rodičom</h4>
+      <p style="margin-bottom: 0;">
+        Od roku 2026 (za zdaňovacie obdobie 2025) môžu SZČO poukázať 2% zo zaplatenej dane priamo svojim rodičom, 
+        spolu až 4% ak obom rodičom. Toto je <strong>dodatočná možnosť</strong> k existujúcej možnosti venovať 
+        2% (alebo 3% pri dobrovoľníckej činnosti) neziskovým organizáciám. Ide o významné rozšírenie 
+        solidarity v rámci rodiny.
+      </p>
+    </div>
+    
+    <div class="info-box" style="margin: 1.5rem 0; padding: 1.5rem; background: #dcfce7; border-left: 4px solid #16a34a;">
+      <h4 style="margin-top: 0; color: #14532d;">✅ Pozitívna zmena: Zrušenie dane z finančných transakcií</h4>
+      <p style="margin-bottom: 0;">
+        Fyzické osoby – podnikatelia (SZČO) od 1. januára 2026 už <strong>nie sú daňovníkmi dane z finančných transakcií</strong>. 
+        Táto zmena znižuje administratívnu záťaž a náklady spojené s vedením podnikateľského účtu.
+      </p>
+    </div>
+    
+    <p style="margin: 1.5rem 0; padding: 1rem; background: #fff7ed; border-radius: 8px; border: 1px solid #fed7aa;">
+      <strong>💡 Dôležité:</strong> Paušálne výdavky ostávajú zachované vo výške <strong>60% z príjmov</strong>, 
+      avšak sú limitované maximálnou sumou (v roku 2026 približne 30 000 €). Pre SZČO s vyššími skutočnými 
+      nákladmi je výhodnejšie viesť evidenciu skutočných výdavkov.
+    </p>
 
     <p style="margin-top: 2rem;">
-      💼 <a routerLink="/vat-calculator" style="color: var(--text-link);">Kalkulačka DPH</a> vám pomôže rýchlo vypočítať 
+      💼 <a routerLink="/calculator/vat" style="color: var(--text-link);">Kalkulačka DPH</a> vám pomôže rýchlo vypočítať 
       daň z pridanej hodnoty pri fakturácii.<br>
-      💰 <a routerLink="/salary-calculator" style="color: var(--text-link);">Kalkulačka čistej mzdy</a> je užitočná 
+      💰 <a routerLink="/calculator/salary" style="color: var(--text-link);">Kalkulačka čistej mzdy</a> je užitočná 
       pre porovnanie príjmu SZČO vs. zamestnanec.
     </p>
   </section>

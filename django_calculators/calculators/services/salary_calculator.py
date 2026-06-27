@@ -127,33 +127,20 @@ class SalaryCalculator(BaseCalculator):
         non_taxable_amount = self.NON_TAXABLE_AMOUNT_MONTHLY if apply_nontaxable_amount else Decimal('0')
         taxable_base = max(Decimal('0'), tax_base - non_taxable_amount)
         
-        # 5. Calculate Income Tax from taxable base - Progressive 4-bracket system (2026)
+        # 5. Income tax — Slovak employee PIT has TWO rates only: 19% and 25%.
+        #    25% applies to the part of the (monthly) taxable base above
+        #    176.8x the subsistence minimum = €3,665.28/mo (€43,983.32/yr).
+        #    (The 30%/35% brackets do NOT exist for personal income tax.)
         income_tax_before_child_bonus = Decimal('0')
-        
+
         if taxable_base <= Decimal('0'):
-            # No tax if taxable base is 0 or negative
             income_tax_before_child_bonus = Decimal('0')
         elif taxable_base <= self.TAX_THRESHOLD_1_MONTHLY:
-            # Bracket 1: 19% up to €3,665.28/month (€43,983.32/year)
             income_tax_before_child_bonus = taxable_base * self.TAX_RATE_1
-        elif taxable_base <= self.TAX_THRESHOLD_2_MONTHLY:
-            # Bracket 2: 19% up to threshold 1, then 25% up to threshold 2
+        else:
             bracket_1 = self.TAX_THRESHOLD_1_MONTHLY * self.TAX_RATE_1
             bracket_2 = (taxable_base - self.TAX_THRESHOLD_1_MONTHLY) * self.TAX_RATE_2
             income_tax_before_child_bonus = bracket_1 + bracket_2
-        elif taxable_base <= self.TAX_THRESHOLD_3_MONTHLY:
-            # Bracket 3: Brackets 1+2 + 30% up to threshold 3
-            bracket_1 = self.TAX_THRESHOLD_1_MONTHLY * self.TAX_RATE_1
-            bracket_2 = (self.TAX_THRESHOLD_2_MONTHLY - self.TAX_THRESHOLD_1_MONTHLY) * self.TAX_RATE_2
-            bracket_3 = (taxable_base - self.TAX_THRESHOLD_2_MONTHLY) * self.TAX_RATE_3
-            income_tax_before_child_bonus = bracket_1 + bracket_2 + bracket_3
-        else:
-            # Bracket 4: Brackets 1+2+3 + 35% above threshold 3
-            bracket_1 = self.TAX_THRESHOLD_1_MONTHLY * self.TAX_RATE_1
-            bracket_2 = (self.TAX_THRESHOLD_2_MONTHLY - self.TAX_THRESHOLD_1_MONTHLY) * self.TAX_RATE_2
-            bracket_3 = (self.TAX_THRESHOLD_3_MONTHLY - self.TAX_THRESHOLD_2_MONTHLY) * self.TAX_RATE_3
-            bracket_4 = (taxable_base - self.TAX_THRESHOLD_3_MONTHLY) * self.TAX_RATE_4
-            income_tax_before_child_bonus = bracket_1 + bracket_2 + bracket_3 + bracket_4
         
         # 6. Apply Child Tax Bonus (if applicable) - reduces tax (cannot be negative)
         child_tax_bonus_total = Decimal('0')

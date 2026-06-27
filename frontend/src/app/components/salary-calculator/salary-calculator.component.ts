@@ -3,17 +3,23 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
 import { SalaryCalculationResponse } from '../../models/calculator.models';
+import { SeoService } from '../../services/seo.service';
+import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.component';
+import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
+import { EmbedSnippetComponent } from '../shared/embed-snippet/embed-snippet.component';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-salary-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AffiliateCtaComponent, AdSlotComponent, EmbedSnippetComponent, TranslatePipe],
   templateUrl: './salary-calculator.component.html',
   styleUrls: ['./salary-calculator.component.css']
 })
 export class SalaryCalculatorComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
+  private seo = inject(SeoService);
   grossSalary: number = 1500;
   childrenUnder15: number = 0;
   children15To18: number = 0;
@@ -32,6 +38,24 @@ export class SalaryCalculatorComponent implements OnInit {
   constructor(private calculatorService: CalculatorService) {}
 
   ngOnInit(): void {
+    this.seo.apply({
+      title: 'Čistá mzda 2026 – kalkulačka výplaty (hrubá → čistá)',
+      description: 'Vypočítajte si čistú mzdu z hrubej mzdy pre rok 2026. Kalkulačka zohľadňuje odvody, daň, nezdaniteľnú časť a daňový bonus na deti.',
+      path: '/calculator/salary',
+      keywords: 'čistá mzda kalkulačka, výpočet čistej mzdy 2026, hrubá mzda na čistú, výplata kalkulačka',
+      isCalculator: true,
+      faq: [
+        {
+          question: 'Ako sa počíta čistá mzda z hrubej?',
+          answer: 'Od hrubej mzdy sa odpočítajú odvody do Sociálnej a zdravotnej poisťovne (9,4 % + 5 %), uplatní sa nezdaniteľná časť základu dane a vypočíta sa daň z príjmu. Výsledok znížený o daň je čistá mzda, ku ktorej sa pripočíta daňový bonus na deti.',
+        },
+        {
+          question: 'Aký je daňový bonus na dieťa v roku 2026?',
+          answer: 'Daňový bonus závisí od veku dieťaťa a výšky príjmu. Kalkulačka ho automaticky zohľadní podľa počtu detí do 15 rokov a od 15 do 18 rokov.',
+        },
+      ],
+    });
+
     // Calculate on init only if running in browser
     if (isPlatformBrowser(this.platformId)) {
       this.calculate();

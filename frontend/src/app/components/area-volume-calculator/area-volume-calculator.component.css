@@ -33,7 +33,7 @@
   height: 50px;
   margin: 0 auto 1rem;
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #667eea;
+  border-top: 4px solid var(--calc-accent);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -117,14 +117,14 @@
 }
 
 .shape-button:hover {
-  border-color: #667eea;
+  border-color: var(--calc-accent);
   transform: translateY(-4px);
   box-shadow: 0 6px 12px rgba(102, 126, 234, 0.15);
 }
 
 .shape-button.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-color: #667eea;
+  background: linear-gradient(135deg, var(--calc-accent) 0%, var(--calc-accent-2) 100%);
+  border-color: var(--calc-accent);
   color: white;
 }
 
@@ -192,7 +192,7 @@
 
 .input-field:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--calc-accent);
 }
 
 .unit-suffix {
@@ -208,7 +208,7 @@
 .calculate-button {
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--calc-accent) 0%, var(--calc-accent-2) 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -221,7 +221,7 @@
 
 .calculate-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 6px 12px var(--calc-accent-shadow);
 }
 
 .mobile-only {
@@ -287,7 +287,7 @@
 
 /* Result Card */
 .result-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--calc-accent) 0%, var(--calc-accent-2) 100%);
   border-radius: 12px;
   padding: 2rem;
   color: white;

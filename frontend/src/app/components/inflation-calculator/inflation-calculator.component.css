@@ -441,7 +441,7 @@
 /* Info Card */
 .info-card {
   background: #e8f4f8;
-  border-left: 4px solid #3498db;
+  border-left: 4px solid var(--calc-accent);
   padding: 1.5rem;
   border-radius: 8px;
   margin-top: 2rem;

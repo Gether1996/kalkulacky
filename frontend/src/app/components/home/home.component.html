@@ -3,26 +3,26 @@
   <section class="hero">
     <div class="hero-content">
       <h1 class="hero-title">
-        Praktické kalkulačky <br/>
-        <span class="gradient-text">pre Slovensko</span>
+        {{ 'home.hero1' | t }} <br/>
+        <span class="gradient-text">{{ 'home.hero2' | t }}</span>
       </h1>
       <p class="hero-subtitle">
-        Presné výpočty pre mzdy, hypotéky, DPH a ďalšie. 
+        {{ 'home.subtitle' | t }}
       </p>
       <div class="hero-badges">
-        <span class="badge">🚀 Rýchle</span>
-        <span class="badge">✅ Presné</span>
-        <span class="badge">💯 Zadarmo</span>
+        <span class="badge">{{ 'home.badge.fast' | t }}</span>
+        <span class="badge">{{ 'home.badge.accurate' | t }}</span>
+        <span class="badge">{{ 'home.badge.free' | t }}</span>
       </div>
     </div>
   </section>
 
   <!-- Calculators Grid -->
   <section class="calculators-section">
-    <h2 class="section-title">Dostupné kalkulačky</h2>
+    <h2 class="section-title">{{ 'home.section.calculators' | t }}</h2>
     <div class="calculators-grid">
-      <a 
-        *ngFor="let calc of calculators" 
+      <a
+        *ngFor="let calc of calculators"
         [routerLink]="calc.route"
         class="calculator-card"
         [attr.data-color]="calc.id"
@@ -31,8 +31,8 @@
           <span class="card-icon">{{ calc.icon }}</span>
         </div>
         <div class="card-body">
-          <h3 class="card-title">{{ calc.title }}</h3>
-          <p class="card-description">{{ calc.description }}</p>
+          <h3 class="card-title">{{ ('calc.' + calc.id + '.name') | t }}</h3>
+          <p class="card-description">{{ ('calc.' + calc.id + '.desc') | t }}</p>
         </div>
       </a>
     </div>
@@ -41,58 +41,57 @@
   <!-- Blog Section -->
   <section class="blog-section">
     <div class="section-header">
-      <h2 class="section-title">📰 Blog & Aktuality</h2>
-      <a routerLink="/blog" class="view-all-link">Zobraziť všetko →</a>
+      <h2 class="section-title">{{ 'home.blog.title' | t }}</h2>
+      <a routerLink="/blog" class="view-all-link">{{ 'home.blog.viewAll' | t }}</a>
     </div>
     <p class="section-subtitle">
-      Najnovšie informácie o daniach, zmenách v zákonoch a praktické tipy pre vaše financie
+      {{ 'home.blog.subtitle' | t }}
     </p>
     <div class="blog-preview-grid">
-      <!-- Blog cards will be loaded here dynamically -->
       <div class="blog-preview-card coming-soon">
         <div class="blog-card-icon">📊</div>
-        <h3>Zmeny v daniach 2026</h3>
-        <p>Progresívne zdanenie, nové sadzby a čo to znamená pre vašu mzdu</p>
-        <span class="blog-cta">Čítať článok →</span>
+        <h3>{{ 'home.blog.post1.title' | t }}</h3>
+        <p>{{ 'home.blog.post1.desc' | t }}</p>
+        <span class="blog-cta">{{ 'home.blog.read' | t }}</span>
       </div>
       <div class="blog-preview-card coming-soon">
         <div class="blog-card-icon">💰</div>
-        <h3>Ako ušetriť na daniach</h3>
-        <p>Praktické tipy pre zníženie daňovej záťaže legálnymi metódami</p>
-        <span class="blog-cta">Čítať článok →</span>
+        <h3>{{ 'home.blog.post2.title' | t }}</h3>
+        <p>{{ 'home.blog.post2.desc' | t }}</p>
+        <span class="blog-cta">{{ 'home.blog.read' | t }}</span>
       </div>
       <div class="blog-preview-card coming-soon">
         <div class="blog-card-icon">🏠</div>
-        <h3>Hypotéky v roku 2026</h3>
-        <p>Trendy úrokových sadzieb a ako vybrať najvýhodnejší úver</p>
-        <span class="blog-cta">Čítať článok →</span>
+        <h3>{{ 'home.blog.post3.title' | t }}</h3>
+        <p>{{ 'home.blog.post3.desc' | t }}</p>
+        <span class="blog-cta">{{ 'home.blog.read' | t }}</span>
       </div>
     </div>
   </section>
 
   <!-- Why Trust Us Section -->
   <section class="trust-section">
-    <h2 class="section-title">Prečo Kalkulačky.sk?</h2>
+    <h2 class="section-title">{{ 'home.trust.title' | t }}</h2>
     <div class="features-grid">
       <div class="feature">
         <div class="feature-icon">⚡</div>
-        <h3>Okamžité výsledky</h3>
-        <p>Bez čakania, bez registrácie. Vypočítajte za sekundy.</p>
+        <h3>{{ 'home.trust.f1.title' | t }}</h3>
+        <p>{{ 'home.trust.f1.desc' | t }}</p>
       </div>
       <div class="feature">
         <div class="feature-icon">🎯</div>
-        <h3>Presné pre Slovensko</h3>
-        <p>Aktuálne sadzby daní, odvodov a DPH pre rok 2026.</p>
+        <h3>{{ 'home.trust.f2.title' | t }}</h3>
+        <p>{{ 'home.trust.f2.desc' | t }}</p>
       </div>
       <div class="feature">
         <div class="feature-icon">📱</div>
-        <h3>Funguje všade</h3>
-        <p>Responzívny dizajn. Perfektné na mobile, tablete aj PC.</p>
+        <h3>{{ 'home.trust.f3.title' | t }}</h3>
+        <p>{{ 'home.trust.f3.desc' | t }}</p>
       </div>
       <div class="feature">
         <div class="feature-icon">🔒</div>
-        <h3>Súkromie</h3>
-        <p>Vaše dáta zostávajú vo vašom prehliadači. Nič neukladáme.</p>
+        <h3>{{ 'home.trust.f4.title' | t }}</h3>
+        <p>{{ 'home.trust.f4.desc' | t }}</p>
       </div>
     </div>
   </section>

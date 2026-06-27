@@ -1,16 +1,18 @@
 import { Component, ChangeDetectorRef, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
-import { 
-  ROICalculationRequest, 
+import {
+  ROICalculationRequest,
   ROICalculationResponse 
 } from '../../models/calculator.models';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-roi-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe],
   templateUrl: './roi-calculator.component.html',
   styleUrl: './roi-calculator.component.css'
 })

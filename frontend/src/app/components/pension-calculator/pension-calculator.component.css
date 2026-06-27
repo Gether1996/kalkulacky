@@ -31,7 +31,7 @@
 
 .keyword {
   background: #e3f2fd;
-  color: #1976d2;
+  color: var(--calc-accent);
   padding: 0.4rem 1rem;
   border-radius: 20px;
   font-size: 0.9rem;
@@ -101,7 +101,7 @@
 
 .input-field:focus {
   outline: none;
-  border-color: #1976d2;
+  border-color: var(--calc-accent);
 }
 
 /* Benchmarks */
@@ -124,12 +124,12 @@
 }
 
 .benchmark-btn:hover {
-  border-color: #1976d2;
+  border-color: var(--calc-accent);
   background: #e3f2fd;
 }
 
 .benchmark-btn strong {
-  color: #1976d2;
+  color: var(--calc-accent);
 }
 
 /* Radio Group */
@@ -163,7 +163,7 @@
 
 .spinner {
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #1976d2;
+  border-top: 4px solid var(--calc-accent);
   border-radius: 50%;
   width: 50px;
   height: 50px;
@@ -195,7 +195,7 @@
 }
 
 .result-highlight {
-  background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%);
+  background: linear-gradient(135deg, #42a5f5 0%, var(--calc-accent) 100%);
   color: white;
   padding: 2rem;
   border-radius: 12px;
@@ -263,7 +263,7 @@
 .info-value {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #1976d2;
+  color: var(--calc-accent);
 }
 
 /* Replacement Rate Card */
@@ -393,7 +393,7 @@
 
 .contribution-item.highlight {
   background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-  border-left: 4px solid #1976d2;
+  border-left: 4px solid var(--calc-accent);
   padding-left: 1rem;
   font-weight: 600;
 }
@@ -408,7 +408,7 @@
 }
 
 .contribution-item.highlight .contrib-value {
-  color: #1976d2;
+  color: var(--calc-accent);
   font-size: 1.2rem;
 }
 
@@ -443,7 +443,7 @@
 
 .lifetime-item.highlight {
   background: linear-gradient(135deg, #fff9e6 0%, #ffe8cc 100%);
-  border-left: 4px solid #1976d2;
+  border-left: 4px solid var(--calc-accent);
   padding-left: 1rem;
   font-weight: 600;
 }
@@ -458,7 +458,7 @@
 }
 
 .lifetime-item.highlight .lifetime-value {
-  color: #1976d2;
+  color: var(--calc-accent);
   font-size: 1.2rem;
 }
 
@@ -561,7 +561,7 @@
 }
 
 .nav-link:hover {
-  background: #1976d2;
+  background: var(--calc-accent);
   color: white;
   transform: translateY(-2px);
 }

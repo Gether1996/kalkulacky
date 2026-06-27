@@ -29,6 +29,7 @@ from .car_leasing_calculator import CarLeasingCalculator
 from .area_volume_calculator import AreaVolumeCalculator
 from .split_bill_calculator import SplitBillCalculator
 from .parental_benefit_calculator import ParentalBenefitCalculator
+from .solar_subsidy_calculator import SolarSubsidyCalculator
 from .notification_service import NotificationService
 from .notification_generator import NotificationGenerator
 from .tracking_helpers import (
@@ -62,6 +63,7 @@ __all__ = [
     'AreaVolumeCalculator',
     'SplitBillCalculator',
     'ParentalBenefitCalculator',
+    'SolarSubsidyCalculator',
     'NotificationService',
     'NotificationGenerator',
     'PregnancyTrackingHelper',

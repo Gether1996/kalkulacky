@@ -2,13 +2,15 @@ import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { SickLeaveCalculationResponse } from '../../models/calculator.models';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-sick-leave-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe],
   templateUrl: './sick-leave-calculator.component.html',
   styleUrls: ['./sick-leave-calculator.component.css']
 })

@@ -2,10 +2,10 @@
   <!-- Header -->
   <header class="calculator-header">
     <h1 class="calculator-title">
-      🏠 Kalkulačka hypotéky
+      {{ 'mortgage.title' | t }}
     </h1>
     <p class="calculator-subtitle">
-      Vypočítajte si mesačnú splátku hypotéky, celkové náklady a amortizačnú tabuľku.
+      {{ 'calc.mortgage.desc' | t }}
     </p>
   </header>
 
@@ -13,11 +13,11 @@
   <div class="calculator-body">
     <!-- Input Section -->
     <section class="input-section">
-      <h2 class="section-title">Zadajte parametre hypotéky</h2>
+      <h2 class="section-title">{{ 'mortgage.inputTitle' | t }}</h2>
       
       <!-- Loan Amount -->
       <div class="input-group">
-        <label for="loan-amount" class="input-label">Výška úveru (€)</label>
+        <label for="loan-amount" class="input-label">{{ 'mortgage.loanAmount' | t }}</label>
         <div class="input-wrapper">
           <input
             type="number"
@@ -48,7 +48,7 @@
 
       <!-- Interest Rate -->
       <div class="input-group">
-        <label for="interest-rate" class="input-label">Úroková sadzba (%)</label>
+        <label for="interest-rate" class="input-label">{{ 'mortgage.rate' | t }}</label>
         <div class="input-wrapper">
           <input
             type="number"
@@ -80,7 +80,7 @@
 
       <!-- Loan Term -->
       <div class="input-group">
-        <label for="loan-term" class="input-label">Dĺžka splácania (roky)</label>
+        <label for="loan-term" class="input-label">{{ 'mortgage.term' | t }}</label>
         <div class="input-wrapper">
           <input
             type="number"
@@ -112,7 +112,7 @@
 
       <!-- Quick Scenarios -->
       <div class="benchmarks">
-        <p class="benchmarks-label">Alebo vyberte scenár:</p>
+        <p class="benchmarks-label">{{ 'mortgage.chooseScenario' | t }}</p>
         <div class="benchmarks-grid">
           <button
             *ngFor="let scenario of scenarios"
@@ -131,10 +131,10 @@
     <section class="results-section" *ngIf="result && !loading">
       <!-- Big Result Card -->
       <div class="big-result-card">
-        <div class="result-label">Mesačná splátka</div>
+        <div class="result-label">{{ 'mortgage.monthlyPayment' | t }}</div>
         <div class="result-value">{{ formatCurrency(result.monthly_payment) }}</div>
         <div class="result-comparison">
-          počas {{ result.loan_term_years }} rokov
+          {{ 'mortgage.during' | t }} {{ result.loan_term_years }} {{ 'common.years' | t }}
         </div>
       </div>
 
@@ -142,65 +142,65 @@
       <div class="breakdown-grid">
         <div class="breakdown-card">
           <div class="breakdown-icon">💰</div>
-          <div class="breakdown-label">Výška úveru</div>
+          <div class="breakdown-label">{{ 'mortgage.principal' | t }}</div>
           <div class="breakdown-value">{{ formatCurrency(result.loan_amount) }}</div>
-          <div class="breakdown-hint">Hlavnica</div>
+          <div class="breakdown-hint">{{ 'mortgage.principalHint' | t }}</div>
         </div>
 
         <div class="breakdown-card">
           <div class="breakdown-icon">📈</div>
-          <div class="breakdown-label">Celkovo zaplatíte</div>
+          <div class="breakdown-label">{{ 'mortgage.totalToPay' | t }}</div>
           <div class="breakdown-value">{{ formatCurrency(result.total_paid) }}</div>
-          <div class="breakdown-hint">Hlavnica + úroky</div>
+          <div class="breakdown-hint">{{ 'mortgage.principalPlusInterest' | t }}</div>
         </div>
 
         <div class="breakdown-card highlight">
           <div class="breakdown-icon">💸</div>
-          <div class="breakdown-label">Celkové úroky</div>
+          <div class="breakdown-label">{{ 'mortgage.totalInterest' | t }}</div>
           <div class="breakdown-value">{{ formatCurrency(result.total_interest) }}</div>
-          <div class="breakdown-hint">{{ formatPercent(getInterestPercentage()) }} z úveru</div>
+          <div class="breakdown-hint">{{ formatPercent(getInterestPercentage()) }} {{ 'mortgage.ofLoan' | t }}</div>
         </div>
 
         <div class="breakdown-card">
           <div class="breakdown-icon">📊</div>
-          <div class="breakdown-label">Úroková sadzba</div>
+          <div class="breakdown-label">{{ 'mortgage.rateLabel' | t }}</div>
           <div class="breakdown-value">{{ formatPercent(result.annual_interest_rate) }}</div>
-          <div class="breakdown-hint">Ročne</div>
+          <div class="breakdown-hint">{{ 'mortgage.annually' | t }}</div>
         </div>
       </div>
 
       <!-- Summary Table -->
       <div class="details-table">
-        <h3 class="details-title">Prehľad splácania</h3>
+        <h3 class="details-title">{{ 'mortgage.summaryTitle' | t }}</h3>
         <table>
           <tr>
-            <td>💰 Výška úveru</td>
+            <td>💰 {{ 'mortgage.principal' | t }}</td>
             <td class="text-right"><strong>{{ formatCurrency(result.loan_amount) }}</strong></td>
           </tr>
           <tr>
-            <td>📈 Úroková sadzba</td>
+            <td>📈 {{ 'mortgage.rateLabel' | t }}</td>
             <td class="text-right">{{ formatPercent(result.annual_interest_rate) }}</td>
           </tr>
           <tr>
-            <td>⏱️ Dĺžka splácania</td>
-            <td class="text-right">{{ result.loan_term_years }} rokov ({{ result.loan_term_years * 12 }} mesiacov)</td>
+            <td>⏱️ {{ 'mortgage.duration' | t }}</td>
+            <td class="text-right">{{ result.loan_term_years }} {{ 'common.years' | t }} ({{ result.loan_term_years * 12 }} {{ 'common.months' | t }})</td>
           </tr>
           <tr class="divider">
             <td colspan="2"></td>
           </tr>
           <tr>
-            <td>📅 Mesačná splátka</td>
+            <td>📅 {{ 'mortgage.monthlyPayment' | t }}</td>
             <td class="text-right"><strong class="text-blue">{{ formatCurrency(result.monthly_payment) }}</strong></td>
           </tr>
           <tr>
-            <td>💸 Celkové úroky</td>
+            <td>💸 {{ 'mortgage.totalInterest' | t }}</td>
             <td class="text-right text-red">{{ formatCurrency(result.total_interest) }}</td>
           </tr>
           <tr class="divider">
             <td colspan="2"></td>
           </tr>
           <tr class="total-row">
-            <td><strong>💳 Celkovo zaplatíte</strong></td>
+            <td><strong>💳 {{ 'mortgage.totalToPay' | t }}</strong></td>
             <td class="text-right"><strong>{{ formatCurrency(result.total_paid) }}</strong></td>
           </tr>
         </table>
@@ -208,25 +208,25 @@
 
       <!-- First Year Details -->
       <div class="details-table" *ngIf="result.first_year">
-        <h3 class="details-title">Prvý rok splácania</h3>
+        <h3 class="details-title">{{ 'mortgage.firstYearTitle' | t }}</h3>
         <table>
           <tr>
-            <td>Zaplatíte celkom</td>
+            <td>{{ 'mortgage.payTotal' | t }}</td>
             <td class="text-right"><strong>{{ formatCurrency(result.first_year.total_payment) }}</strong></td>
           </tr>
           <tr>
-            <td>Z toho hlavnica</td>
+            <td>{{ 'mortgage.ofWhichPrincipal' | t }}</td>
             <td class="text-right text-green">{{ formatCurrency(result.first_year.principal) }}</td>
           </tr>
           <tr>
-            <td>Z toho úroky</td>
+            <td>{{ 'mortgage.ofWhichInterest' | t }}</td>
             <td class="text-right text-red">{{ formatCurrency(result.first_year.interest) }}</td>
           </tr>
           <tr class="divider">
             <td colspan="2"></td>
           </tr>
           <tr>
-            <td><strong>Zostávajúci dlh po 1. roku</strong></td>
+            <td><strong>{{ 'mortgage.remainingY1' | t }}</strong></td>
             <td class="text-right"><strong>{{ formatCurrency(result.first_year.remaining_balance) }}</strong></td>
           </tr>
         </table>
@@ -235,22 +235,22 @@
       <!-- Amortization Schedule Toggle -->
       <div class="amortization-toggle" *ngIf="result.amortization_schedule && result.amortization_schedule.length > 0">
         <button (click)="toggleAmortization()" class="toggle-button">
-          {{ showAmortization ? '▼ Skryť' : '▶ Zobraziť' }} amortizačnú tabuľku
+          {{ (showAmortization ? 'mortgage.amortHide' : 'mortgage.amortShow') | t }}
         </button>
       </div>
 
       <!-- Amortization Schedule -->
       <div class="amortization-table" *ngIf="showAmortization && result.amortization_schedule">
-        <h3 class="details-title">Amortizačná tabuľka (ročný prehľad)</h3>
+        <h3 class="details-title">{{ 'mortgage.amortTitle' | t }}</h3>
         <div class="table-wrapper">
           <table>
             <thead>
               <tr>
-                <th>Rok</th>
-                <th class="text-right">Hlavnica</th>
-                <th class="text-right">Úroky</th>
-                <th class="text-right">Celkom</th>
-                <th class="text-right">Zostatok</th>
+                <th>{{ 'mortgage.thYear' | t }}</th>
+                <th class="text-right">{{ 'mortgage.principalHint' | t }}</th>
+                <th class="text-right">{{ 'mortgage.interestShort' | t }}</th>
+                <th class="text-right">{{ 'common.total' | t }}</th>
+                <th class="text-right">{{ 'mortgage.thBalance' | t }}</th>
               </tr>
             </thead>
             <tbody>
@@ -278,6 +278,15 @@
       <p>{{ error }}</p>
     </div>
   </div>
+
+  <!-- Monetization: qualified lead capture + partner offers -->
+  <div class="monetization-zone" *ngIf="result && !loading">
+    <app-lead-form calculatorType="mortgage" [context]="leadContext"></app-lead-form>
+    <app-affiliate-cta calculatorType="mortgage"></app-affiliate-cta>
+    <app-ad-slot slot="mortgage-after-result"></app-ad-slot>
+  </div>
+
+  <app-embed-snippet calculatorType="mortgage" [height]="600"></app-embed-snippet>
 
   <!-- Info Section -->
   <section class="info-section">
@@ -378,7 +387,7 @@
     
     
     <p style="margin-top: 2rem;">
-      💼 <a routerLink="/salary-calculator" style="color: var(--text-link);">Kalkulačka čistej mzdy</a> vám pomôže 
+      💼 <a routerLink="/calculator/salary" style="color: var(--text-link);">Kalkulačka čistej mzdy</a> vám pomôže 
       zistiť váš disponibilný príjem, ktorý banky používajú na výpočet schopnosti splácať hypotéku.
     </p>
   </section>

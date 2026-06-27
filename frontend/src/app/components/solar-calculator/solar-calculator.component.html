@@ -1,0 +1,112 @@
+<div class="calculator-container">
+  <header class="calc-header">
+    <h1>{{ 'solar.title' | t }}</h1>
+    <p class="calc-subtitle">
+      {{ 'calc.solar.desc' | t }}
+    </p>
+  </header>
+
+  <section class="input-section">
+    <div class="preset-row">
+      <button *ngFor="let p of presets" type="button" class="preset-btn"
+              (click)="setPreset(p.kwh)">
+        {{ p.label }} <span>({{ p.kwh }} kWh)</span>
+      </button>
+    </div>
+
+    <div class="field">
+      <label for="consumption">{{ 'solar.consumption' | t }}</label>
+      <input id="consumption" type="number" min="0" [(ngModel)]="annualConsumption"
+             (ngModelChange)="calculate()" />
+    </div>
+
+    <div class="field">
+      <label for="rate">{{ 'solar.rate' | t }}</label>
+      <input id="rate" type="number" step="0.01" min="0" [(ngModel)]="electricityRate"
+             (ngModelChange)="calculate()" />
+    </div>
+
+    <label class="switch-field">
+      <input type="checkbox" [(ngModel)]="includeBattery" (ngModelChange)="calculate()" />
+      <span>{{ 'solar.includeBattery' | t }}</span>
+    </label>
+  </section>
+
+  <section class="results-section" *ngIf="result && !loading">
+    <div class="hero-grid">
+      <div class="hero-card primary">
+        <div class="hero-label">{{ 'solar.payback' | t }}</div>
+        <div class="hero-value">
+          <ng-container *ngIf="result.analysis.payback_years; else noPayback">{{ result.analysis.payback_years }} {{ 'common.years' | t }}</ng-container>
+          <ng-template #noPayback>—</ng-template>
+        </div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-label">{{ 'solar.estSubsidy' | t }}</div>
+        <div class="hero-value green">{{ formatCurrency(result.subsidy.total_subsidy) }}</div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-label">{{ 'solar.netCost' | t }}</div>
+        <div class="hero-value">{{ formatCurrency(result.subsidy.net_cost) }}</div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-label">{{ 'solar.annualSavings' | t }}</div>
+        <div class="hero-value green">{{ formatCurrency(result.savings.annual_savings) }}</div>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail">
+        <span>{{ 'solar.recommendedPower' | t }}</span>
+        <strong>{{ formatNumber(result.system.recommended_kwp, 1) }} kWp</strong>
+      </div>
+      <div class="detail" *ngIf="result.inputs.include_battery">
+        <span>{{ 'solar.battery' | t }}</span>
+        <strong>{{ formatNumber(result.system.battery_capacity_kwh, 1) }} kWh</strong>
+      </div>
+      <div class="detail">
+        <span>{{ 'solar.annualProduction' | t }}</span>
+        <strong>{{ formatNumber(result.system.annual_production_kwh) }} kWh</strong>
+      </div>
+      <div class="detail">
+        <span>{{ 'solar.coverage' | t }}</span>
+        <strong>{{ formatNumber(result.savings.coverage_pct, 1) }} %</strong>
+      </div>
+      <div class="detail">
+        <span>{{ 'solar.totalCost' | t }}</span>
+        <strong>{{ formatCurrency(result.cost.total_cost) }}</strong>
+      </div>
+      <div class="detail">
+        <span>{{ 'solar.savings30' | t }}</span>
+        <strong class="green">{{ formatCurrency(result.analysis.savings_30y) }}</strong>
+      </div>
+      <div class="detail">
+        <span>{{ 'solar.co2' | t }}</span>
+        <strong>{{ formatNumber(result.analysis.co2_savings_kg) }} kg</strong>
+      </div>
+    </div>
+
+    <p class="subsidy-note">
+      💶 Dotácia <strong>{{ result.subsidy.scheme }}</strong>:
+      {{ result.subsidy.rate_per_kwp }} €/kW (oprávnené do 7 kW),
+      max {{ formatCurrency(result.subsidy.max_subsidy) }} a zároveň 50 % nákladov.
+      Vo vašom prípade limituje: <strong>{{ result.subsidy.limited_by }}</strong>.
+    </p>
+    <p class="disclaimer">
+      ⚠️ Výsledky sú orientačné a závisia od konkrétneho projektu a aktuálneho kola
+      dotácií SIEA. So zvýhodnením (+15 %) môže byť max. dotácia až 4 025 €.
+      Overte si aktuálne podmienky na <a href="https://zelenadomacnostiam.sk" target="_blank" rel="noopener">zelenadomacnostiam.sk</a>.
+    </p>
+  </section>
+
+  <div class="error-state" *ngIf="error">{{ error }}</div>
+
+  <!-- Monetization: installer lead capture + partner offers -->
+  <div class="monetization-zone" *ngIf="result && !loading">
+    <app-lead-form calculatorType="solar" [context]="leadContext"></app-lead-form>
+    <app-affiliate-cta calculatorType="solar"></app-affiliate-cta>
+    <app-ad-slot slot="solar-after-result"></app-ad-slot>
+  </div>
+
+  <app-embed-snippet calculatorType="solar" [height]="600"></app-embed-snippet>
+</div>

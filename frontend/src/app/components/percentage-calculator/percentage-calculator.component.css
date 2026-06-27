@@ -100,15 +100,15 @@
 }
 
 .calc-type-btn:hover {
-  border-color: #9b59b6;
+  border-color: var(--calc-accent);
   background: #f8f9fa;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(155, 89, 182, 0.15);
 }
 
 .calc-type-btn.active {
-  border-color: #9b59b6;
-  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+  border-color: var(--calc-accent);
+  background: linear-gradient(135deg, var(--calc-accent) 0%, var(--calc-accent-2) 100%);
   color: white;
 }
 
@@ -168,7 +168,7 @@
 
 .input-field:focus {
   outline: none;
-  border-color: #9b59b6;
+  border-color: var(--calc-accent);
 }
 
 /* Examples */
@@ -204,7 +204,7 @@
 
 .spinner {
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #9b59b6;
+  border-top: 4px solid var(--calc-accent);
   border-radius: 50%;
   width: 50px;
   height: 50px;
@@ -235,7 +235,7 @@
 }
 
 .result-highlight {
-  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+  background: linear-gradient(135deg, var(--calc-accent) 0%, var(--calc-accent-2) 100%);
   color: white;
   padding: 2rem;
   border-radius: 12px;
@@ -286,7 +286,7 @@
 
 .detail-item.highlight {
   background: linear-gradient(135deg, #f8f9fa 0%, #e8ffe8 100%);
-  border-left: 4px solid #9b59b6;
+  border-left: 4px solid var(--calc-accent);
   padding-left: 1rem;
   font-size: 1.1rem;
 }
@@ -302,7 +302,7 @@
 }
 
 .detail-value.primary {
-  color: #9b59b6;
+  color: var(--calc-accent);
   font-size: 1.3rem;
 }
 
@@ -429,7 +429,7 @@
 }
 
 .nav-link:hover {
-  background: #9b59b6;
+  background: var(--calc-accent);
   color: white;
   transform: translateY(-2px);
 }

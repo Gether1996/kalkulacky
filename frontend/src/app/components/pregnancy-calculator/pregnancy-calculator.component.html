@@ -1,8 +1,8 @@
 <div class="calculator-container">
   <!-- Header -->
   <div class="calculator-header">
-    <h1>🤰 Kalkulačka tehotenstva</h1>
-    <p class="subtitle">Vypočítajte termín pôrodu, týždeň tehotenstva a trimester</p>
+    <h1>{{ 'pregnancy.title' | t }}</h1>
+    <p class="subtitle">{{ 'calc.pregnancy.desc' | t }}</p>
     <div class="seo-keywords">
       <span class="keyword">Termín pôrodu</span>
       <span class="keyword">Týždne tehotenstva</span>
@@ -325,7 +325,7 @@
 
   <!-- Navigation -->
   <div class="navigation-links">
-    <a routerLink="/bmi-calculator" class="nav-link">📊 BMI kalkulačka →</a>
-    <a routerLink="/parental-benefit-calculator" class="nav-link">👶 Rodičovský príspevok →</a>
+    <a routerLink="/calculator/bmi" class="nav-link">📊 BMI kalkulačka →</a>
+    <a routerLink="/calculator/parental-benefit" class="nav-link">👶 Rodičovský príspevok →</a>
   </div>
 </div>

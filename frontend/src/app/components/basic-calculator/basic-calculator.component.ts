@@ -1,6 +1,7 @@
 import { Component, OnInit, PLATFORM_ID, inject, HostListener } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 interface CalculationHistory {
   expression: string;
@@ -11,7 +12,7 @@ interface CalculationHistory {
 @Component({
   selector: 'app-basic-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './basic-calculator.component.html',
   styleUrls: ['./basic-calculator.component.css']
 })

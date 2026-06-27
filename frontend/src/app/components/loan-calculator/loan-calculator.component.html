@@ -1,7 +1,7 @@
 <div class="calculator-container">
   <div class="calculator-header">
-    <h1>💰 Kalkulačka úveru</h1>
-    <p class="subtitle">Výpočet mesačnej splátky a celkových nákladov úveru</p>
+    <h1>{{ 'loan.title' | t }}</h1>
+    <p class="subtitle">{{ 'calc.loan.desc' | t }}</p>
     <div class="seo-keywords">
       <span class="keyword">kalkulačka úveru</span>
       <span class="keyword">splátka úveru</span>
@@ -245,6 +245,12 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Monetization: partner offers + display ad -->
+  <div class="monetization-zone" *ngIf="result && !loading">
+    <app-affiliate-cta calculatorType="loan"></app-affiliate-cta>
+    <app-ad-slot slot="loan-after-result"></app-ad-slot>
   </div>
 
   <!-- SEO Content -->

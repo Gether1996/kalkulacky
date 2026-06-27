@@ -45,6 +45,9 @@ from .views import (
     SplitBillCalculatorView,
     TipSuggestionsView,
     ParentalBenefitCalculatorView,
+    SolarSubsidyCalculatorView,
+    LeadCreateView,
+    AffiliateClickView,
     HealthCheckView,
     BlogCategoryListView,
     BlogPostListView,
@@ -98,7 +101,14 @@ urlpatterns = [
     
     # Parental benefit calculator
     path('parental-benefit/', ParentalBenefitCalculatorView.as_view(), name='parental-benefit-calculator'),
+
+    # Solar / PV subsidy & payback calculator
+    path('solar/', SolarSubsidyCalculatorView.as_view(), name='solar-subsidy-calculator'),
     
+    # Monetization (lead-gen + affiliate tracking)
+    path('leads/', LeadCreateView.as_view(), name='lead-create'),
+    path('affiliate-click/', AffiliateClickView.as_view(), name='affiliate-click'),
+
     # Health check
     path('health/', HealthCheckView.as_view(), name='health-check'),
     

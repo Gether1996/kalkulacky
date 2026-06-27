@@ -9,6 +9,7 @@ import {
   BlogPostDetail, 
   BlogListResponse 
 } from '../models/blog.models';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -18,11 +19,9 @@ export class BlogService {
   private platformId = inject(PLATFORM_ID);
 
   constructor(private http: HttpClient) {
-    if (isPlatformBrowser(this.platformId)) {
-      this.apiUrl = 'http://localhost:8000/api/calculators';
-    } else {
-      this.apiUrl = 'http://backend:8000/api/calculators';
-    }
+    this.apiUrl = isPlatformBrowser(this.platformId)
+      ? `${environment.apiUrl}/calculators`
+      : 'http://backend:8000/api/calculators';
   }
 
   // Get all blog categories

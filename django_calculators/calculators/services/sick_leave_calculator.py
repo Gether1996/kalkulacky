@@ -1,5 +1,5 @@
-# Sick Leave (Nemocenská) Calculator Service
-# Výpočet nemocenskej podľa slovenskej legislatívy
+# Sick Leave (Pracovná neschopnosť / PN) Calculator Service
+# Výpočet nemocenských dávok podľa slovenskej legislatívy
 
 from decimal import Decimal
 from datetime import datetime
@@ -7,18 +7,20 @@ from . import config_variables as cfg
 
 class SickLeaveCalculator:
     """
-    Service pre výpočet nemocenskej na Slovensku (2026).
+    Service pre výpočet nemocenských dávok pri pracovnej neschopnosti na Slovensku (2026).
     
-    Pravidlá:
-    - Prvé 3 dni: 25% denného vymeriavacieho základu (DVZ) - platí zamestnávateľ
-    - Od 4. do 10. dňa: 55% DVZ - platí Sociálna poisťovňa
-    - Od 11. dňa: 55% DVZ pri chorobe, 55% DVZ pri ošetrovaní
-    
+    Pravidlá (choroba):
+    - 1.-3. deň: 25% denného vymeriavacieho základu (DVZ) - platí zamestnávateľ
+    - 4.-10. deň: 55% DVZ - platí zamestnávateľ (náhrada príjmu)
+    - od 11. dňa: 55% DVZ - platí Sociálna poisťovňa
+    Ošetrovné (OČR): 55% DVZ od 1. dňa - platí Sociálna poisťovňa.
+
     DVZ = hrubá mzda za posledných 12 mesiacov / 365
     """
-    
+
     # Konštanty pre výpočet (2026) - importované z config_variables
-    EMPLOYER_PAYMENT_DAYS = cfg.SICK_LEAVE_EMPLOYER_PAYMENT_DAYS  # Prvé 3 dni platí zamestnávateľ
+    EMPLOYER_PAYMENT_DAYS = cfg.SICK_LEAVE_EMPLOYER_PAYMENT_DAYS  # zamestnávateľ platí dni 1-10
+    EMPLOYER_TIER1_DAYS = cfg.SICK_LEAVE_EMPLOYER_TIER1_DAYS  # dni 1-3 (25%)
     EMPLOYER_RATE = cfg.SICK_LEAVE_EMPLOYER_RATE  # 25% DVZ
     INSURANCE_RATE_ILLNESS = cfg.SICK_LEAVE_INSURANCE_RATE_ILLNESS  # 55% DVZ od 4. dňa
     INSURANCE_RATE_CARE = cfg.SICK_LEAVE_INSURANCE_RATE_CARE  # 55% DVZ pri ošetrovaní
@@ -58,21 +60,28 @@ class SickLeaveCalculator:
             capped_daily_base = daily_assessment_base
             is_capped = False
         
-        # Výpočet nemocenskej podľa dní
-        employer_days = min(days_sick, cls.EMPLOYER_PAYMENT_DAYS)
-        insurance_days = max(0, days_sick - cls.EMPLOYER_PAYMENT_DAYS)
-        
-        # Výplata od zamestnávateľa (prvé 3 dni, 25% DVZ)
-        employer_payment = employer_days * capped_daily_base * cls.EMPLOYER_RATE
-        
-        # Výplata od poisťovne (od 4. dňa, 55% DVZ)
+        # Výpočet nemocenskej podľa dní (SK 2026)
+        insurance_rate = cls.INSURANCE_RATE_CARE if leave_type == 'care' else cls.INSURANCE_RATE_ILLNESS
+
         if leave_type == 'care':
-            insurance_rate = cls.INSURANCE_RATE_CARE
+            # Ošetrovné (OČR): platí Sociálna poisťovňa od 1. dňa (55% DVZ).
+            employer_days = 0
+            insurance_days = days_sick
+            employer_payment = Decimal('0')
+            insurance_payment = insurance_days * capped_daily_base * insurance_rate
         else:
-            insurance_rate = cls.INSURANCE_RATE_ILLNESS
-        
-        insurance_payment = insurance_days * capped_daily_base * insurance_rate
-        
+            # Choroba: zamestnávateľ platí dni 1-10 (1.-3. deň 25%, 4.-10. deň 55%),
+            # od 11. dňa platí Sociálna poisťovňa (55%).
+            tier1_days = min(days_sick, cls.EMPLOYER_TIER1_DAYS)
+            tier2_days = max(0, min(days_sick, cls.EMPLOYER_PAYMENT_DAYS) - cls.EMPLOYER_TIER1_DAYS)
+            employer_days = tier1_days + tier2_days
+            insurance_days = max(0, days_sick - cls.EMPLOYER_PAYMENT_DAYS)
+            employer_payment = (
+                tier1_days * capped_daily_base * cls.EMPLOYER_RATE
+                + tier2_days * capped_daily_base * cls.INSURANCE_RATE_ILLNESS
+            )
+            insurance_payment = insurance_days * capped_daily_base * insurance_rate
+
         # Celková nemocenská
         total_sick_leave = employer_payment + insurance_payment
         
@@ -122,8 +131,7 @@ class SickLeaveCalculator:
                 insurance_payment, leave_type
             ),
             'breakdown': cls._generate_breakdown(
-                employer_days, insurance_days, capped_daily_base,
-                cls.EMPLOYER_RATE, insurance_rate
+                days_sick, capped_daily_base, leave_type
             )
         }
     
@@ -136,15 +144,15 @@ class SickLeaveCalculator:
         
         if employer_days > 0 and insurance_days > 0:
             return (
-                f"Pri {leave_label} prvé {employer_days} dni platí zamestnávateľ "
-                f"(25% DVZ = €{employer_payment:.2f}), "
-                f"od 4. dňa ďalších {insurance_days} dní platí Sociálna poisťovňa "
-                f"(55% DVZ = €{insurance_payment:.2f})."
+                f"Pri {leave_label} prvých {employer_days} dní platí zamestnávateľ "
+                f"(1.–3. deň 25 % DVZ, 4.–{employer_days}. deň 55 % DVZ = spolu €{employer_payment:.2f}), "
+                f"od {employer_days + 1}. dňa ďalších {insurance_days} dní platí Sociálna poisťovňa "
+                f"(55 % DVZ = €{insurance_payment:.2f})."
             )
         elif employer_days > 0:
             return (
-                f"Pri {leave_label} prvé {employer_days} dni platí zamestnávateľ "
-                f"25% denného vymeriavacieho základu (celkom €{employer_payment:.2f})."
+                f"Pri {leave_label} prvých {employer_days} dní platí zamestnávateľ "
+                f"(1.–3. deň 25 %, ďalej 55 % denného vymeriavacieho základu; spolu €{employer_payment:.2f})."
             )
         else:
             return (
@@ -153,32 +161,26 @@ class SickLeaveCalculator:
             )
     
     @classmethod
-    def _generate_breakdown(cls, employer_days: int, insurance_days: int,
-                           daily_base: Decimal, employer_rate: Decimal,
-                           insurance_rate: Decimal) -> list:
-        """Vygeneruje denný rozpis nemocenskej"""
+    def _generate_breakdown(cls, days_sick: int, daily_base: Decimal,
+                           leave_type: str) -> list:
+        """Vygeneruje denný rozpis nemocenskej podľa pravidiel SK 2026."""
         breakdown = []
-        
-        # Dni platené zamestnávateľom
-        for day in range(1, employer_days + 1):
-            daily_amount = daily_base * employer_rate
+        insurance_rate = cls.INSURANCE_RATE_CARE if leave_type == 'care' else cls.INSURANCE_RATE_ILLNESS
+
+        for day in range(1, days_sick + 1):
+            if leave_type != 'care' and day <= cls.EMPLOYER_TIER1_DAYS:
+                payer, rate = 'Zamestnávateľ', cls.EMPLOYER_RATE          # dni 1-3: 25%
+            elif leave_type != 'care' and day <= cls.EMPLOYER_PAYMENT_DAYS:
+                payer, rate = 'Zamestnávateľ', cls.INSURANCE_RATE_ILLNESS  # dni 4-10: 55%
+            else:
+                payer, rate = 'Sociálna poisťovňa', insurance_rate        # od 11. dňa (alebo OČR)
             breakdown.append({
                 'day': day,
-                'payer': 'Zamestnávateľ',
-                'rate_percent': float(employer_rate * 100),
-                'daily_amount': round(float(daily_amount), 2)
+                'payer': payer,
+                'rate_percent': float(rate * 100),
+                'daily_amount': round(float(daily_base * rate), 2),
             })
-        
-        # Dni platené poisťovňou
-        for day in range(employer_days + 1, employer_days + insurance_days + 1):
-            daily_amount = daily_base * insurance_rate
-            breakdown.append({
-                'day': day,
-                'payer': 'Sociálna poisťovňa',
-                'rate_percent': float(insurance_rate * 100),
-                'daily_amount': round(float(daily_amount), 2)
-            })
-        
+
         return breakdown
     
     @classmethod

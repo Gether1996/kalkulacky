@@ -218,7 +218,7 @@
 }
 
 .goal-option.gain-moderate.selected .goal-card {
-  border-color: #3498db;
+  border-color: var(--calc-accent);
   background: #d6eaf8;
 }
 
@@ -372,7 +372,7 @@
 }
 
 .tdee-card {
-  border-top: 4px solid #3498db;
+  border-top: 4px solid var(--calc-accent);
 }
 
 .recommendations-card {
@@ -395,7 +395,7 @@
 .tdee-value-large {
   font-size: 3rem;
   font-weight: 700;
-  color: #3498db;
+  color: var(--calc-accent);
   margin-bottom: 0.5rem;
 }
 
@@ -430,7 +430,7 @@
   font-size: 1.1rem;
   padding-top: 1rem;
   margin-top: 0.5rem;
-  border-top: 2px solid #3498db;
+  border-top: 2px solid var(--calc-accent);
 }
 
 .recommendation-main {
@@ -468,12 +468,12 @@
 }
 
 .goal-badge-large.gain-slow {
-  background: #3498db;
+  background: var(--calc-accent);
   color: white;
 }
 
 .goal-badge-large.gain-moderate {
-  background: #3498db;
+  background: var(--calc-accent);
   color: white;
 }
 
@@ -509,7 +509,7 @@
 }
 
 .target-adjustment .positive {
-  color: #3498db;
+  color: var(--calc-accent);
 }
 
 .target-adjustment .negative {

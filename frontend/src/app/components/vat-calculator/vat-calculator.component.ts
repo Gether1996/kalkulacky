@@ -1,13 +1,15 @@
 import { Component, OnInit, PLATFORM_ID, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { VATCalculationRequest, VATCalculationResponse } from '../../models/calculator.models';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-vat-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe],
   templateUrl: './vat-calculator.component.html',
   styleUrl: './vat-calculator.component.css'
 })

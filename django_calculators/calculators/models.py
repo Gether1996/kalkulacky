@@ -203,7 +203,7 @@ class SavedCalculation(models.Model):
         ('bmi', 'BMI'),
         ('bmr', 'BMR'),
         ('energy', 'Energia'),
-        ('sick_leave', 'Nemocenská'),
+        ('sick_leave', 'Pracovná neschopnosť (PN)'),
         ('parental_benefit', 'Rodičovský príspevok'),
         ('fuel_cost', 'Spotreba paliva'),
         ('percentage', 'Percentá'),
@@ -391,9 +391,146 @@ class ScheduledNotification(models.Model):
         """Mark notification as failed with error message"""
         self.error_message = str(error)
         self.save(update_fields=['error_message'])
-    
-    def increment_views(self):
-        """Increment view counter"""
-        self.view_count += 1
-        self.save(update_fields=['view_count'])
+
+
+# ============================================================================
+# MONETIZATION MODELS (lead-gen + affiliate tracking)
+# ============================================================================
+
+class Lead(models.Model):
+    """
+    A qualified lead captured from a calculator (e.g. mortgage broker request,
+    solar/heat-pump installer quote, accounting-software enquiry).
+
+    Lead-gen is the single highest-value monetization model for these calculators
+    (€3-40 per qualified lead). Each lead stores the calculator context + the
+    user's calculation snapshot so it can be sold/routed to a partner with full
+    qualifying detail.
+    """
+
+    # Which vertical / partner program this lead belongs to. Keep loose (CharField)
+    # so new verticals can be added without a migration.
+    VERTICAL_CHOICES = [
+        ('mortgage', 'Hypotéka — broker'),
+        ('solar', 'Fotovoltika — montážna firma'),
+        ('heat_pump', 'Tepelné čerpadlo — montážna firma'),
+        ('renovation', 'Obnova domu — dotácie/firma'),
+        ('insurance_car', 'PZP / havarijné poistenie'),
+        ('accounting', 'Účtovný softvér / účtovník (SZČO)'),
+        ('pension', 'Dôchodok / sporenie'),
+        ('energy', 'Dodávateľ energií'),
+        ('loan', 'Spotrebný úver'),
+        ('other', 'Iné'),
+    ]
+
+    STATUS_CHOICES = [
+        ('new', 'Nový'),
+        ('contacted', 'Kontaktovaný'),
+        ('sold', 'Predaný partnerovi'),
+        ('converted', 'Skonvertovaný'),
+        ('rejected', 'Zamietnutý / nekvalitný'),
+    ]
+
+    vertical = models.CharField(
+        max_length=40,
+        choices=VERTICAL_CHOICES,
+        db_index=True,
+        help_text="Lead vertical / partner program",
+    )
+    calculator_type = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Calculator that produced the lead (e.g. 'mortgage')",
+    )
+
+    # Contact details
+    name = models.CharField(max_length=150, blank=True)
+    email = models.EmailField(blank=True)
+    phone = models.CharField(max_length=40, blank=True)
+    region = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="City / region — important for routing to local providers",
+    )
+    message = models.TextField(blank=True)
+
+    # Qualifying context — the calculation snapshot that makes the lead valuable
+    context = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Calculation inputs/results that qualify the lead (e.g. loan amount, kWp)",
+    )
+
+    consent = models.BooleanField(
+        default=False,
+        help_text="User consented to be contacted (GDPR)",
+    )
+
+    # Sales / routing
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default='new', db_index=True
+    )
+    estimated_value = models.DecimalField(
+        max_digits=8, decimal_places=2, null=True, blank=True,
+        help_text="Estimated € value of this lead",
+    )
+    sold_to = models.CharField(
+        max_length=150, blank=True, help_text="Partner the lead was sold/routed to"
+    )
+
+    # Attribution / anti-spam
+    source_url = models.CharField(max_length=500, blank=True)
+    session_key = models.CharField(max_length=100, blank=True, db_index=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=300, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Lead'
+        verbose_name_plural = 'Leads'
+        indexes = [
+            models.Index(fields=['vertical', 'status']),
+            models.Index(fields=['-created_at']),
+        ]
+
+    def __str__(self):
+        who = self.name or self.email or self.phone or 'anonym'
+        return f"[{self.get_vertical_display()}] {who} ({self.status})"
+
+
+class AffiliateClick(models.Model):
+    """
+    Tracks outbound clicks on affiliate/partner CTAs so partner payouts and
+    EPC (earnings per click) can be reconciled and the best-performing offers
+    surfaced. Lightweight by design — one row per click.
+    """
+    partner = models.CharField(max_length=100, db_index=True)
+    offer_id = models.CharField(
+        max_length=100, db_index=True,
+        help_text="Identifier of the affiliate offer/placement",
+    )
+    calculator_type = models.CharField(max_length=50, blank=True, db_index=True)
+    target_url = models.URLField(max_length=600)
+
+    session_key = models.CharField(max_length=100, blank=True)
+    source_url = models.CharField(max_length=500, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=300, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Affiliate Click'
+        verbose_name_plural = 'Affiliate Clicks'
+        indexes = [
+            models.Index(fields=['partner', '-created_at']),
+            models.Index(fields=['offer_id', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.partner}/{self.offer_id} @ {self.calculator_type}"
 

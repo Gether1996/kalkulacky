@@ -1,21 +1,23 @@
-import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { VacationCalculationRequest, VacationCalculationResponse } from '../../models/calculator.models';
 import { DatePickerComponent } from '../date-picker/date-picker.component';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-vacation-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, DatePickerComponent],
+  imports: [CommonModule, FormsModule, RouterLink, DatePickerComponent, TranslatePipe],
   templateUrl: './vacation-calculator.component.html',
   styleUrls: ['./vacation-calculator.component.css']
 })
 export class VacationCalculatorComponent implements OnInit {
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
+  private platformId = inject(PLATFORM_ID);
 
   currentYear: number = new Date().getFullYear();
 
@@ -43,8 +45,10 @@ export class VacationCalculatorComponent implements OnInit {
     // Set default employment start date (3 years ago)
     this.employmentStartDate = new Date();
     this.employmentStartDate.setFullYear(this.employmentStartDate.getFullYear() - 3);
-    
-    this.calculate();
+
+    if (isPlatformBrowser(this.platformId)) {
+      this.calculate();
+    }
   }
 
   formatDateForInput(date: Date): string {

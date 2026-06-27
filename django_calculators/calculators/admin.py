@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import BlogCategory, BlogPost
+from .models import BlogCategory, BlogPost, Lead, AffiliateClick
 
 
 @admin.register(BlogCategory)
@@ -43,4 +43,35 @@ class BlogPostAdmin(admin.ModelAdmin):
     )
     
     readonly_fields = ['view_count']
+
+
+@admin.register(Lead)
+class LeadAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'vertical', 'status', 'region', 'email', 'phone',
+                    'estimated_value', 'created_at']
+    list_filter = ['vertical', 'status', 'calculator_type', 'created_at']
+    list_editable = ['status', 'estimated_value']
+    search_fields = ['name', 'email', 'phone', 'region', 'sold_to', 'message']
+    date_hierarchy = 'created_at'
+    readonly_fields = ['session_key', 'ip_address', 'user_agent', 'source_url',
+                       'context', 'created_at', 'updated_at']
+    fieldsets = (
+        ('Lead', {'fields': ('vertical', 'calculator_type', 'status',
+                             'estimated_value', 'sold_to')}),
+        ('Kontakt', {'fields': ('name', 'email', 'phone', 'region', 'message',
+                                'consent')}),
+        ('Kontext výpočtu', {'fields': ('context',), 'classes': ('collapse',)}),
+        ('Atribúcia', {'fields': ('source_url', 'session_key', 'ip_address',
+                                  'user_agent', 'created_at', 'updated_at'),
+                       'classes': ('collapse',)}),
+    )
+
+
+@admin.register(AffiliateClick)
+class AffiliateClickAdmin(admin.ModelAdmin):
+    list_display = ['partner', 'offer_id', 'calculator_type', 'created_at']
+    list_filter = ['partner', 'calculator_type', 'created_at']
+    search_fields = ['partner', 'offer_id', 'target_url']
+    date_hierarchy = 'created_at'
+    readonly_fields = [f.name for f in AffiliateClick._meta.fields]
 

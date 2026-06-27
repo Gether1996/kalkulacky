@@ -3,18 +3,23 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
 import { CarLeasingCalculationResponse, CarLeasingOption } from '../../models/calculator.models';
+import { SeoService } from '../../services/seo.service';
+import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.component';
+import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-car-leasing-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AffiliateCtaComponent, AdSlotComponent, TranslatePipe],
   templateUrl: './car-leasing-calculator.component.html',
   styleUrls: ['./car-leasing-calculator.component.css']
 })
 export class CarLeasingCalculatorComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
-  
+  private seo = inject(SeoService);
+
   // Input parameters
   carPrice: number = 25000;
   downPayment: number = 5000;
@@ -48,6 +53,13 @@ export class CarLeasingCalculatorComponent implements OnInit {
   constructor(private calculatorService: CalculatorService) {}
 
   ngOnInit(): void {
+    this.seo.apply({
+      title: 'Kalkulačka lízingu auta 2026 – lízing vs úver vs hotovosť',
+      description: 'Porovnajte finančný lízing, operatívny lízing, úver a kúpu auta na hotovosť. Zistite najvýhodnejší spôsob financovania auta.',
+      path: '/calculator/car-leasing',
+      keywords: 'lízing auta kalkulačka, operatívny lízing, financovanie auta, lízing vs úver',
+      isCalculator: true,
+    });
     if (isPlatformBrowser(this.platformId)) {
       this.calculate();
     }

@@ -825,6 +825,55 @@ export interface BlogPostDetail {
   updated_at: string;
 }
 
+// Solar / PV Subsidy & Payback Calculator
+export interface SolarSubsidyCalculationRequest {
+  annual_consumption_kwh: number;
+  electricity_rate?: number;
+  system_size_kwp?: number;
+  include_battery?: boolean;
+  battery_capacity_kwh?: number;
+}
+
+export interface SolarSubsidyCalculationResponse {
+  inputs: {
+    annual_consumption_kwh: number;
+    electricity_rate: number;
+    include_battery: boolean;
+  };
+  system: {
+    recommended_kwp: number;
+    battery_capacity_kwh: number;
+    annual_production_kwh: number;
+    self_consumption_ratio: number;
+  };
+  cost: {
+    pv_cost: number;
+    battery_cost: number;
+    total_cost: number;
+  };
+  subsidy: {
+    eligible_kwp: number;
+    rate_per_kwp: number;
+    max_subsidy: number;
+    total_subsidy: number;
+    limited_by: string;
+    net_cost: number;
+    scheme: string;
+  };
+  savings: {
+    self_consumed_kwh: number;
+    exported_kwh: number;
+    annual_savings: number;
+    monthly_savings: number;
+    coverage_pct: number;
+  };
+  analysis: {
+    payback_years: number | null;
+    savings_30y: number;
+    co2_savings_kg: number;
+  };
+}
+
 // Unit Converter
 export interface UnitConverterRequest {
   value: number;
@@ -855,7 +904,7 @@ export interface UnitOption {
   label: string;
 }
 
-// Sick Leave Calculator (Nemocenská)
+// Sick Leave Calculator (Pracovná neschopnosť / PN)
 export interface SickLeaveCalculationRequest {
   gross_salary: number;
   days_sick: number;

@@ -1,5 +1,24 @@
 /* Global Styles */
 
+:root {
+  /* Unified calculator accent — single source of truth for every calculator.
+     CSS custom properties inherit through the DOM and pierce Angular's view
+     encapsulation, so changing these restyles all calculators at once. */
+  --calc-accent: #667eea;
+  --calc-accent-2: #764ba2;
+  --calc-accent-strong: #5a67d8;
+  --calc-accent-shadow: rgba(102, 126, 234, 0.3);
+
+  /* Shared shell tokens */
+  --calc-max-width: 1100px;
+  --calc-card-bg: #ffffff;
+  --calc-border: #e2e8f0;
+  --calc-radius: 12px;
+  --calc-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --calc-text: #2c3e50;
+  --calc-text-muted: #7f8c8d;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -19,4 +38,30 @@ body {
 html, body {
   height: 100%;
   overflow-x: hidden;
+}
+
+/*
+ * SEO-text strategy for non-Slovak languages.
+ * The long-form SEO/FAQ articles in calculators are Slovak-only. Rather than
+ * shipping untranslated walls of text to EN/PL/HU visitors, we hide them for
+ * those locales (Czech readers understand Slovak, so it's kept for sk + cs).
+ * The translated header, description and tool UI remain — a clean localized
+ * experience — plus a short localized note (see .i18n-note). document lang is
+ * kept in sync by LocaleService.
+ */
+html:not([lang="sk"]):not([lang="cs"]) .seo-content,
+html:not([lang="sk"]):not([lang="cs"]) .info-section {
+  display: none;
+}
+
+/* Localized notice shown above calculators for non-SK/CS visitors. */
+.i18n-note {
+  max-width: var(--calc-max-width);
+  margin: 16px auto 0;
+  padding: 10px 16px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  color: #1e3a8a;
+  font-size: 14px;
 }

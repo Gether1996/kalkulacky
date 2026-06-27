@@ -1,7 +1,9 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap, catchError, throwError } from 'rxjs';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 import {
   User,
   LoginRequest,
@@ -18,9 +20,11 @@ import {
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_URL = 'http://localhost:8000/api/auth';
+  private readonly API_URL = `${environment.apiUrl}/auth`;
   private readonly ACCESS_TOKEN_KEY = 'access_token';
   private readonly REFRESH_TOKEN_KEY = 'refresh_token';
+  private platformId = inject(PLATFORM_ID);
+  private get isBrowser(): boolean { return isPlatformBrowser(this.platformId); }
 
   // User state
   private currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromStorage());
@@ -173,6 +177,7 @@ export class AuthService {
    * Get access token
    */
   getAccessToken(): string | null {
+    if (!this.isBrowser) return null;
     return localStorage.getItem(this.ACCESS_TOKEN_KEY);
   }
 
@@ -180,6 +185,7 @@ export class AuthService {
    * Get refresh token
    */
   getRefreshToken(): string | null {
+    if (!this.isBrowser) return null;
     return localStorage.getItem(this.REFRESH_TOKEN_KEY);
   }
 
@@ -212,6 +218,7 @@ export class AuthService {
    * Set access token
    */
   private setAccessToken(token: string): void {
+    if (!this.isBrowser) return;
     localStorage.setItem(this.ACCESS_TOKEN_KEY, token);
   }
 
@@ -219,6 +226,7 @@ export class AuthService {
    * Set refresh token
    */
   private setRefreshToken(token: string): void {
+    if (!this.isBrowser) return;
     localStorage.setItem(this.REFRESH_TOKEN_KEY, token);
   }
 
@@ -226,6 +234,7 @@ export class AuthService {
    * Save user to localStorage
    */
   private saveUserToStorage(user: User): void {
+    if (!this.isBrowser) return;
     localStorage.setItem('current_user', JSON.stringify(user));
   }
 
@@ -233,6 +242,7 @@ export class AuthService {
    * Get user from localStorage
    */
   private getUserFromStorage(): User | null {
+    if (!this.isBrowser) return null;
     const userStr = localStorage.getItem('current_user');
     return userStr ? JSON.parse(userStr) : null;
   }
@@ -241,11 +251,12 @@ export class AuthService {
    * Clear all authentication data
    */
   private clearAuthData(): void {
+    this.currentUserSubject.next(null);
+    this.isAuthenticated.set(false);
+    if (!this.isBrowser) return;
     localStorage.removeItem(this.ACCESS_TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem('current_user');
-    this.currentUserSubject.next(null);
-    this.isAuthenticated.set(false);
   }
 
   /**
