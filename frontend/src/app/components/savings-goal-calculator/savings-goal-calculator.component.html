@@ -1,0 +1,125 @@
+<div class="calculator-container">
+  <header class="calc-header">
+    <h1>{{ 'sg.title' | t }}</h1>
+    <p class="calc-subtitle">{{ 'sg.subtitle' | t }}</p>
+  </header>
+
+  <!-- Mode toggle -->
+  <div class="mode-toggle">
+    <button type="button" [class.active]="mode === 'time'" (click)="setMode('time')">
+      {{ 'sg.mode.time' | t }}
+    </button>
+    <button type="button" [class.active]="mode === 'monthly'" (click)="setMode('monthly')">
+      {{ 'sg.mode.monthly' | t }}
+    </button>
+  </div>
+
+  <section class="input-section">
+    <div class="field">
+      <label for="target">{{ 'sg.target' | t }} ({{ currency }})</label>
+      <input id="target" type="number" min="1" [(ngModel)]="targetAmount" (ngModelChange)="calculate()" />
+    </div>
+
+    <div class="field">
+      <label for="initial">{{ 'sg.initial' | t }} ({{ currency }})</label>
+      <input id="initial" type="number" min="0" [(ngModel)]="initialAmount" (ngModelChange)="calculate()" />
+    </div>
+
+    <div class="field" *ngIf="mode === 'time'">
+      <label for="monthly">{{ 'sg.monthly' | t }} ({{ currency }})</label>
+      <input id="monthly" type="number" min="0" [(ngModel)]="monthlyContribution" (ngModelChange)="calculate()" />
+    </div>
+
+    <div class="field" *ngIf="mode === 'monthly'">
+      <label for="months">{{ 'sg.deadline' | t }}</label>
+      <input id="months" type="number" min="1" max="1200" [(ngModel)]="months" (ngModelChange)="calculate()" />
+    </div>
+
+    <div class="field">
+      <label for="rate">{{ 'sg.rate' | t }}</label>
+      <input id="rate" type="number" min="0" max="30" step="0.1" [(ngModel)]="annualRate" (ngModelChange)="calculate()" />
+    </div>
+  </section>
+
+  <!-- Results -->
+  <section class="results-section" *ngIf="result">
+    <!-- TIME mode -->
+    <div *ngIf="mode === 'time'">
+      <div *ngIf="result.reached; else unreachableTpl" class="result-hero">
+        <div class="result-label">{{ 'sg.reachIn' | t }}</div>
+        <div class="result-big">
+          {{ result.years }} {{ 'sg.years' | t }}
+          <span class="result-sub">({{ result.months }} {{ 'sg.months' | t }})</span>
+        </div>
+      </div>
+      <ng-template #unreachableTpl>
+        <div class="result-warn">⚠️ {{ 'sg.unreachable' | t }}</div>
+      </ng-template>
+    </div>
+
+    <!-- MONTHLY mode -->
+    <div *ngIf="mode === 'monthly'" class="result-hero">
+      <div class="result-label">{{ 'sg.result.monthlyTitle' | t }}</div>
+      <div class="result-big">
+        {{ formatCurrency(result.required_monthly) }}
+        <span class="result-sub">/ {{ 'sg.perMonth' | t }}</span>
+      </div>
+    </div>
+
+    <!-- Breakdown -->
+    <div class="breakdown" *ngIf="mode === 'monthly' || result.reached">
+      <div class="bd-row">
+        <span>{{ 'sg.totalContributed' | t }}</span>
+        <strong>{{ formatCurrency(result.total_contributed) }}</strong>
+      </div>
+      <div class="bd-row">
+        <span>{{ 'sg.interestEarned' | t }}</span>
+        <strong class="positive">+ {{ formatCurrency(result.interest_earned) }}</strong>
+      </div>
+      <div class="bd-row total">
+        <span>{{ 'sg.projectedBalance' | t }}</span>
+        <strong>{{ formatCurrency(result.projected_balance) }}</strong>
+      </div>
+    </div>
+
+    <!-- Track as a goal -->
+    <div class="track-zone">
+      <ng-container *ngIf="!trackSaved; else trackedTpl">
+        <button *ngIf="!trackOpen" type="button" class="track-cta" (click)="openTrack()">
+          {{ 'sg.track' | t }}
+        </button>
+        <p *ngIf="!trackOpen" class="track-hint">{{ 'sg.trackHint' | t }}</p>
+
+        <div *ngIf="trackOpen" class="track-form">
+          <label>{{ 'dash.sg.name' | t }}</label>
+          <input type="text" [(ngModel)]="goalName" [placeholder]="'dash.sg.namePh' | t" />
+          <div class="track-actions">
+            <button type="button" class="btn-primary" (click)="saveGoal()" [disabled]="trackSaving">
+              {{ trackSaving ? ('dash.sg.save' | t) + '…' : ('dash.sg.save' | t) }}
+            </button>
+            <button type="button" class="btn-text" (click)="trackOpen = false">{{ 'dash.sg.cancel' | t }}</button>
+          </div>
+          <p class="track-error" *ngIf="trackError">{{ trackError }}</p>
+        </div>
+      </ng-container>
+      <ng-template #trackedTpl>
+        <div class="track-done">
+          ✅ {{ 'dash.sg.status.on_track' | t }}
+          <button type="button" class="btn-text" (click)="goToDashboard()">→ {{ 'dash.sg.title' | t }}</button>
+        </div>
+      </ng-template>
+    </div>
+  </section>
+
+  <p class="calc-disclaimer">{{ 'sg.disclaimer' | t }}</p>
+
+  <div class="monetization-zone" *ngIf="result">
+    <app-ad-slot slot="savings-goal-after-result"></app-ad-slot>
+  </div>
+
+  <!-- SEO content -->
+  <section class="info-section">
+    <h2>{{ 'sg.seoH' | t }}</h2>
+    <p>{{ 'sg.seoP' | t }}</p>
+  </section>
+</div>

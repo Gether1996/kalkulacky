@@ -51,7 +51,10 @@ DATA_REPORT_RECIPIENT=pat.kredatus@gmail.com
 5. Run Django with gunicorn/uvicorn behind nginx (port 8000).
 6. Build + run Angular SSR: `npm run build` then serve `dist/frontend/server` (port 4000).
 7. nginx from `deploy/nginx.conf.example`; TLS via certbot.
-8. Cron the daily emails: `python manage.py send_notifications` (e.g. 09:00).
+8. Schedule notification emails — **pick ONE** (running both double-sends):
+   - **Cron** (recommended): run every 15 min so daily/weekly/monthly reminders fire near their chosen time, e.g. `*/15 * * * * cd /app && /app/venv/bin/python manage.py send_notifications`.
+   - **Always-on worker** (systemd / Docker sidecar): `python manage.py run_notifications_worker --interval 900`.
+   Reminders carry a `frequency` (once/daily/weekly/monthly/yearly); recurring ones re-arm to their next occurrence after each send (catch-up safe — a downtime gap sends once, not a backlog). Verify with `python manage.py send_notifications --dry-run`.
 9. Fill operator details in the legal pages (`/privacy`, `/terms`, `/cookies`) and have them reviewed.
 10. Add 192×192 + 512×512 PNG icons to `frontend/public/` and reference them in `manifest.webmanifest` for full PWA install.
 11. Verify: `python manage.py check --deploy` (only the SECRET_KEY warning should remain if env is set).

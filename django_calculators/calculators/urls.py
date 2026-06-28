@@ -46,6 +46,11 @@ from .views import (
     TipSuggestionsView,
     ParentalBenefitCalculatorView,
     SolarSubsidyCalculatorView,
+    SavingsGoalCalculatorView,
+    SavingsGoalListCreateView,
+    SavingsGoalDetailView,
+    SavingsContributionCreateView,
+    SavingsContributionDeleteView,
     SavedCalculationViewSet,
     SavedCalculationDetailView,
     NotificationListView,
@@ -113,7 +118,14 @@ urlpatterns = [
 
     # Solar / PV subsidy & payback calculator
     path('solar/', SolarSubsidyCalculatorView.as_view(), name='solar-subsidy-calculator'),
-    
+
+    # Savings goal — public projection + logged-in progress tracker
+    path('savings-goal/', SavingsGoalCalculatorView.as_view(), name='savings-goal-calculator'),
+    path('my/savings-goals/', SavingsGoalListCreateView.as_view(), name='my-savings-goals'),
+    path('my/savings-goals/<int:pk>/', SavingsGoalDetailView.as_view(), name='my-savings-goal-detail'),
+    path('my/savings-goals/<int:goal_id>/contributions/', SavingsContributionCreateView.as_view(), name='my-savings-goal-contributions'),
+    path('my/savings-goals/<int:goal_id>/contributions/<int:pk>/', SavingsContributionDeleteView.as_view(), name='my-savings-goal-contribution-detail'),
+
     # Saved calculations + tracking/notifications (logged-in dashboard + anon)
     path('saved-calculations/', SavedCalculationViewSet.as_view(), name='saved-calculations'),
     path('saved-calculations/<int:pk>/', SavedCalculationDetailView.as_view(), name='saved-calculation-detail'),

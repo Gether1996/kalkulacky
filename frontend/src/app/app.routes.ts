@@ -120,6 +120,10 @@ export const routes: Routes = [
     loadComponent: () => import('./components/car-insurance-calculator/car-insurance-calculator.component').then(m => m.CarInsuranceCalculatorComponent)
   },
   {
+    path: 'calculator/savings-goal',
+    loadComponent: () => import('./components/savings-goal-calculator/savings-goal-calculator.component').then(m => m.SavingsGoalCalculatorComponent)
+  },
+  {
     path: 'energia',
     loadComponent: () => import('./components/energy-hub/energy-hub.component').then(m => m.EnergyHubComponent)
   },

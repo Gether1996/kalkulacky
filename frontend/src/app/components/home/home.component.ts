@@ -113,6 +113,15 @@ export class HomeComponent {
       color: 'from-blue-400 to-sky-500'
     },
     {
+      id: 'savings-goal',
+      title: '🎯 Sporiaci cieľ',
+      description: 'Naplánujte si sporenie: zistite, kedy dosiahnete cieľ alebo koľko mesačne odkladať. Prihlásení používatelia môžu sledovať pokrok a zaznamenávať vklady.',
+      icon: '🎯',
+      route: '/calculator/savings-goal',
+      searchVolume: 6000,
+      color: 'from-emerald-400 to-teal-500'
+    },
+    {
       id: 'fuel-cost',
       title: 'Spotreba auta',
       description: 'Vypočítajte náklady na palivo pre vašu cestu na základe vzdialenosti a spotreby.',

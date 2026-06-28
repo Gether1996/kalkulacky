@@ -20,13 +20,17 @@ export interface SavedCalculation {
   last_accessed?: string;
 }
 
+export type ReminderFrequency = 'once' | 'daily' | 'weekly' | 'monthly' | 'yearly';
+
 export interface UserReminder {
   id: number;
   title: string;
   note?: string;
   category?: string;
-  remind_date: string;          // YYYY-MM-DD
+  remind_date: string;          // YYYY-MM-DD (next fire date for recurring)
   remind_time?: string;
+  frequency?: ReminderFrequency;
+  is_active?: boolean;
   related_calculator?: string;
   email_enabled?: boolean;
   sent?: boolean;
@@ -50,6 +54,59 @@ export interface DashboardStats {
   trackedCalculations: number;
   favoritesCount: number;
   upcomingNotifications: number;
+  activeSavingsGoals?: number;
+}
+
+// ---- Savings goals ----
+export interface SavingsContribution {
+  id: number;
+  amount: number;
+  date: string;          // YYYY-MM-DD
+  note?: string;
+  created_at?: string;
+}
+
+export interface SavingsGoalProgress {
+  status: 'on_track' | 'behind' | 'reached' | 'no_deadline';
+  progress_pct: number;
+  projected_balance: number | null;
+  shortfall: number | null;
+}
+
+export interface SavingsGoal {
+  id: number;
+  name: string;
+  target_amount: number;
+  initial_amount: number;
+  monthly_contribution: number;
+  annual_rate: number;
+  target_date?: string | null;
+  currency: string;
+  current_balance: number;
+  progress: SavingsGoalProgress;
+  contributions: SavingsContribution[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface SavingsGoalProjection {
+  reached: boolean;
+  months: number | null;
+  years: number | null;
+  projected_balance: number;
+  total_contributed: number;
+  interest_earned: number;
+  required_monthly?: number;
+}
+
+export interface SavingsGoalCalcRequest {
+  mode: 'time' | 'monthly';
+  target_amount: number;
+  initial_amount?: number;
+  monthly_contribution?: number;
+  months?: number | null;
+  annual_rate?: number;
+  currency?: string;
 }
 
 export interface DashboardData {
@@ -58,6 +115,7 @@ export interface DashboardData {
   calculations: SavedCalculation[];
   upcomingNotifications: UpcomingNotification[];
   reminders: UserReminder[];
+  savingsGoals?: SavingsGoal[];
 }
 
 export interface SaveCalculationRequest {
@@ -127,6 +185,52 @@ export class DashboardService {
   deleteReminder(id: number): Observable<{ success: boolean }> {
     return this.http.delete<{ success: boolean }>(
       `${this.apiUrl}/calculators/my/reminders/${id}/`
+    );
+  }
+
+  // ---- Savings goals ----
+  /** Public savings-goal projection (no login needed). */
+  calcSavingsGoal(req: SavingsGoalCalcRequest):
+    Observable<{ success: boolean; mode: string; currency: string; result: SavingsGoalProjection }> {
+    return this.http.post<{ success: boolean; mode: string; currency: string; result: SavingsGoalProjection }>(
+      `${this.apiUrl}/calculators/savings-goal/`, req
+    );
+  }
+
+  getSavingsGoals(): Observable<{ success: boolean; data: SavingsGoal[] }> {
+    return this.http.get<{ success: boolean; data: SavingsGoal[] }>(
+      `${this.apiUrl}/calculators/my/savings-goals/`
+    );
+  }
+
+  createSavingsGoal(data: Partial<SavingsGoal>): Observable<{ success: boolean; data: SavingsGoal }> {
+    return this.http.post<{ success: boolean; data: SavingsGoal }>(
+      `${this.apiUrl}/calculators/my/savings-goals/`, data
+    );
+  }
+
+  updateSavingsGoal(id: number, patch: Partial<SavingsGoal>): Observable<{ success: boolean; data: SavingsGoal }> {
+    return this.http.patch<{ success: boolean; data: SavingsGoal }>(
+      `${this.apiUrl}/calculators/my/savings-goals/${id}/`, patch
+    );
+  }
+
+  deleteSavingsGoal(id: number): Observable<{ success: boolean }> {
+    return this.http.delete<{ success: boolean }>(
+      `${this.apiUrl}/calculators/my/savings-goals/${id}/`
+    );
+  }
+
+  addContribution(goalId: number, data: { amount: number; date: string; note?: string }):
+    Observable<{ success: boolean; data: SavingsGoal }> {
+    return this.http.post<{ success: boolean; data: SavingsGoal }>(
+      `${this.apiUrl}/calculators/my/savings-goals/${goalId}/contributions/`, data
+    );
+  }
+
+  deleteContribution(goalId: number, id: number): Observable<{ success: boolean }> {
+    return this.http.delete<{ success: boolean }>(
+      `${this.apiUrl}/calculators/my/savings-goals/${goalId}/contributions/${id}/`
     );
   }
 }

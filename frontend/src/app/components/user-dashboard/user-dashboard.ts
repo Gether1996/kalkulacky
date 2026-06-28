@@ -8,6 +8,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import {
   DashboardService, DashboardData, SavedCalculation, UpcomingNotification, DashboardStats, UserReminder,
+  SavingsGoal,
 } from '../../services/dashboard.service';
 
 @Component({
@@ -36,10 +37,24 @@ export class UserDashboard implements OnInit {
   calculations: SavedCalculation[] = [];
   upcoming: UpcomingNotification[] = [];
   reminders: UserReminder[] = [];
+  savingsGoals: SavingsGoal[] = [];
+
+  // New-goal form
+  showGoalForm = false;
+  goalSaving = false;
+  newGoal = { name: '', target_amount: null as number | null, initial_amount: 0,
+              monthly_contribution: 0, annual_rate: 0, target_date: '' };
+
+  // Add-deposit form (per goal)
+  depositGoalId: number | null = null;
+  depositSaving = false;
+  newDeposit = { amount: null as number | null, date: '', note: '' };
 
   // New-reminder form
-  newReminder = { title: '', remind_date: '', note: '', category: 'custom' };
+  newReminder = { title: '', remind_date: '', note: '', category: 'custom', frequency: 'once' };
   reminderSaving = false;
+
+  reminderFrequencies = ['once', 'daily', 'weekly', 'monthly', 'yearly'];
 
   // Inline note editing on saved calculations
   editingNoteId: number | null = null;
@@ -89,6 +104,7 @@ export class UserDashboard implements OnInit {
         this.calculations = data.calculations ?? [];
         this.upcoming = data.upcomingNotifications ?? [];
         this.reminders = data.reminders ?? [];
+        this.savingsGoals = data.savingsGoals ?? [];
         this.loading = false;
       },
       error: () => {
@@ -135,12 +151,13 @@ export class UserDashboard implements OnInit {
       remind_date: this.newReminder.remind_date,
       note: this.newReminder.note || '',
       category: this.newReminder.category || 'custom',
+      frequency: (this.newReminder.frequency || 'once') as any,
     }).subscribe({
       next: (res) => {
         if (res.success) {
           this.reminders = [...this.reminders, res.data]
             .sort((a, b) => a.remind_date.localeCompare(b.remind_date));
-          this.newReminder = { title: '', remind_date: '', note: '', category: 'custom' };
+          this.newReminder = { title: '', remind_date: '', note: '', category: 'custom', frequency: 'once' };
           this.stats = { ...this.stats, upcomingNotifications: this.stats.upcomingNotifications + 1 };
         }
         this.reminderSaving = false;
@@ -164,6 +181,7 @@ export class UserDashboard implements OnInit {
       remind_date: this.toISODate(target),
       note: '',
       category: p.category,
+      frequency: 'once',
     };
   }
 
@@ -283,6 +301,101 @@ export class UserDashboard implements OnInit {
       trackedCalculations: this.calculations.filter(c => c.is_tracking).length,
       favoritesCount: this.calculations.filter(c => c.is_favorite).length,
     };
+  }
+
+  // ---- Savings goals ----
+  openGoalForm() {
+    this.showGoalForm = true;
+    this.newGoal = { name: '', target_amount: null, initial_amount: 0,
+                     monthly_contribution: 0, annual_rate: 0, target_date: '' };
+  }
+
+  cancelGoalForm() { this.showGoalForm = false; }
+
+  addGoal() {
+    const name = this.newGoal.name.trim();
+    if (!name || !this.newGoal.target_amount) return;
+    this.goalSaving = true;
+    this.dashboard.createSavingsGoal({
+      name,
+      target_amount: this.newGoal.target_amount,
+      initial_amount: this.newGoal.initial_amount || 0,
+      monthly_contribution: this.newGoal.monthly_contribution || 0,
+      annual_rate: this.newGoal.annual_rate || 0,
+      target_date: this.newGoal.target_date || null,
+      currency: this.goalCurrency(),
+    }).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.savingsGoals = [res.data, ...this.savingsGoals];
+          this.showGoalForm = false;
+        }
+        this.goalSaving = false;
+      },
+      error: () => { this.goalSaving = false; },
+    });
+  }
+
+  removeGoal(goal: SavingsGoal) {
+    if (isPlatformBrowser(this.platformId) && !confirm(this.locale.t('dash.sg.deleteConfirm'))) return;
+    this.dashboard.deleteSavingsGoal(goal.id).subscribe({
+      next: () => { this.savingsGoals = this.savingsGoals.filter(g => g.id !== goal.id); },
+    });
+  }
+
+  openDeposit(goal: SavingsGoal) {
+    this.depositGoalId = goal.id;
+    this.newDeposit = { amount: null, date: this.toISODate(new Date()), note: '' };
+  }
+
+  cancelDeposit() { this.depositGoalId = null; }
+
+  addDeposit(goal: SavingsGoal) {
+    if (!this.newDeposit.amount || !this.newDeposit.date) return;
+    this.depositSaving = true;
+    this.dashboard.addContribution(goal.id, {
+      amount: this.newDeposit.amount,
+      date: this.newDeposit.date,
+      note: this.newDeposit.note || '',
+    }).subscribe({
+      next: (res) => {
+        if (res.success) {
+          // Replace the goal with the refreshed copy (progress recomputed server-side).
+          this.savingsGoals = this.savingsGoals.map(g => g.id === goal.id ? res.data : g);
+          this.depositGoalId = null;
+        }
+        this.depositSaving = false;
+      },
+      error: () => { this.depositSaving = false; },
+    });
+  }
+
+  goalRemaining(goal: SavingsGoal): number {
+    return Math.max(0, goal.target_amount - goal.current_balance);
+  }
+
+  goalStatusKey(goal: SavingsGoal): string {
+    return 'dash.sg.status.' + (goal.progress?.status ?? 'no_deadline');
+  }
+
+  /** Currency for a NEW goal follows the active language. */
+  private goalCurrency(): string {
+    const map: Record<string, string> = { sk: 'EUR', cs: 'CZK', en: 'EUR', pl: 'PLN', hu: 'HUF' };
+    return map[this.locale.locale()] ?? 'EUR';
+  }
+
+  formatGoalCurrency(value: number | null | undefined, currency: string): string {
+    if (value == null) return '—';
+    const localeMap: Record<string, string> = {
+      EUR: 'sk-SK', CZK: 'cs-CZ', PLN: 'pl-PL', HUF: 'hu-HU',
+    };
+    try {
+      return new Intl.NumberFormat(localeMap[currency] ?? 'sk-SK', {
+        style: 'currency', currency, maximumFractionDigits: 0,
+      }).format(value);
+    } catch {
+      return `${Math.round(value)} ${currency}`;
+    }
   }
 
   getUserInitials(): string {

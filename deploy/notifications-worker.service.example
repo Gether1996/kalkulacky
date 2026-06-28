@@ -1,0 +1,21 @@
+# Always-on notifications worker (systemd).
+# Copy to /etc/systemd/system/kalkulacky-notifications.service, adjust paths/user,
+# then: systemctl daemon-reload && systemctl enable --now kalkulacky-notifications
+#
+# Use EITHER this worker OR a cron entry for `send_notifications` — never both.
+
+[Unit]
+Description=Kalkulacky.sk notifications worker (recurring reminders + tracked-calc alerts)
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/app/django_calculators
+EnvironmentFile=/app/django_calculators/.env
+ExecStart=/app/django_calculators/venv/bin/python manage.py run_notifications_worker --interval 900
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

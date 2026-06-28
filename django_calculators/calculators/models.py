@@ -620,6 +620,14 @@ class UserReminder(models.Model):
         ('home', 'Domácnosť / energie'),
     ]
 
+    FREQUENCY_CHOICES = [
+        ('once', 'Jednorazovo'),
+        ('daily', 'Denne'),
+        ('weekly', 'Týždenne'),
+        ('monthly', 'Mesačne'),
+        ('yearly', 'Ročne'),
+    ]
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -630,6 +638,14 @@ class UserReminder(models.Model):
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='custom')
     remind_date = models.DateField(db_index=True)
     remind_time = models.TimeField(default='09:00:00')
+    # Recurrence: 'once' fires a single time; the rest re-arm themselves to the
+    # next occurrence after each send (see send_notifications). remind_date always
+    # holds the NEXT fire date.
+    frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES, default='once')
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Recurring reminders keep firing while active; set False to pause/stop.",
+    )
     related_calculator = models.CharField(
         max_length=50, blank=True, default='',
         help_text="Optional calculator slug this reminder links to",
@@ -638,6 +654,45 @@ class UserReminder(models.Model):
     sent = models.BooleanField(default=False)
     sent_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def next_occurrence(self, after=None):
+        """
+        Return the next remind_date strictly after `after` (default: current
+        remind_date) for this reminder's frequency, or None for one-off reminders.
+        Catch-up safe: if the worker was down for several periods, this advances
+        past all of them to the next future slot rather than firing a backlog.
+        """
+        import calendar
+        from datetime import date as _date, timedelta
+        if self.frequency == 'once':
+            return None
+        base = after or self.remind_date
+        today = _date.today()
+        nxt = base
+
+        def _bump(d):
+            if self.frequency == 'daily':
+                return d + timedelta(days=1)
+            if self.frequency == 'weekly':
+                return d + timedelta(days=7)
+            if self.frequency == 'monthly':
+                month = d.month + 1
+                year = d.year + (1 if month > 12 else 0)
+                month = 1 if month > 12 else month
+                day = min(d.day, calendar.monthrange(year, month)[1])
+                return _date(year, month, day)
+            if self.frequency == 'yearly':
+                try:
+                    return d.replace(year=d.year + 1)
+                except ValueError:  # Feb 29 -> Feb 28
+                    return d.replace(year=d.year + 1, day=28)
+            return d + timedelta(days=1)
+
+        # Advance at least once, then keep going until we're in the future.
+        nxt = _bump(nxt)
+        while nxt <= today:
+            nxt = _bump(nxt)
+        return nxt
 
     class Meta:
         ordering = ['remind_date', 'remind_time']
@@ -650,6 +705,61 @@ class UserReminder(models.Model):
 
     def __str__(self):
         return f"{self.title} @ {self.remind_date}"
+
+
+class SavingsGoal(models.Model):
+    """
+    A user's savings goal to track over time (e.g. "Emergency fund €10 000").
+    Progress = initial_amount + logged contributions; the calculator projects
+    time-to-goal / required monthly contribution with compound interest.
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='savings_goals',
+    )
+    name = models.CharField(max_length=200)
+    target_amount = models.DecimalField(max_digits=14, decimal_places=2)
+    initial_amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    monthly_contribution = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    annual_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0,
+                                      help_text='Expected annual interest rate (%)')
+    target_date = models.DateField(null=True, blank=True)
+    currency = models.CharField(max_length=3, default='EUR')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Savings Goal'
+        verbose_name_plural = 'Savings Goals'
+        indexes = [models.Index(fields=['user', '-created_at'])]
+
+    def __str__(self):
+        return f"{self.name} ({self.target_amount} {self.currency})"
+
+    @property
+    def contributed_total(self):
+        return sum((c.amount for c in self.contributions.all()), 0)
+
+    @property
+    def current_balance(self):
+        return self.initial_amount + self.contributed_total
+
+
+class SavingsContribution(models.Model):
+    """A single deposit logged against a savings goal."""
+    goal = models.ForeignKey(SavingsGoal, on_delete=models.CASCADE, related_name='contributions')
+    amount = models.DecimalField(max_digits=14, decimal_places=2)
+    date = models.DateField()
+    note = models.CharField(max_length=200, blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+        verbose_name = 'Savings Contribution'
+        verbose_name_plural = 'Savings Contributions'
+
+    def __str__(self):
+        return f"{self.amount} -> {self.goal_id} ({self.date})"
 
 
 class PageView(models.Model):

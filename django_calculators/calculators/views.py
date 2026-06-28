@@ -1728,14 +1728,22 @@ class SavedCalculationDetailView(APIView):
     """
     
     def get(self, request, pk):
-        """Retrieve a single saved calculation"""
+        """Retrieve a single saved calculation (owner-scoped)."""
         try:
             from calculators.models import SavedCalculation
             calculation = SavedCalculation.objects.get(pk=pk)
-            
+
+            # Owner-scoped read: a calc owned by a user is only readable by that
+            # user (prevents IDOR — reading someone else's saved data by id).
+            if calculation.user_id and calculation.user_id != getattr(request.user, 'id', None):
+                return Response(
+                    {'success': False, 'error': 'Prístup zamietnutý'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
             # Increment access counter
             calculation.increment_access()
-            
+
             return Response({
                 'success': True,
                 'data': SavedCalculationSerializer(calculation).data
@@ -1831,7 +1839,14 @@ class NotificationListView(APIView):
         try:
             from calculators.models import SavedCalculation, ScheduledNotification
             calculation = SavedCalculation.objects.get(pk=calculation_id)
-            
+
+            # Owner-scoped: don't expose another user's notifications by id.
+            if calculation.user_id and calculation.user_id != getattr(request.user, 'id', None):
+                return Response(
+                    {'success': False, 'error': 'Prístup zamietnutý'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
             notifications = ScheduledNotification.objects.filter(calculation=calculation)
             
             serializer = ScheduledNotificationSerializer(notifications, many=True)
@@ -1880,11 +1895,22 @@ class MyDashboardView(APIView):
         )
         reminders_data = UserReminderSerializer(reminders, many=True).data
 
+        from calculators.models import SavingsGoal
+        from .serializers import SavingsGoalSerializer
+        goals = (SavingsGoal.objects
+                 .filter(user=request.user)
+                 .prefetch_related('contributions'))
+        goals_data = SavingsGoalSerializer(goals, many=True).data
+        active_goals = sum(
+            1 for g in goals_data if g['progress']['status'] != 'reached'
+        )
+
         stats = {
             'totalCalculations': calculations.count(),
             'trackedCalculations': calculations.filter(is_tracking=True).count(),
             'favoritesCount': calculations.filter(is_favorite=True).count(),
             'upcomingNotifications': upcoming.count() + reminders.count(),
+            'activeSavingsGoals': active_goals,
         }
 
         return Response({
@@ -1893,6 +1919,7 @@ class MyDashboardView(APIView):
             'calculations': calc_data,
             'upcomingNotifications': upcoming_data,
             'reminders': reminders_data,
+            'savingsGoals': goals_data,
         })
 
 
@@ -1946,6 +1973,145 @@ class UserReminderDetailView(APIView):
             return Response({'success': False}, status=status.HTTP_404_NOT_FOUND)
         return Response({'success': True})
 
+
+# ============================================================================
+# SAVINGS GOAL — public calculator + logged-in progress tracker
+# ============================================================================
+
+class SavingsGoalCalculatorView(APIView):
+    """
+    Public savings-goal projection (no login required).
+
+    POST /api/calculators/savings-goal/
+      mode='time'    { target_amount, initial_amount?, monthly_contribution, annual_rate?, currency? }
+      mode='monthly' { target_amount, initial_amount?, months, annual_rate?, currency? }
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        from .serializers import SavingsGoalCalculatorSerializer
+        from .services.savings_goal_calculator import (
+            project_time_to_goal, required_monthly_contribution,
+        )
+        serializer = SavingsGoalCalculatorSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({'success': False, 'errors': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)
+        d = serializer.validated_data
+
+        if d['mode'] == 'monthly':
+            result = required_monthly_contribution(
+                d['target_amount'], d.get('initial_amount', 0),
+                d['months'], d.get('annual_rate', 0),
+            )
+        else:
+            result = project_time_to_goal(
+                d['target_amount'], d.get('initial_amount', 0),
+                d.get('monthly_contribution', 0), d.get('annual_rate', 0),
+            )
+
+        return Response({
+            'success': True,
+            'mode': d['mode'],
+            'currency': d.get('currency', 'EUR'),
+            'result': result,
+        })
+
+
+class SavingsGoalListCreateView(APIView):
+    """
+    List / create the logged-in user's savings goals (with progress + status).
+    GET  /api/calculators/my/savings-goals/
+    POST /api/calculators/my/savings-goals/  { name, target_amount, ... }
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from calculators.models import SavingsGoal
+        from .serializers import SavingsGoalSerializer
+        qs = (SavingsGoal.objects
+              .filter(user=request.user)
+              .prefetch_related('contributions'))
+        data = SavingsGoalSerializer(qs, many=True).data
+        return Response({'success': True, 'data': data})
+
+    def post(self, request):
+        from .serializers import SavingsGoalSerializer
+        serializer = SavingsGoalSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({'success': False, 'errors': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)
+        goal = serializer.save(user=request.user)
+        return Response({'success': True, 'data': SavingsGoalSerializer(goal).data},
+                        status=status.HTTP_201_CREATED)
+
+
+class SavingsGoalDetailView(APIView):
+    """
+    Update / delete a single savings goal (owner only).
+    PATCH/DELETE /api/calculators/my/savings-goals/<pk>/
+    """
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        from calculators.models import SavingsGoal
+        from .serializers import SavingsGoalSerializer
+        goal = SavingsGoal.objects.filter(pk=pk, user=request.user).first()
+        if not goal:
+            return Response({'success': False}, status=status.HTTP_404_NOT_FOUND)
+        serializer = SavingsGoalSerializer(goal, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'success': True, 'data': serializer.data})
+
+    def delete(self, request, pk):
+        from calculators.models import SavingsGoal
+        deleted, _ = SavingsGoal.objects.filter(pk=pk, user=request.user).delete()
+        if not deleted:
+            return Response({'success': False}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'success': True})
+
+
+class SavingsContributionCreateView(APIView):
+    """
+    Log a contribution (deposit) against a savings goal, advancing its progress.
+    POST /api/calculators/my/savings-goals/<goal_id>/contributions/
+      { amount, date, note? }
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, goal_id):
+        from calculators.models import SavingsGoal
+        from .serializers import SavingsContributionSerializer, SavingsGoalSerializer
+        goal = SavingsGoal.objects.filter(pk=goal_id, user=request.user).first()
+        if not goal:
+            return Response({'success': False}, status=status.HTTP_404_NOT_FOUND)
+        serializer = SavingsContributionSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({'success': False, 'errors': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)
+        serializer.save(goal=goal)
+        # Return the refreshed goal so the UI can update progress in one round-trip.
+        goal.refresh_from_db()
+        return Response({'success': True, 'data': SavingsGoalSerializer(goal).data},
+                        status=status.HTTP_201_CREATED)
+
+
+class SavingsContributionDeleteView(APIView):
+    """
+    Remove a logged contribution (owner only).
+    DELETE /api/calculators/my/savings-goals/<goal_id>/contributions/<pk>/
+    """
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, goal_id, pk):
+        from calculators.models import SavingsContribution
+        deleted, _ = SavingsContribution.objects.filter(
+            pk=pk, goal_id=goal_id, goal__user=request.user,
+        ).delete()
+        if not deleted:
+            return Response({'success': False}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'success': True})
 
 
 # ============================================================================

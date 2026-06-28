@@ -1,8 +1,22 @@
 from django.contrib import admin
 from .models import (
     BlogCategory, BlogPost, Lead, AffiliateClick, DataReport, UserReminder,
-    PageView, AuthEvent,
+    PageView, AuthEvent, SavingsGoal, SavingsContribution,
 )
+
+
+class SavingsContributionInline(admin.TabularInline):
+    model = SavingsContribution
+    extra = 0
+
+
+@admin.register(SavingsGoal)
+class SavingsGoalAdmin(admin.ModelAdmin):
+    list_display = ['name', 'user', 'target_amount', 'currency', 'target_date', 'created_at']
+    list_filter = ['currency', 'created_at']
+    search_fields = ['name', 'user__email']
+    date_hierarchy = 'created_at'
+    inlines = [SavingsContributionInline]
 
 
 @admin.register(PageView)

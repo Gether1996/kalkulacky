@@ -53,6 +53,7 @@ export class NavbarComponent implements OnInit {
         { id: 'roi', name: 'ROI Kalkulačka', route: '/calculator/roi', icon: '📊' },
         { id: 'car-leasing', name: 'Lízing auta', route: '/calculator/car-leasing', icon: '🚗' },
         { id: 'car-insurance', name: 'PZP poistenie', route: '/calculator/car-insurance', icon: '🚗' },
+        { id: 'savings-goal', name: 'Sporiaci cieľ', route: '/calculator/savings-goal', icon: '🎯' },
         { id: 'sick-leave', name: 'Pracovná neschopnosť (PN)', route: '/calculator/sick-leave', icon: '🏥' }
       ]
     },

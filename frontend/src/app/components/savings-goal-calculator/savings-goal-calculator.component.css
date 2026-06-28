@@ -1,0 +1,160 @@
+.calculator-container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.calc-header { text-align: center; margin-bottom: 1.5rem; }
+.calc-header h1 { font-size: 2.1rem; color: #1a202c; margin: 0 0 0.5rem; font-weight: 700; }
+.calc-subtitle { color: #64748b; font-size: 1.05rem; margin: 0; }
+
+/* Mode toggle */
+.mode-toggle {
+  display: flex;
+  gap: 0.5rem;
+  background: #f1f5f9;
+  border-radius: 12px;
+  padding: 0.35rem;
+  margin-bottom: 1.5rem;
+}
+.mode-toggle button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.7rem 1rem;
+  border-radius: 9px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+.mode-toggle button.active {
+  background: #fff;
+  color: #0f766e;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Inputs */
+.input-section {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  background: #fff;
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  margin-bottom: 1.5rem;
+}
+.field { display: flex; flex-direction: column; gap: 0.4rem; }
+.field label { font-size: 0.88rem; font-weight: 600; color: #475569; }
+.field input {
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.75rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1e293b;
+  background: #fff;
+}
+.field input:focus {
+  outline: none;
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
+}
+
+/* Results */
+.results-section {
+  background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+  border-radius: 16px;
+  padding: 1.75rem;
+  color: #fff;
+  box-shadow: 0 6px 24px rgba(13, 148, 136, 0.3);
+  margin-bottom: 1rem;
+}
+.result-hero { text-align: center; margin-bottom: 1.25rem; }
+.result-label { font-size: 0.95rem; opacity: 0.9; margin-bottom: 0.3rem; }
+.result-big { font-size: 2.4rem; font-weight: 800; line-height: 1.1; }
+.result-sub { font-size: 1.1rem; font-weight: 600; opacity: 0.85; }
+.result-warn {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.breakdown {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 0.5rem 1.1rem;
+}
+.bd-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem 0;
+  font-size: 0.98rem;
+}
+.bd-row + .bd-row { border-top: 1px solid rgba(255, 255, 255, 0.18); }
+.bd-row.total { font-size: 1.1rem; }
+.bd-row .positive { color: #d1fae5; }
+
+/* Track as goal */
+.track-zone { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid rgba(255, 255, 255, 0.2); }
+.track-cta {
+  background: #fff;
+  color: #0f766e;
+  border: none;
+  border-radius: 12px;
+  padding: 0.8rem 1.4rem;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+}
+.track-cta:hover { background: #f0fdfa; }
+.track-hint { font-size: 0.85rem; opacity: 0.9; margin: 0.6rem 0 0; text-align: center; }
+.track-form { display: flex; flex-direction: column; gap: 0.6rem; }
+.track-form label { font-size: 0.85rem; font-weight: 600; }
+.track-form input {
+  border: none;
+  border-radius: 10px;
+  padding: 0.75rem;
+  font-size: 1rem;
+  color: #1e293b;
+}
+.track-actions { display: flex; gap: 0.6rem; align-items: center; }
+.btn-primary {
+  background: #0f766e;
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 10px;
+  padding: 0.7rem 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-text { background: none; border: none; color: #fff; text-decoration: underline; cursor: pointer; font-size: 0.95rem; }
+.track-error { color: #fee2e2; font-size: 0.85rem; margin: 0; }
+.track-done { display: flex; align-items: center; gap: 0.75rem; font-weight: 700; flex-wrap: wrap; }
+
+.calc-disclaimer { font-size: 0.82rem; color: #94a3b8; text-align: center; margin: 0.75rem auto 1.5rem; max-width: 600px; }
+
+.monetization-zone { margin: 1.5rem 0; }
+
+.info-section {
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+.info-section h2 { font-size: 1.4rem; color: #1e293b; margin: 0 0 0.75rem; }
+.info-section p { color: #475569; line-height: 1.75; margin: 0; }
+
+@media (max-width: 560px) {
+  .input-section { grid-template-columns: 1fr; }
+  .calc-header h1 { font-size: 1.7rem; }
+  .result-big { font-size: 2rem; }
+}

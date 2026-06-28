@@ -53,17 +53,18 @@ class Command(BaseCommand):
         notifications = query.order_by('scheduled_date', 'scheduled_time', '-priority')
         
         total_count = notifications.count()
-        
-        if total_count == 0:
-            self.stdout.write(self.style.WARNING('No notifications to send'))
-            return
-        
-        self.stdout.write(f"Found {total_count} notification(s) to send")
-        
+
         sent_count = 0
         failed_count = 0
         skipped_count = 0
-        
+
+        if total_count == 0:
+            # No tracked-calculation alerts due — but custom user reminders
+            # (incl. recurring ones) still need processing, so don't return early.
+            self.stdout.write(self.style.WARNING('No tracked-calculation notifications to send'))
+        else:
+            self.stdout.write(f"Found {total_count} notification(s) to send")
+
         for notification in notifications:
             calculation = notification.calculation
             
@@ -144,21 +145,33 @@ class Command(BaseCommand):
         self.stdout.write("=" * 50)
     
     def _send_user_reminders(self, today, current_time, dry_run, force):
-        """Email custom user-created reminders that are due."""
+        """
+        Email custom user-created reminders that are due.
+
+        One-off reminders (frequency='once') are marked sent + deactivated.
+        Recurring reminders (daily/weekly/monthly/yearly) re-arm themselves: after
+        sending, remind_date is advanced to the next future occurrence so they
+        keep firing on schedule.
+        """
         from django.conf import settings
         from django.core.mail import send_mail
         from django.utils import timezone
 
+        # "Due" = next fire timestamp has passed and the reminder is still active.
         query = UserReminder.objects.filter(
-            remind_date__lte=today, email_enabled=True
+            remind_date__lte=today, email_enabled=True, is_active=True,
         ).select_related('user')
-        if not force:
-            query = query.filter(sent=False)
 
-        reminders = query.filter(remind_date__lt=today) | query.filter(
-            remind_date=today, remind_time__lte=current_time
-        )
-        count = reminders.count()
+        # Don't re-fire a one-off that already went out (unless --force).
+        if not force:
+            from django.db.models import Q
+            query = query.filter(Q(frequency='once', sent=False) | ~Q(frequency='once'))
+
+        reminders = [
+            r for r in query
+            if r.remind_date < today or (r.remind_date == today and r.remind_time <= current_time)
+        ]
+        count = len(reminders)
         if count == 0:
             return
         self.stdout.write(f"Found {count} user reminder(s) to send")
@@ -170,25 +183,45 @@ class Command(BaseCommand):
             email = getattr(r.user, 'email', None)
             if not email:
                 continue
+
+            freq_label = dict(UserReminder.FREQUENCY_CHOICES).get(r.frequency, '')
             if dry_run:
-                self.stdout.write(self.style.NOTICE(f"[DRY RUN] reminder '{r.title}' -> {email}"))
+                self.stdout.write(self.style.NOTICE(
+                    f"[DRY RUN] reminder '{r.title}' ({freq_label}) -> {email}"))
                 continue
+
             body = (
                 f"Pripomienka: {r.title}\n\n"
                 f"{r.note or ''}\n\n"
-                f"Termín: {r.remind_date:%d.%m.%Y}\n\n"
-                f"— Kalkulačky.sk · {base}/dashboard"
+                f"Termín: {r.remind_date:%d.%m.%Y}\n"
+                + (f"Opakovanie: {freq_label}\n" if r.frequency != 'once' else "")
+                + f"\n— Kalkulačky.sk · {base}/dashboard"
             )
             try:
                 send_mail(f"Pripomienka: {r.title}",
                           body, getattr(settings, 'DEFAULT_FROM_EMAIL', None),
                           [email], fail_silently=False)
-                r.sent = True
-                r.sent_at = timezone.now()
-                r.save(update_fields=['sent', 'sent_at'])
-                self.stdout.write(self.style.SUCCESS(f"Sent reminder '{r.title}' to {email}"))
+                self._reschedule(r, timezone.now())
+                self.stdout.write(self.style.SUCCESS(
+                    f"Sent reminder '{r.title}' to {email}"
+                    + (f" (next: {r.remind_date})" if r.frequency != 'once' else "")))
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f"Reminder '{r.title}' failed: {e}"))
+
+    def _reschedule(self, reminder, now):
+        """Mark a fired reminder: re-arm if recurring, else close it out."""
+        reminder.sent_at = now
+        nxt = reminder.next_occurrence()
+        if nxt is None:
+            # One-off: done.
+            reminder.sent = True
+            reminder.is_active = False
+            reminder.save(update_fields=['sent', 'is_active', 'sent_at'])
+        else:
+            # Recurring: arm the next occurrence; stays active + unsent.
+            reminder.remind_date = nxt
+            reminder.sent = False
+            reminder.save(update_fields=['remind_date', 'sent', 'sent_at'])
 
     def _prepare_context(self, notification, calculation):
         """

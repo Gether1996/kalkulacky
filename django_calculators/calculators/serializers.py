@@ -1155,7 +1155,8 @@ class UserReminderSerializer(serializers.ModelSerializer):
         model = UserReminder
         fields = [
             'id', 'title', 'note', 'category', 'remind_date', 'remind_time',
-            'related_calculator', 'email_enabled', 'sent', 'created_at',
+            'frequency', 'is_active', 'related_calculator', 'email_enabled',
+            'sent', 'created_at',
         ]
         read_only_fields = ['id', 'sent', 'created_at']
 
@@ -1163,6 +1164,120 @@ class UserReminderSerializer(serializers.ModelSerializer):
         value = (value or '').strip()
         if len(value) < 2:
             raise serializers.ValidationError('Zadajte názov pripomienky.')
+        return value
+
+
+class SavingsGoalCalculatorSerializer(serializers.Serializer):
+    """
+    Public (anonymous) savings-goal projection. Two modes:
+      * mode='time'    -> how long until the target is reached
+      * mode='monthly' -> required monthly contribution to hit target by `months`
+    Currency-agnostic; `currency` is echoed back for display only.
+    """
+    mode = serializers.ChoiceField(
+        choices=['time', 'monthly'], default='time',
+        help_text="'time' = how long to reach goal; 'monthly' = required monthly payment",
+    )
+    target_amount = serializers.DecimalField(
+        max_digits=14, decimal_places=2, min_value=1, max_value=100000000,
+        help_text="Target amount to save",
+    )
+    initial_amount = serializers.DecimalField(
+        max_digits=14, decimal_places=2, min_value=0, default=0, required=False,
+        help_text="Money you already have saved",
+    )
+    monthly_contribution = serializers.DecimalField(
+        max_digits=14, decimal_places=2, min_value=0, default=0, required=False,
+        help_text="Monthly contribution (required for mode='time')",
+    )
+    months = serializers.IntegerField(
+        min_value=1, max_value=1200, required=False, allow_null=True,
+        help_text="Deadline in months (required for mode='monthly')",
+    )
+    annual_rate = serializers.DecimalField(
+        max_digits=5, decimal_places=2, min_value=0, max_value=30,
+        default=0, required=False,
+        help_text="Expected annual interest rate (%)",
+    )
+    currency = serializers.CharField(
+        max_length=3, default='EUR', required=False,
+        help_text="Display currency (EUR/CZK/PLN/HUF)",
+    )
+
+    def validate(self, data):
+        if data['mode'] == 'time' and not data.get('monthly_contribution'):
+            # A zero monthly with zero rate can never reach a positive target.
+            if not data.get('annual_rate'):
+                raise serializers.ValidationError({
+                    'monthly_contribution': 'Zadajte mesačný vklad alebo úrokovú sadzbu.'
+                })
+        if data['mode'] == 'monthly' and not data.get('months'):
+            raise serializers.ValidationError({
+                'months': 'Pre výpočet mesačného vkladu zadajte termín (počet mesiacov).'
+            })
+        return data
+
+
+class SavingsContributionSerializer(serializers.ModelSerializer):
+    """A single logged deposit against a savings goal."""
+
+    class Meta:
+        from .models import SavingsContribution
+        model = SavingsContribution
+        fields = ['id', 'amount', 'date', 'note', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+    def validate_amount(self, value):
+        if value == 0:
+            raise serializers.ValidationError('Suma vkladu nemôže byť nula.')
+        return value
+
+
+class SavingsGoalSerializer(serializers.ModelSerializer):
+    """A user's savings goal with computed progress + on-track status."""
+    current_balance = serializers.SerializerMethodField()
+    progress = serializers.SerializerMethodField()
+    contributions = serializers.SerializerMethodField()
+
+    class Meta:
+        from .models import SavingsGoal
+        model = SavingsGoal
+        fields = [
+            'id', 'name', 'target_amount', 'initial_amount',
+            'monthly_contribution', 'annual_rate', 'target_date', 'currency',
+            'current_balance', 'progress', 'contributions',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_current_balance(self, obj):
+        return round(float(obj.current_balance), 2)
+
+    def get_contributions(self, obj):
+        return SavingsContributionSerializer(obj.contributions.all(), many=True).data
+
+    def get_progress(self, obj):
+        from .services.savings_goal_calculator import status_for_goal
+        months_remaining = None
+        if obj.target_date:
+            today = self.context.get('today')
+            if today is None:
+                from datetime import date
+                today = date.today()
+            months_remaining = max(
+                0,
+                (obj.target_date.year - today.year) * 12
+                + (obj.target_date.month - today.month),
+            )
+        return status_for_goal(
+            obj.target_amount, obj.current_balance,
+            obj.monthly_contribution, obj.annual_rate, months_remaining,
+        )
+
+    def validate_name(self, value):
+        value = (value or '').strip()
+        if len(value) < 2:
+            raise serializers.ValidationError('Zadajte názov cieľa.')
         return value
 
 

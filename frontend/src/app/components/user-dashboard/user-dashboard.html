@@ -88,6 +88,84 @@
     </div>
   </div>
 
+  <!-- Savings goals -->
+  <div class="dashboard-section">
+    <div class="sg-head">
+      <h2 class="section-title">🎯 {{ 'dash.sg.title' | t }}</h2>
+      <button type="button" class="rf-btn" (click)="openGoalForm()" *ngIf="!showGoalForm">
+        {{ 'dash.sg.new' | t }}
+      </button>
+    </div>
+
+    <!-- New goal form -->
+    <div class="sg-form" *ngIf="showGoalForm">
+      <input class="rf-input" type="text" [(ngModel)]="newGoal.name"
+             [placeholder]="'dash.sg.namePh' | t" />
+      <div class="sg-form-grid">
+        <label>{{ 'sg.target' | t }}
+          <input type="number" min="1" [(ngModel)]="newGoal.target_amount" /></label>
+        <label>{{ 'sg.initial' | t }}
+          <input type="number" min="0" [(ngModel)]="newGoal.initial_amount" /></label>
+        <label>{{ 'sg.monthly' | t }}
+          <input type="number" min="0" [(ngModel)]="newGoal.monthly_contribution" /></label>
+        <label>{{ 'sg.rate' | t }}
+          <input type="number" min="0" max="30" step="0.1" [(ngModel)]="newGoal.annual_rate" /></label>
+        <label>{{ 'dash.sg.targetDate' | t }}
+          <input type="date" [(ngModel)]="newGoal.target_date" /></label>
+      </div>
+      <div class="note-actions">
+        <button type="button" class="btn-mini primary" (click)="addGoal()"
+                [disabled]="goalSaving || !newGoal.name || !newGoal.target_amount">{{ 'dash.sg.save' | t }}</button>
+        <button type="button" class="btn-mini" (click)="cancelGoalForm()">{{ 'dash.sg.cancel' | t }}</button>
+      </div>
+    </div>
+
+    <p class="section-hint" *ngIf="!savingsGoals.length && !showGoalForm">{{ 'dash.sg.empty' | t }}</p>
+
+    <div class="sg-list">
+      <div class="sg-card" *ngFor="let g of savingsGoals">
+        <div class="sg-card-head">
+          <span class="sg-name">{{ g.name }}</span>
+          <span class="sg-status" [attr.data-status]="g.progress.status">{{ goalStatusKey(g) | t }}</span>
+        </div>
+
+        <div class="sg-bar">
+          <div class="sg-bar-fill" [style.width.%]="(g.progress.progress_pct || 0) > 100 ? 100 : (g.progress.progress_pct || 0)"></div>
+        </div>
+
+        <div class="sg-figures">
+          <span><strong>{{ formatGoalCurrency(g.current_balance, g.currency) }}</strong> {{ 'dash.sg.saved' | t }}</span>
+          <span>{{ 'dash.sg.remaining' | t }}: {{ formatGoalCurrency(goalRemaining(g), g.currency) }}</span>
+          <span class="sg-target">/ {{ formatGoalCurrency(g.target_amount, g.currency) }}</span>
+        </div>
+
+        <div class="sg-meta">
+          <span *ngIf="g.target_date">📅 {{ 'dash.sg.targetDate' | t }}: {{ formatDate(g.target_date) }}</span>
+          <span *ngIf="g.progress.projected_balance != null">
+            {{ 'dash.sg.projected' | t }}: {{ formatGoalCurrency(g.progress.projected_balance, g.currency) }}
+          </span>
+        </div>
+
+        <div class="sg-actions" *ngIf="depositGoalId !== g.id">
+          <button type="button" class="btn-mini primary" (click)="openDeposit(g)">{{ 'dash.sg.addDeposit' | t }}</button>
+          <button type="button" class="icon-btn danger" (click)="removeGoal(g)" [title]="'dash.sg.delete' | t">🗑️</button>
+        </div>
+
+        <!-- Add deposit -->
+        <div class="sg-deposit" *ngIf="depositGoalId === g.id">
+          <input type="number" [(ngModel)]="newDeposit.amount" [placeholder]="'dash.sg.amount' | t" />
+          <input type="date" [(ngModel)]="newDeposit.date" />
+          <input type="text" [(ngModel)]="newDeposit.note" [placeholder]="'dash.sg.note' | t" />
+          <div class="note-actions">
+            <button type="button" class="btn-mini primary" (click)="addDeposit(g)"
+                    [disabled]="depositSaving || !newDeposit.amount || !newDeposit.date">{{ 'dash.sg.save' | t }}</button>
+            <button type="button" class="btn-mini" (click)="cancelDeposit()">{{ 'dash.sg.cancel' | t }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- My custom reminders -->
   <div class="dashboard-section">
     <h2 class="section-title">{{ 'dash.myReminders.title' | t }}</h2>
@@ -103,6 +181,10 @@
       <input class="rf-input rf-title" type="text" [(ngModel)]="newReminder.title"
              [placeholder]="'dash.myReminders.titlePh' | t" />
       <input class="rf-input rf-date" type="date" [(ngModel)]="newReminder.remind_date" />
+      <select class="rf-input rf-freq" [(ngModel)]="newReminder.frequency"
+              [title]="'dash.freq.label' | t">
+        <option *ngFor="let f of reminderFrequencies" [value]="f">{{ ('dash.freq.' + f) | t }}</option>
+      </select>
       <input class="rf-input rf-note" type="text" [(ngModel)]="newReminder.note"
              [placeholder]="'dash.myReminders.notePh' | t" />
       <button class="rf-btn" type="button" (click)="addReminder()"
@@ -117,7 +199,10 @@
         <div class="reminder-row" *ngIf="editingReminderId !== r.id" [attr.data-priority]="'medium'">
           <div class="reminder-date">{{ formatDate(r.remind_date) }}</div>
           <div class="reminder-body">
-            <span class="reminder-title">{{ r.title }}</span>
+            <span class="reminder-title">
+              {{ r.title }}
+              <span class="freq-badge" *ngIf="r.frequency && r.frequency !== 'once'">🔁 {{ ('dash.freq.' + r.frequency) | t }}</span>
+            </span>
             <span class="reminder-msg" *ngIf="r.note">{{ r.note }}</span>
           </div>
           <div class="reminder-actions">
