@@ -1,0 +1,79 @@
+<div class="calculator-container">
+  <header class="calc-header">
+    <h1>{{ 'reno.title' | t }}</h1>
+    <p class="calc-subtitle">{{ 'calc.renovation.desc' | t }}</p>
+    <p class="country-badge">🌍 {{ 'salary.rulesFor' | t }}: <strong>{{ countryName }}</strong> · {{ programName }}</p>
+    <a routerLink="/energia" class="hub-link">⚡ {{ 'energyhub.backlink' | t }}</a>
+  </header>
+
+  <section class="input-section">
+    <h2 class="step-title">1 · {{ 'reno.step.eligibility' | t }}</h2>
+    <label class="switch-field">
+      <input type="checkbox" [(ngModel)]="isFamilyHouse" (ngModelChange)="calculate()" />
+      <span>{{ 'reno.familyHouse' | t }}</span>
+    </label>
+    <label class="switch-field" *ngIf="isSK">
+      <input type="checkbox" [(ngModel)]="builtBefore2013" (ngModelChange)="calculate()" />
+      <span>{{ 'reno.before2013' | t }}</span>
+    </label>
+
+    <h2 class="step-title">2 · {{ 'reno.step.measures' | t }}</h2>
+    <div class="measures-grid">
+      <label class="measure" *ngFor="let m of measures" [class.active]="m.checked">
+        <input type="checkbox" [(ngModel)]="m.checked" (ngModelChange)="calculate()" />
+        <span>{{ m.labelKey | t }}</span>
+      </label>
+    </div>
+
+    <h2 class="step-title">3 · {{ 'reno.step.cost' | t }}</h2>
+    <div class="field">
+      <label for="cost">{{ 'reno.projectCost' | t }}</label>
+      <input id="cost" type="number" min="0" step="1000" [(ngModel)]="projectCost" (ngModelChange)="calculate()" />
+    </div>
+  </section>
+
+  <section class="results-section" *ngIf="result">
+    <div class="eligibility-banner" [class.ok]="result.eligible" [class.no]="!result.eligible">
+      <span class="elig-icon">{{ result.eligible ? '✅' : '⚠️' }}</span>
+      <span *ngIf="result.eligible">{{ 'reno.eligibleYes' | t }} — {{ result.tierKey | t }} ({{ result.tierPct }})</span>
+      <span *ngIf="!result.eligible && result.reasonKey">{{ result.reasonKey | t }}</span>
+    </div>
+
+    <div class="hero-grid" *ngIf="result.eligible">
+      <div class="hero-card primary">
+        <div class="hero-label">{{ 'reno.estGrant' | t }}</div>
+        <div class="hero-value green">{{ formatCurrency(result.estimatedGrant) }}</div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-label">{{ 'reno.contribution' | t }}</div>
+        <div class="hero-value">{{ formatCurrency(result.contribution) }}</div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-label">{{ 'reno.coverage' | t }}</div>
+        <div class="hero-value">{{ result.coveragePct }} %</div>
+      </div>
+    </div>
+
+    <p class="subsidy-note">
+      💶 {{ 'reno.note' | t }} <strong>{{ programName }}</strong> ({{ 'common.indicative' | t }}).
+    </p>
+    <p class="disclaimer">
+      ⚠️ {{ 'reno.disclaimer' | t }}
+      <a [href]="programUrl" target="_blank" rel="noopener">{{ programUrl }}</a>.
+    </p>
+  </section>
+
+  <!-- Monetization: auditor/contractor lead capture + partner offers -->
+  <div class="monetization-zone" *ngIf="result">
+    <app-lead-form calculatorType="renovation" [context]="leadContext"></app-lead-form>
+    <app-affiliate-cta calculatorType="renovation"></app-affiliate-cta>
+    <app-ad-slot slot="renovation-after-result"></app-ad-slot>
+  </div>
+
+  <!-- Cross-links inside the home-energy hub -->
+  <nav class="hub-cross" *ngIf="result">
+    <a routerLink="/calculator/solar" class="hub-chip">☀️ {{ 'calc.solar.name' | t }}</a>
+    <a routerLink="/calculator/heat-pump" class="hub-chip">♨️ {{ 'calc.heat-pump.name' | t }}</a>
+    <a routerLink="/calculator/energy" class="hub-chip">⚡ {{ 'calc.energy.name' | t }}</a>
+  </nav>
+</div>

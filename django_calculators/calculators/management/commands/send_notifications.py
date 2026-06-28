@@ -8,7 +8,7 @@ Run this command via cron job:
 
 from django.core.management.base import BaseCommand
 from datetime import datetime, time
-from calculators.models import ScheduledNotification
+from calculators.models import ScheduledNotification, UserReminder
 from calculators.services.notification_service import NotificationService
 import logging
 
@@ -77,8 +77,15 @@ class Command(BaseCommand):
                 skipped_count += 1
                 continue
             
-            # Check if email is available
-            if not calculation.email:
+            # Respect the owner's master email-notifications preference.
+            owner = getattr(calculation, 'user', None)
+            if owner is not None and not getattr(owner, 'email_notifications', True):
+                skipped_count += 1
+                continue
+
+            # Effective recipient: the calculation's email, else the account email.
+            recipient_email = calculation.email or (owner.email if owner else None)
+            if not recipient_email:
                 self.stdout.write(
                     self.style.WARNING(
                         f"Skipping notification {notification.id} - no email for calculation {calculation.id}"
@@ -91,28 +98,28 @@ class Command(BaseCommand):
             if dry_run:
                 self.stdout.write(
                     self.style.NOTICE(
-                        f"[DRY RUN] Would send: {notification.title} to {calculation.email}"
+                        f"[DRY RUN] Would send: {notification.title} to {recipient_email}"
                     )
                 )
                 sent_count += 1
             else:
                 # Prepare context for email template
                 context = self._prepare_context(notification, calculation)
-                
+
                 # Send notification
                 success = NotificationService.send_notification_email(
-                    to_email=calculation.email,
+                    to_email=recipient_email,
                     notification_type=notification.notification_type,
                     context=context,
                     calculator_type=calculation.calculator_type
                 )
-                
+
                 if success:
                     notification.mark_sent()
                     sent_count += 1
                     self.stdout.write(
                         self.style.SUCCESS(
-                            f"Sent notification {notification.id}: {notification.title} to {calculation.email}"
+                            f"Sent notification {notification.id}: {notification.title} to {recipient_email}"
                         )
                     )
                 else:
@@ -124,6 +131,9 @@ class Command(BaseCommand):
                         )
                     )
         
+        # User-created custom reminders due today
+        self._send_user_reminders(today, current_time, dry_run, force)
+
         # Summary
         self.stdout.write("\n" + "=" * 50)
         self.stdout.write(self.style.SUCCESS(f"Successfully sent: {sent_count}"))
@@ -133,6 +143,53 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING(f"Skipped: {skipped_count}"))
         self.stdout.write("=" * 50)
     
+    def _send_user_reminders(self, today, current_time, dry_run, force):
+        """Email custom user-created reminders that are due."""
+        from django.conf import settings
+        from django.core.mail import send_mail
+        from django.utils import timezone
+
+        query = UserReminder.objects.filter(
+            remind_date__lte=today, email_enabled=True
+        ).select_related('user')
+        if not force:
+            query = query.filter(sent=False)
+
+        reminders = query.filter(remind_date__lt=today) | query.filter(
+            remind_date=today, remind_time__lte=current_time
+        )
+        count = reminders.count()
+        if count == 0:
+            return
+        self.stdout.write(f"Found {count} user reminder(s) to send")
+
+        base = getattr(settings, 'FRONTEND_URL', 'https://kalkulacky.sk')
+        for r in reminders:
+            if not getattr(r.user, 'email_notifications', True):
+                continue
+            email = getattr(r.user, 'email', None)
+            if not email:
+                continue
+            if dry_run:
+                self.stdout.write(self.style.NOTICE(f"[DRY RUN] reminder '{r.title}' -> {email}"))
+                continue
+            body = (
+                f"Pripomienka: {r.title}\n\n"
+                f"{r.note or ''}\n\n"
+                f"Termín: {r.remind_date:%d.%m.%Y}\n\n"
+                f"— Kalkulačky.sk · {base}/dashboard"
+            )
+            try:
+                send_mail(f"Pripomienka: {r.title}",
+                          body, getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+                          [email], fail_silently=False)
+                r.sent = True
+                r.sent_at = timezone.now()
+                r.save(update_fields=['sent', 'sent_at'])
+                self.stdout.write(self.style.SUCCESS(f"Sent reminder '{r.title}' to {email}"))
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f"Reminder '{r.title}' failed: {e}"))
+
     def _prepare_context(self, notification, calculation):
         """
         Prepare template context from notification and calculation data.

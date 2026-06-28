@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models/auth.models';
 import { LanguageSwitcherComponent } from '../shared/language-switcher/language-switcher.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { ThemeService } from '../../services/theme.service';
 
 interface Category {
   id: string;
@@ -33,6 +34,8 @@ export class NavbarComponent implements OnInit {
   isUserMenuOpen = false;
   currentUser: User | null = null;
 
+  public theme = inject(ThemeService);
+
   categories: Category[] = [
     {
       id: 'financial',
@@ -49,6 +52,7 @@ export class NavbarComponent implements OnInit {
         { id: 'inflation', name: 'Inflácia', route: '/calculator/inflation', icon: '📉' },
         { id: 'roi', name: 'ROI Kalkulačka', route: '/calculator/roi', icon: '📊' },
         { id: 'car-leasing', name: 'Lízing auta', route: '/calculator/car-leasing', icon: '🚗' },
+        { id: 'car-insurance', name: 'PZP poistenie', route: '/calculator/car-insurance', icon: '🚗' },
         { id: 'sick-leave', name: 'Pracovná neschopnosť (PN)', route: '/calculator/sick-leave', icon: '🏥' }
       ]
     },
@@ -72,6 +76,8 @@ export class NavbarComponent implements OnInit {
         { id: 'percentage', name: 'Percentá', route: '/calculator/percentage', icon: '➗' },
         { id: 'vacation', name: 'Dovolenka', route: '/calculator/vacation', icon: '🏖️' },
         { id: 'solar', name: 'Fotovoltika (dotácia)', route: '/calculator/solar', icon: '☀️' },
+        { id: 'heat-pump', name: 'Tepelné čerpadlo', route: '/calculator/heat-pump', icon: '♨️' },
+        { id: 'renovation', name: 'Obnov dom (dotácia)', route: '/calculator/renovation', icon: '🏚️' },
         { id: 'energy', name: 'Náklady na energiu', route: '/calculator/energy', icon: '⚡' },
         { id: 'hours-worked', name: 'Odpracované hodiny', route: '/calculator/hours-worked', icon: '⏰' },
         { id: 'split-bill', name: 'Rozdelenie účtu', route: '/calculator/split-bill', icon: '🧾' },

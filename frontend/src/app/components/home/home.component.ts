@@ -1,17 +1,35 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CalculatorCard } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslatePipe],
+  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent {
+  private locale = inject(LocaleService);
+
+  /** Live search term to filter the calculator grid. */
+  searchTerm = '';
+
+  /** Calculators matching the search (by localized name + description). */
+  get filteredCalculators(): CalculatorCard[] {
+    const q = this.searchTerm.trim().toLowerCase();
+    if (!q) return this.calculators;
+    return this.calculators.filter(c => {
+      const name = this.locale.t('calc.' + c.id + '.name').toLowerCase();
+      const desc = this.locale.t('calc.' + c.id + '.desc').toLowerCase();
+      return name.includes(q) || desc.includes(q) || c.id.includes(q);
+    });
+  }
+
   calculators: CalculatorCard[] = [
     {
       id: 'basic',
@@ -84,6 +102,15 @@ export class HomeComponent {
       route: '/calculator/loan',
       searchVolume: 6000,
       color: 'from-orange-500 to-orange-600'
+    },
+    {
+      id: 'car-insurance',
+      title: '🚗 PZP – povinné zmluvné poistenie',
+      description: 'Orientačná cena PZP podľa výkonu auta, veku vodiča a regiónu. Porovnajte ponuky poisťovní a získajte nezáväznú cenu PZP.',
+      icon: '🚗',
+      route: '/calculator/car-insurance',
+      searchVolume: 9000,
+      color: 'from-blue-400 to-sky-500'
     },
     {
       id: 'fuel-cost',
@@ -174,6 +201,24 @@ export class HomeComponent {
       route: '/calculator/solar',
       searchVolume: 9000,
       color: 'from-amber-400 to-yellow-500'
+    },
+    {
+      id: 'heat-pump',
+      title: '♨️ Tepelné čerpadlo – výkon, cena a dotácia',
+      description: 'Vypočítajte výkon tepelného čerpadla, cenu, ročnú úsporu oproti plynu či elektrine, dotáciu a návratnosť. Získajte nezáväznú ponuku od montážnej firmy.',
+      icon: '♨️',
+      route: '/calculator/heat-pump',
+      searchVolume: 7000,
+      color: 'from-sky-400 to-cyan-500'
+    },
+    {
+      id: 'renovation',
+      title: '🏚️ Obnov dom – dotácia na obnovu',
+      description: 'Zistite, či máte nárok na dotáciu Obnov dom a koľko môžete získať na zateplenie, okná a zdroj tepla. Sprievodca oprávnenosťou a odhad dotácie.',
+      icon: '🏚️',
+      route: '/calculator/renovation',
+      searchVolume: 6500,
+      color: 'from-teal-400 to-emerald-500'
     },
     {
       id: 'energy',

@@ -1,0 +1,35 @@
+<div class="value-container">
+  <header class="value-header">
+    <h1>{{ 'salaryval.h1pre' | t }} {{ gross }} € {{ 'salaryval.h1post' | t }}</h1>
+    <p class="value-sub">{{ 'salaryval.sub' | t }}</p>
+  </header>
+
+  <section class="value-result" *ngIf="result; else loadingTpl">
+    <div class="big-card">
+      <div class="big-label">{{ 'salary.net' | t }}</div>
+      <div class="big-value">{{ formatCurrency(result.net_salary) }}</div>
+      <div class="big-from">{{ 'salaryval.fromGross' | t }} {{ formatCurrency(result.gross_salary) }}</div>
+    </div>
+
+    <div class="breakdown">
+      <div class="brow"><span>{{ 'salary.social' | t }} (9,4 %)</span><strong>− {{ formatCurrency(result.social_insurance) }}</strong></div>
+      <div class="brow"><span>{{ 'salary.health' | t }} (5 %)</span><strong>− {{ formatCurrency(result.health_insurance) }}</strong></div>
+      <div class="brow"><span>{{ 'salary.tax' | t }}</span><strong>− {{ formatCurrency(result.income_tax) }}</strong></div>
+    </div>
+
+    <a routerLink="/calculator/salary" class="full-cta">{{ 'salaryval.fullCta' | t }} →</a>
+  </section>
+
+  <ng-template #loadingTpl>
+    <p class="value-loading">{{ 'common.loading' | t }}…</p>
+  </ng-template>
+
+  <app-ad-slot slot="salary-value-after"></app-ad-slot>
+
+  <nav class="related" *ngIf="related.length">
+    <span class="related-label">{{ 'salaryval.related' | t }}</span>
+    <a *ngFor="let r of related" [routerLink]="['/cista-mzda', r]" class="related-chip">{{ r }} €</a>
+  </nav>
+
+  <app-affiliate-cta calculatorType="salary"></app-affiliate-cta>
+</div>

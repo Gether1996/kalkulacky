@@ -14,7 +14,9 @@ from .serializers import (
     RegisterSerializer,
     LoginSerializer,
     ChangePasswordSerializer,
-    GoogleAuthSerializer
+    GoogleAuthSerializer,
+    ForgotPasswordSerializer,
+    ResetPasswordSerializer,
 )
 
 
@@ -176,6 +178,87 @@ class ChangePasswordView(APIView):
         return Response({
             'message': 'Password changed successfully'
         }, status=status.HTTP_200_OK)
+
+
+class ForgotPasswordView(APIView):
+    """
+    Request a password-reset email.
+
+    POST /api/auth/forgot-password/  Body: { "email": "..." }
+    Always returns success (does not reveal whether the email exists). Emails a
+    reset link to the frontend /reset-password page. Needs SMTP configured to
+    actually deliver (console backend in dev).
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = ForgotPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+
+        user = User.objects.filter(email__iexact=email, is_active=True).first()
+        if user and not user.oauth_provider:
+            from django.contrib.auth.tokens import default_token_generator
+            from django.utils.http import urlsafe_base64_encode
+            from django.utils.encoding import force_bytes
+            from django.core.mail import send_mail
+
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            base = getattr(settings, 'FRONTEND_URL', 'https://kalkulacky.sk')
+            reset_link = f"{base}/reset-password?uid={uid}&token={token}"
+            try:
+                send_mail(
+                    'Obnovenie hesla – Kalkulačky.sk',
+                    f'Pre obnovenie hesla kliknite na odkaz (platí 24 hodín):\n\n{reset_link}\n\n'
+                    f'Ak ste o obnovenie nežiadali, tento e-mail ignorujte.',
+                    getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+                    [user.email],
+                    fail_silently=True,
+                )
+            except Exception as e:
+                print(f"Password reset email failed: {e}")
+
+        return Response(
+            {'message': 'Ak účet s týmto e-mailom existuje, poslali sme naň odkaz na obnovenie hesla.'},
+            status=status.HTTP_200_OK,
+        )
+
+
+class ResetPasswordView(APIView):
+    """
+    Set a new password using the emailed uid + token.
+
+    POST /api/auth/reset-password/
+    Body: { "uid", "token", "new_password", "new_password_confirm" }
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        from django.contrib.auth.tokens import default_token_generator
+        from django.utils.http import urlsafe_base64_decode
+        from django.utils.encoding import force_str
+
+        try:
+            uid = force_str(urlsafe_base64_decode(serializer.validated_data['uid']))
+            user = User.objects.get(pk=uid)
+        except (User.DoesNotExist, ValueError, TypeError, OverflowError):
+            user = None
+
+        if user is None or not default_token_generator.check_token(
+            user, serializer.validated_data['token']
+        ):
+            return Response(
+                {'error': 'Odkaz na obnovenie hesla je neplatný alebo expiroval.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
+        return Response({'message': 'Heslo bolo úspešne zmenené. Môžete sa prihlásiť.'},
+                        status=status.HTTP_200_OK)
 
 
 class GoogleAuthView(APIView):

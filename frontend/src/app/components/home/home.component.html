@@ -20,9 +20,22 @@
   <!-- Calculators Grid -->
   <section class="calculators-section">
     <h2 class="section-title">{{ 'home.section.calculators' | t }}</h2>
+
+    <div class="calc-search">
+      <span class="calc-search-icon">🔍</span>
+      <input
+        type="search"
+        class="calc-search-input"
+        [(ngModel)]="searchTerm"
+        [placeholder]="'home.search.placeholder' | t"
+        [attr.aria-label]="'home.search.placeholder' | t" />
+      <button *ngIf="searchTerm" type="button" class="calc-search-clear"
+              (click)="searchTerm = ''" aria-label="×">×</button>
+    </div>
+
     <div class="calculators-grid">
       <a
-        *ngFor="let calc of calculators"
+        *ngFor="let calc of filteredCalculators"
         [routerLink]="calc.route"
         class="calculator-card"
         [attr.data-color]="calc.id"
@@ -36,6 +49,10 @@
         </div>
       </a>
     </div>
+
+    <p class="calc-search-empty" *ngIf="filteredCalculators.length === 0">
+      {{ 'home.search.empty' | t }} “{{ searchTerm }}”.
+    </p>
   </section>
 
   <!-- Blog Section -->

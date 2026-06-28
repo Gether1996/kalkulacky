@@ -35,6 +35,7 @@
           <span *ngIf="password?.errors?.['required']">Heslo je povinné</span>
           <span *ngIf="password?.errors?.['minlength']">Heslo musí mať aspoň 8 znakov</span>
         </div>
+        <p class="forgot-link"><a routerLink="/forgot-password">Zabudli ste heslo?</a></p>
       </div>
 
       <!-- Error Message -->

@@ -1,0 +1,13 @@
+{
+  "name": "Kalkulačky.sk",
+  "short_name": "Kalkulačky",
+  "description": "Bezplatné online kalkulačky: čistá mzda, hypotéka, DPH, dôchodok, dotácie a ďalšie.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#667eea",
+  "lang": "sk",
+  "icons": [
+    { "src": "favicon.ico", "sizes": "48x48", "type": "image/x-icon" }
+  ]
+}

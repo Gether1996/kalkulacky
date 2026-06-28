@@ -22,12 +22,18 @@ export const serverRoutes: ServerRoute[] = [
     path: 'embed/**',
     renderMode: RenderMode.Client
   },
+  // Home-energy hub landing page — server-rendered for SEO.
+  { path: 'energia', renderMode: RenderMode.Server },
+  // Programmatic gross→net long-tail pages — server-rendered for SEO.
+  { path: 'cista-mzda/**', renderMode: RenderMode.Server },
   // Blog — server-rendered for SEO.
   { path: 'blog', renderMode: RenderMode.Server },
   { path: 'blog/**', renderMode: RenderMode.Server },
   // App / auth pages — no SEO value, client-rendered.
   { path: 'login', renderMode: RenderMode.Client },
   { path: 'register', renderMode: RenderMode.Client },
+  { path: 'forgot-password', renderMode: RenderMode.Client },
+  { path: 'reset-password', renderMode: RenderMode.Client },
   { path: 'dashboard', renderMode: RenderMode.Client },
   { path: 'profile', renderMode: RenderMode.Client },
   // Fallback for any other route.

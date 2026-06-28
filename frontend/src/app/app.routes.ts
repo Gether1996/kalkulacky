@@ -108,6 +108,26 @@ export const routes: Routes = [
     loadComponent: () => import('./components/solar-calculator/solar-calculator.component').then(m => m.SolarCalculatorComponent)
   },
   {
+    path: 'calculator/heat-pump',
+    loadComponent: () => import('./components/heat-pump-calculator/heat-pump-calculator.component').then(m => m.HeatPumpCalculatorComponent)
+  },
+  {
+    path: 'calculator/renovation',
+    loadComponent: () => import('./components/renovation-grant-calculator/renovation-grant-calculator.component').then(m => m.RenovationGrantCalculatorComponent)
+  },
+  {
+    path: 'calculator/car-insurance',
+    loadComponent: () => import('./components/car-insurance-calculator/car-insurance-calculator.component').then(m => m.CarInsuranceCalculatorComponent)
+  },
+  {
+    path: 'energia',
+    loadComponent: () => import('./components/energy-hub/energy-hub.component').then(m => m.EnergyHubComponent)
+  },
+  {
+    path: 'cista-mzda/:amount',
+    loadComponent: () => import('./components/salary-value-page/salary-value-page.component').then(m => m.SalaryValuePageComponent)
+  },
+  {
     path: 'embed/:type',
     loadComponent: () => import('./components/embed/embed.component').then(m => m.EmbedComponent)
   },
@@ -128,6 +148,15 @@ export const routes: Routes = [
     path: 'register',
     loadComponent: () => import('./components/register/register').then(m => m.Register),
     canActivate: [guestGuard]
+  },
+  {
+    path: 'forgot-password',
+    loadComponent: () => import('./components/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent),
+    canActivate: [guestGuard]
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./components/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
   },
   {
     path: 'dashboard',

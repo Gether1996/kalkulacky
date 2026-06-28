@@ -1,0 +1,116 @@
+<div class="calculator-container">
+  <header class="calc-header">
+    <h1>{{ 'heatpump.title' | t }}</h1>
+    <p class="calc-subtitle">{{ 'calc.heat-pump.desc' | t }}</p>
+    <p class="country-badge">🌍 {{ 'salary.rulesFor' | t }}: <strong>{{ countryName }}</strong> · {{ currency }}</p>
+    <a routerLink="/energia" class="hub-link">⚡ {{ 'energyhub.backlink' | t }}</a>
+  </header>
+
+  <section class="input-section">
+    <div class="preset-row">
+      <span class="preset-caption">{{ 'common.quickSelect' | t }}</span>
+      <button type="button" class="preset-btn" (click)="setArea(80)">{{ 'heatpump.preset.flat' | t }} <span>(80 m²)</span></button>
+      <button type="button" class="preset-btn" (click)="setArea(120)">{{ 'heatpump.preset.house' | t }} <span>(120 m²)</span></button>
+      <button type="button" class="preset-btn" (click)="setArea(180)">{{ 'heatpump.preset.large' | t }} <span>(180 m²)</span></button>
+    </div>
+
+    <div class="field">
+      <label for="area">{{ 'heatpump.area' | t }}</label>
+      <input id="area" type="number" min="0" [(ngModel)]="heatedArea" (ngModelChange)="calculate()" />
+    </div>
+
+    <div class="field">
+      <label for="insulation">{{ 'heatpump.insulation' | t }}</label>
+      <select id="insulation" [(ngModel)]="insulation" (ngModelChange)="calculate()">
+        <option *ngFor="let o of insulationOptions" [value]="o.key">{{ o.labelKey | t }}</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="heating">{{ 'heatpump.currentHeating' | t }}</label>
+      <select id="heating" [(ngModel)]="currentHeating" (ngModelChange)="calculate()">
+        <option *ngFor="let o of heatingOptions" [value]="o.key">{{ o.labelKey | t }}</option>
+      </select>
+    </div>
+  </section>
+
+  <section class="results-section" *ngIf="result">
+    <div class="hero-grid">
+      <div class="hero-card primary">
+        <div class="hero-label">{{ 'heatpump.payback' | t }}</div>
+        <div class="hero-value">
+          <ng-container *ngIf="result.paybackYears; else noPayback">{{ result.paybackYears }} {{ 'common.years' | t }}</ng-container>
+          <ng-template #noPayback>—</ng-template>
+        </div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-label">{{ 'heatpump.annualSavings' | t }}</div>
+        <div class="hero-value green">{{ formatCurrency(result.annualSavings) }}</div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-label">{{ 'heatpump.estSubsidy' | t }}</div>
+        <div class="hero-value green">{{ formatCurrency(result.subsidy) }}</div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-label">{{ 'heatpump.netCost' | t }}</div>
+        <div class="hero-value">{{ formatCurrency(result.netCost) }}</div>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail">
+        <span>{{ 'heatpump.recommendedPower' | t }}</span>
+        <strong>{{ formatNumber(result.recommendedKw, 1) }} kW · {{ result.hpType }}</strong>
+      </div>
+      <div class="detail">
+        <span>{{ 'heatpump.heatDemand' | t }}</span>
+        <strong>{{ formatNumber(result.annualHeatDemand) }} kWh</strong>
+      </div>
+      <div class="detail">
+        <span>{{ 'heatpump.currentCost' | t }}</span>
+        <strong>{{ formatCurrency(result.currentAnnualCost) }}</strong>
+      </div>
+      <div class="detail">
+        <span>{{ 'heatpump.hpCost' | t }}</span>
+        <strong>{{ formatCurrency(result.hpAnnualCost) }}</strong>
+      </div>
+      <div class="detail">
+        <span>{{ 'heatpump.totalCost' | t }}</span>
+        <strong>{{ formatCurrency(result.totalCost) }}</strong>
+      </div>
+      <div class="detail">
+        <span>{{ 'heatpump.savings15' | t }}</span>
+        <strong class="green">{{ formatCurrency(result.savings15y) }}</strong>
+      </div>
+      <div class="detail">
+        <span>{{ 'heatpump.co2' | t }}</span>
+        <strong>{{ formatNumber(result.co2SavingsKg) }} kg</strong>
+      </div>
+    </div>
+
+    <p class="subsidy-note">
+      💶 {{ 'heatpump.subsidyNote' | t }} <strong>{{ programName }}</strong> ({{ 'common.indicative' | t }}).
+      {{ 'heatpump.limitedBy' | t }}: <strong>{{ result.subsidyLimitedBy }}</strong>.
+    </p>
+    <p class="disclaimer">
+      ⚠️ {{ 'heatpump.disclaimer' | t }}
+      <a [href]="programUrl" target="_blank" rel="noopener">{{ programUrl }}</a>.
+    </p>
+  </section>
+
+  <div class="error-state" *ngIf="error">{{ error }}</div>
+
+  <!-- Monetization: installer lead capture + partner offers -->
+  <div class="monetization-zone" *ngIf="result">
+    <app-lead-form calculatorType="heat-pump" [context]="leadContext"></app-lead-form>
+    <app-affiliate-cta calculatorType="heat-pump"></app-affiliate-cta>
+    <app-ad-slot slot="heat-pump-after-result"></app-ad-slot>
+  </div>
+
+  <!-- Cross-links inside the home-energy hub -->
+  <nav class="hub-cross" *ngIf="result">
+    <a routerLink="/calculator/solar" class="hub-chip">☀️ {{ 'calc.solar.name' | t }}</a>
+    <a routerLink="/calculator/renovation" class="hub-chip">🏚️ {{ 'calc.renovation.name' | t }}</a>
+    <a routerLink="/calculator/energy" class="hub-chip">⚡ {{ 'calc.energy.name' | t }}</a>
+  </nav>
+</div>

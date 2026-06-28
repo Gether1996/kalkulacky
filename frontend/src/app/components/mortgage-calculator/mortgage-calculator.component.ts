@@ -1,4 +1,4 @@
-import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -9,12 +9,15 @@ import { LeadFormComponent } from '../shared/lead-form/lead-form.component';
 import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.component';
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
 import { EmbedSnippetComponent } from '../shared/embed-snippet/embed-snippet.component';
+import { SaveCalculationComponent } from '../shared/save-calculation/save-calculation.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
+import { getCountryParams } from '../../i18n/country-params';
 
 @Component({
   selector: 'app-mortgage-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LeadFormComponent, AffiliateCtaComponent, AdSlotComponent, EmbedSnippetComponent, TranslatePipe],
+  imports: [CommonModule, FormsModule, RouterLink, LeadFormComponent, AffiliateCtaComponent, AdSlotComponent, EmbedSnippetComponent, SaveCalculationComponent, TranslatePipe],
   templateUrl: './mortgage-calculator.component.html',
   styleUrls: ['./mortgage-calculator.component.css']
 })
@@ -31,15 +34,43 @@ export class MortgageCalculatorComponent implements OnInit {
   error: string | null = null;
   showAmortization: boolean = false;
 
-  // Common mortgage scenarios
-  scenarios = [
-    { label: 'Prvé bývanie', amount: 100000, rate: 3.2, years: 25 },
-    { label: 'Byt v BA', amount: 150000, rate: 3.5, years: 25 },
-    { label: 'Rodinný dom', amount: 200000, rate: 3.8, years: 30 },
-    { label: 'Investícia', amount: 100000, rate: 4.2, years: 20 }
-  ];
+  private locale = inject(LocaleService);
 
-  constructor(private calculatorService: CalculatorService) {}
+  /** Currency follows the selected language (CZK for Czech, otherwise EUR). */
+  get currency(): string { return getCountryParams(this.locale.locale()).currency === 'CZK' ? 'CZK' : 'EUR'; }
+  get isCZK(): boolean { return this.currency === 'CZK'; }
+  get currencySymbol(): string { return this.isCZK ? 'Kč' : '€'; }
+  private get numberLocale(): string { return this.isCZK ? 'cs-CZ' : 'sk-SK'; }
+
+  // Country-appropriate scenarios + defaults.
+  get scenarios() {
+    return this.isCZK
+      ? [
+          { label: 'První bydlení', amount: 2500000, rate: 4.7, years: 25 },
+          { label: 'Byt v Praze', amount: 3800000, rate: 4.9, years: 25 },
+          { label: 'Rodinný dům', amount: 5000000, rate: 5.1, years: 30 },
+          { label: 'Investice', amount: 2500000, rate: 5.5, years: 20 },
+        ]
+      : [
+          { label: 'Prvé bývanie', amount: 100000, rate: 3.2, years: 25 },
+          { label: 'Byt v BA', amount: 150000, rate: 3.5, years: 25 },
+          { label: 'Rodinný dom', amount: 200000, rate: 3.8, years: 30 },
+          { label: 'Investícia', amount: 100000, rate: 4.2, years: 20 },
+        ];
+  }
+
+  constructor(private calculatorService: CalculatorService) {
+    let firstRun = true;
+    effect(() => {
+      const czk = this.isCZK;
+      if (!firstRun) {
+        this.loanAmount = czk ? 3800000 : 150000;
+        this.interestRate = czk ? 4.9 : 3.5;
+      }
+      firstRun = false;
+      if (isPlatformBrowser(this.platformId)) this.calculate();
+    });
+  }
 
   ngOnInit(): void {
     this.seo.apply({
@@ -60,10 +91,7 @@ export class MortgageCalculatorComponent implements OnInit {
       ],
     });
 
-    // Auto-calculate on component init (browser only)
-    if (isPlatformBrowser(this.platformId)) {
-      this.calculate();
-    }
+    // Initial calculation is driven by the locale effect (constructor).
   }
 
   /** Calculation snapshot attached to a lead so it is fully qualified. */
@@ -74,6 +102,19 @@ export class MortgageCalculatorComponent implements OnInit {
       loan_term_years: this.loanTerm,
       monthly_payment: this.result?.monthly_payment ?? null,
     };
+  }
+
+  /** Input snapshot persisted when a logged-in user saves & tracks this calc. */
+  get saveParams(): Record<string, any> {
+    return {
+      loan_amount: this.loanAmount,
+      annual_interest_rate: this.interestRate,
+      loan_term_years: this.loanTerm,
+    };
+  }
+
+  get saveName(): string {
+    return `Hypotéka ${this.loanAmount?.toLocaleString('sk-SK')} € · ${this.loanTerm} r`;
   }
 
   calculate(): void {
@@ -127,9 +168,13 @@ export class MortgageCalculatorComponent implements OnInit {
 
   formatCurrency(value: number | undefined): string {
     if (value === undefined || value === null || isNaN(value)) {
-      return '0.00 €';
+      return '0.00 ' + this.currencySymbol;
     }
-    return value.toLocaleString('sk-SK', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+    const noDecimals = this.isCZK;
+    return value.toLocaleString(this.numberLocale, {
+      minimumFractionDigits: noDecimals ? 0 : 2,
+      maximumFractionDigits: noDecimals ? 0 : 2,
+    }) + ' ' + this.currencySymbol;
   }
 
   formatPercent(value: number | undefined): string {

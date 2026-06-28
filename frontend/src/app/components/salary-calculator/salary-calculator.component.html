@@ -7,6 +7,7 @@
     <p class="calculator-subtitle">
       {{ 'salary.subtitle' | t }}
     </p>
+    <p class="country-badge">🌍 {{ 'salary.rulesFor' | t }}: <strong>{{ countryName }}</strong> · {{ currency }}</p>
   </header>
 
   <!-- Calculator Body -->
@@ -29,12 +30,12 @@
               min="0"
               step="50"
             />
-            <span class="currency-symbol">€</span>
+            <span class="currency-symbol">{{ currencySymbol }}</span>
           </div>
         </div>
 
-        <!-- Range Slider -->
-        <div class="slider-group">
+        <!-- Range Slider — EUR range, shown for SK only -->
+        <div class="slider-group" *ngIf="isSK">
           <input
             type="range"
             [(ngModel)]="grossSalary"
@@ -50,7 +51,7 @@
           </div>
         </div>
 
-        <!-- Quick Benchmarks -->
+        <!-- Quick Benchmarks (country-appropriate amounts) -->
         <div class="benchmarks">
           <p class="benchmarks-label">{{ 'common.quickSelect' | t }}</p>
           <div class="benchmarks-grid">
@@ -60,14 +61,14 @@
               class="benchmark-button"
               [class.active]="grossSalary === benchmark.value"
             >
-              <span class="benchmark-label-text">{{ benchmark.label }}</span>
-              <strong class="benchmark-value">{{ benchmark.value }} €</strong>
+              <span class="benchmark-label-text">{{ benchmark.labelKey | t }}</span>
+              <strong class="benchmark-value">{{ benchmark.value }} {{ currencySymbol }}</strong>
             </button>
           </div>
         </div>
 
-        <!-- Non-taxable Amount Checkbox -->
-        <div class="checkbox-group">
+        <!-- Non-taxable Amount Checkbox (SK-specific: NČZD) -->
+        <div class="checkbox-group" *ngIf="isSK">
           <label class="checkbox-label">
             <input
               type="checkbox"
@@ -81,8 +82,8 @@
             </span>
           </label>
         </div>
-        <!-- Disability Checkbox (ZŤP) -->
-        <div class="checkbox-group" style="margin-top: 15px;">
+        <!-- Disability Checkbox (ZŤP) — SK-specific -->
+        <div class="checkbox-group" style="margin-top: 15px;" *ngIf="isSK">
           <label class="checkbox-label">
             <input
               type="checkbox"
@@ -115,7 +116,7 @@
                   max="10"
                   step="1"
                 />
-                <span class="input-hint-compact">100 €/mes.</span>
+                <span class="input-hint-compact" *ngIf="isSK">100 €/mes.</span>
               </div>
             </div>
 
@@ -133,18 +134,18 @@
                   max="10"
                   step="1"
                 />
-                <span class="input-hint-compact">50 €/mes.</span>
+                <span class="input-hint-compact" *ngIf="isSK">50 €/mes.</span>
               </div>
             </div>
           </div>
         </div>
 
-      <!-- Info Section -->
-      <div class="info-box">
+      <!-- Info Section (SK rates) -->
+      <div class="info-box" *ngIf="isSK">
         <h4 class="info-title">{{ 'salary.infoTitle' | t }}</h4>
         <ul class="info-list">
           <li><strong>Sociálne:</strong> 9.4% | <strong>Zdravotné:</strong> {{ hasDisability ? '2.5% (ZŤP)' : '5%' }}</li>
-          <li><strong>Daň:</strong> 19% / 25% / 30% / 35% (progresívna)</li>
+          <li><strong>Daň:</strong> 19% / 25% (progresívna)</li>
           <li><strong>Bonus na dieťa:</strong> 100€ (do 15r.) / 50€ (15-18r.)</li>
         </ul>
       </div>
@@ -182,14 +183,14 @@
               <div class="breakdown-icon">👨‍👩‍👧</div>
               <div class="breakdown-label">{{ 'salary.social' | t }}</div>
               <div class="breakdown-value">{{ formatCurrency(result.social_insurance) }}</div>
-              <div class="breakdown-hint">9.4%</div>
+              <div class="breakdown-hint" *ngIf="isSK">9.4%</div>
             </div>
 
-            <div class="breakdown-card">
+            <div class="breakdown-card" *ngIf="!isSK ? result.health_insurance > 0 : true">
               <div class="breakdown-icon">🏥</div>
               <div class="breakdown-label">{{ 'salary.health' | t }}</div>
               <div class="breakdown-value">{{ formatCurrency(result.health_insurance) }}</div>
-              <div class="breakdown-hint">{{ hasDisability ? '2.5% (ZŤP)' : '5%' }}</div>
+              <div class="breakdown-hint" *ngIf="isSK">{{ hasDisability ? '2.5% (ZŤP)' : '5%' }}</div>
             </div>
 
             <div class="breakdown-card">
@@ -207,7 +208,39 @@
             </div>
           </div>
 
-          <div class="details-card">
+          <!-- Universal breakdown for non-SK countries (CZ/PL/HU) -->
+          <div class="details-card" *ngIf="!isSK">
+            <h3 class="details-title">{{ 'common.detailedCalc' | t }}</h3>
+            <div class="details-table">
+              <div class="detail-row header-row">
+                <span>{{ 'salary.grossShort' | t }}</span>
+                <strong>{{ formatCurrency(result.gross_salary) }}</strong>
+              </div>
+              <div class="detail-row">
+                <span>{{ 'salary.social' | t }}</span>
+                <span class="negative">- {{ formatCurrency(result.social_insurance) }}</span>
+              </div>
+              <div class="detail-row" *ngIf="result.health_insurance > 0">
+                <span>{{ 'salary.health' | t }}</span>
+                <span class="negative">- {{ formatCurrency(result.health_insurance) }}</span>
+              </div>
+              <div class="detail-row">
+                <span>{{ 'salary.tax' | t }}</span>
+                <span class="negative">- {{ formatCurrency(result.income_tax) }}</span>
+              </div>
+              <div class="detail-row total-row">
+                <strong>{{ 'salary.net' | t }}</strong>
+                <strong class="positive">{{ formatCurrency(result.net_salary) }}</strong>
+              </div>
+              <div class="detail-row" style="border-top: 2px dashed #e2e8f0; margin-top: 12px; padding-top: 12px; opacity: 0.75;">
+                <span>{{ 'salary.totalEmployerCost' | t }}</span>
+                <span>{{ formatCurrency(result.super_gross_salary) }}</span>
+              </div>
+            </div>
+            <p class="beta-note">⚠️ {{ 'salary.betaNote' | t }}</p>
+          </div>
+
+          <div class="details-card" *ngIf="isSK">
             <h3 class="details-title">{{ 'common.detailedCalc' | t }}</h3>
             <div class="details-table">
               <div class="detail-row header-row">
@@ -268,6 +301,14 @@
         </div>
       </div>
     </div>
+
+    <app-save-calculation
+      *ngIf="result && !loading"
+      calculatorType="salary"
+      [params]="saveParams"
+      [result]="result"
+      [defaultName]="saveName">
+    </app-save-calculation>
 
     <!-- Monetization: contextual partner offers + display ad -->
     <div class="monetization-zone" *ngIf="result && !loading">

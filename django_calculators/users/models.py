@@ -58,6 +58,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
+
+    # Whether the user wants to receive reminder/notification emails (master switch).
+    email_notifications = models.BooleanField(default=True)
     
     # OAuth fields
     oauth_provider = models.CharField(

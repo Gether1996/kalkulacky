@@ -247,6 +247,14 @@
     </div>
   </div>
 
+  <app-save-calculation
+    *ngIf="result && !loading"
+    calculatorType="loan"
+    [params]="saveParams"
+    [result]="result"
+    [defaultName]="saveName">
+  </app-save-calculation>
+
   <!-- Monetization: partner offers + display ad -->
   <div class="monetization-zone" *ngIf="result && !loading">
     <app-affiliate-cta calculatorType="loan"></app-affiliate-cta>

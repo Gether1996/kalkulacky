@@ -13,6 +13,12 @@
       <!-- Language switcher -->
       <app-language-switcher class="navbar-lang"></app-language-switcher>
 
+      <!-- Theme toggle -->
+      <button class="theme-toggle" type="button" (click)="theme.toggle()"
+              [attr.aria-label]="'nav.theme' | t" [title]="'nav.theme' | t">
+        {{ theme.theme() === 'dark' ? '☀️' : '🌙' }}
+      </button>
+
       <!-- Desktop Auth Section -->
       <div class="auth-section" *ngIf="!authService.isAuthenticated()">
         <a routerLink="/login" class="auth-btn auth-btn-login">

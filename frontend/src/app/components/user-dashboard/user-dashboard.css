@@ -232,6 +232,151 @@
   font-size: 1.2rem;
 }
 
+.loading-state {
+  color: #6c757d;
+  padding: 1.5rem 0;
+}
+
+/* Saved calculations list */
+.saved-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.saved-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid #eef2f7;
+  border-radius: 12px;
+  background: #fbfcfe;
+}
+.saved-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.saved-name {
+  font-weight: 600;
+  color: #2c3e50;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.saved-meta {
+  font-size: 0.82rem;
+  color: #95a5a6;
+}
+.saved-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+.icon-btn {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 9px;
+  width: 38px;
+  height: 38px;
+  font-size: 1.05rem;
+  cursor: pointer;
+  opacity: 0.45;
+  filter: grayscale(0.4);
+  transition: opacity 0.15s, transform 0.15s, border-color 0.15s;
+}
+.icon-btn:hover { transform: translateY(-1px); }
+.icon-btn.on { opacity: 1; filter: none; border-color: #c7d2fe; background: #eef2ff; }
+.icon-btn.danger:hover { border-color: #fecaca; background: #fef2f2; opacity: 1; }
+
+/* Reminders */
+.reminders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.reminder-row {
+  display: flex;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  background: #f8fafc;
+  border-left: 4px solid #cbd5e1;
+}
+.reminder-row[data-priority="high"],
+.reminder-row[data-priority="urgent"] { border-left-color: #f59e0b; background: #fffbeb; }
+.reminder-date {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #475569;
+  white-space: nowrap;
+  min-width: 96px;
+}
+.reminder-body { display: flex; flex-direction: column; }
+.reminder-title { font-weight: 600; color: #2c3e50; font-size: 0.95rem; }
+.reminder-msg { font-size: 0.85rem; color: #64748b; }
+.reminders-note {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+/* Notes on saved calculations */
+.saved-row-wrap { display: flex; flex-direction: column; gap: 0.4rem; }
+.saved-note {
+  margin: 0 0 0.2rem; padding: 0.5rem 0.8rem; font-size: 0.88rem; color: #475569;
+  background: #fffbeb; border: 1px solid #fde68a; border-radius: 9px;
+}
+.note-editor { display: flex; flex-direction: column; gap: 0.4rem; }
+.note-input {
+  width: 100%; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 9px;
+  padding: 0.5rem 0.7rem; font-size: 0.9rem; font-family: inherit;
+}
+.note-actions { display: flex; gap: 0.4rem; }
+.btn-mini {
+  border: 1px solid #e2e8f0; background: #fff; border-radius: 8px; padding: 5px 12px;
+  font-size: 0.82rem; cursor: pointer;
+}
+.btn-mini.primary { background: #4f46e5; color: #fff; border-color: #4f46e5; }
+
+/* Section header with actions */
+.section-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.section-head .section-title { margin-bottom: 1rem; }
+.export-actions { display: flex; gap: 0.5rem; }
+
+/* Reminder edit */
+.reminder-wrap { display: flex; flex-direction: column; }
+.reminder-actions { display: flex; gap: 0.4rem; margin-left: auto; align-self: center; }
+.reminder-editor {
+  display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
+  padding: 0.7rem 1rem; background: #f8fafc; border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+/* Custom reminders */
+.section-hint { color: #64748b; font-size: 0.9rem; margin: -0.8rem 0 1rem; }
+.reminder-presets { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+.preset-caption { font-size: 0.85rem; color: #64748b; }
+.preset-chip {
+  border: 1px solid #c7d2fe; background: #eef2ff; color: #3730a3; border-radius: 999px;
+  padding: 6px 14px; font-size: 0.82rem; cursor: pointer;
+}
+.preset-chip:hover { background: #e0e7ff; }
+.reminder-form { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1.2rem; }
+.rf-input {
+  border: 1px solid #cbd5e1; border-radius: 10px; padding: 0.6rem 0.8rem; font-size: 0.92rem;
+}
+.rf-title { flex: 2 1 200px; }
+.rf-date { flex: 0 0 auto; }
+.rf-note { flex: 2 1 200px; }
+.rf-btn {
+  background: #4f46e5; color: #fff; border: none; border-radius: 10px; padding: 0.6rem 1.1rem;
+  font-weight: 700; font-size: 0.9rem; cursor: pointer;
+}
+.rf-btn:disabled { opacity: .6; cursor: not-allowed; }
+.reminder-row .icon-btn { margin-left: auto; align-self: center; }
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .dashboard-container {

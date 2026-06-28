@@ -3,6 +3,7 @@
   <div class="calculator-header">
     <h1>{{ 'parental.title' | t }}</h1>
     <p class="subtitle">{{ 'calc.parental-benefit.desc' | t }}</p>
+    <p class="country-badge">🌍 {{ 'salary.rulesFor' | t }}: <strong>{{ countryName }}</strong> · {{ currency }}</p>
     <div class="seo-keywords">
       <span class="keyword">Materská</span>
       <span class="keyword">Rodičovský príspevok</span>
@@ -47,8 +48,8 @@
         </div>
       </div>
 
-      <!-- Benefit Type Selection -->
-      <div class="selection-group">
+      <!-- Benefit Type Selection (SK osnova/alternatíva; CZ has a single fixed pot) -->
+      <div class="selection-group" *ngIf="isSK">
         <label>Typ rodičovského príspevku</label>
         <div class="benefit-type-selector">
           <button 
@@ -96,10 +97,10 @@
         </label>
       </div>
 
-      <!-- Plan to Work -->
-      <div class="checkbox-group">
+      <!-- Plan to Work (SK income limit; CZ has no such limit on rodičovský) -->
+      <div class="checkbox-group" *ngIf="isSK">
         <label>
-          <input 
+          <input
             type="checkbox"
             [(ngModel)]="planToWork"
             (change)="calculate()"
@@ -279,8 +280,8 @@
           </p>
         </div>
 
-        <!-- Comparison -->
-        <div class="comparison-card">
+        <!-- Comparison (SK only — CZ has no osnova/alternatíva split) -->
+        <div class="comparison-card" *ngIf="result.comparison">
           <h3>⚖️ Porovnanie osnovy a alternatívy</h3>
           
           <div class="comparison-grid">

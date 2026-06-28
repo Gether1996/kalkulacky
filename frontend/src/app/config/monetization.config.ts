@@ -66,6 +66,54 @@ export const MONETIZATION_CONFIG: Record<string, CalculatorMonetization> = {
     ],
   },
 
+  'heat-pump': {
+    calculatorType: 'heat-pump',
+    showAds: true,
+    leadOffer: {
+      vertical: 'heat_pump',
+      headline: 'Získajte nezáväznú ponuku na tepelné čerpadlo',
+      subtext: 'Spojíme vás s overenou montážnou firmou vo vašom regióne a poradíme s dotáciou Zelená domácnostiam. Zdarma a nezáväzne.',
+      ctaLabel: 'Chcem ponuku na tepelné čerpadlo',
+      fields: ['name', 'phone', 'region'],
+      estimatedValueEur: 18,
+    },
+    affiliateOffers: [
+      {
+        id: 'heat-pump-financing',
+        partner: 'Partner',
+        title: 'Financovanie tepelného čerpadla',
+        description: 'Zelená pôžička alebo úver na tepelné čerpadlo s výhodnou sadzbou.',
+        ctaLabel: 'Zobraziť ponuky',
+        url: 'https://example.com/affiliate/tepelne-cerpadlo-financovanie',
+        icon: '♨️',
+      },
+    ],
+  },
+
+  renovation: {
+    calculatorType: 'renovation',
+    showAds: true,
+    leadOffer: {
+      vertical: 'renovation',
+      headline: 'Získajte nezáväznú ponuku na obnovu domu',
+      subtext: 'Spojíme vás s energetickým audítorom alebo overenou firmou a pomôžeme s dotáciou Obnov dom. Zdarma a nezáväzne.',
+      ctaLabel: 'Chcem ponuku na obnovu domu',
+      fields: ['name', 'phone', 'region'],
+      estimatedValueEur: 16,
+    },
+    affiliateOffers: [
+      {
+        id: 'renovation-financing',
+        partner: 'Partner',
+        title: 'Financovanie obnovy domu',
+        description: 'Úver na rekonštrukciu alebo predfinancovanie dotácie Obnov dom.',
+        ctaLabel: 'Zobraziť ponuky',
+        url: 'https://example.com/affiliate/obnova-domu-financovanie',
+        icon: '🏚️',
+      },
+    ],
+  },
+
   salary: {
     calculatorType: 'salary',
     showAds: true,
@@ -183,6 +231,30 @@ export const MONETIZATION_CONFIG: Record<string, CalculatorMonetization> = {
         ctaLabel: 'Zistiť viac',
         url: 'https://example.com/affiliate/dochodok',
         icon: '💼',
+      },
+    ],
+  },
+
+  'car-insurance': {
+    calculatorType: 'car-insurance',
+    showAds: true,
+    leadOffer: {
+      vertical: 'insurance_car',
+      headline: 'Získajte nezáväzné porovnanie PZP na mieru',
+      subtext: 'Porovnáme za vás ponuky poisťovní a nájdeme najlacnejšie povinné zmluvné poistenie pre vaše auto. Zdarma a nezáväzne.',
+      ctaLabel: 'Chcem porovnať PZP',
+      fields: ['name', 'phone', 'region'],
+      estimatedValueEur: 8,
+    },
+    affiliateOffers: [
+      {
+        id: 'pzp-compare',
+        partner: 'Partner',
+        title: 'Porovnanie PZP online',
+        description: 'Porovnajte povinné zmluvné poistenie od viacerých poisťovní na jednom mieste.',
+        ctaLabel: 'Porovnať PZP',
+        url: 'https://example.com/affiliate/pzp',
+        icon: '🚗',
       },
     ],
   },

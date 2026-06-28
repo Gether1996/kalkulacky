@@ -1,4 +1,4 @@
-import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
@@ -9,6 +9,8 @@ import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.com
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
 import { EmbedSnippetComponent } from '../shared/embed-snippet/embed-snippet.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
+import { getCountryParams } from '../../i18n/country-params';
 
 @Component({
   selector: 'app-solar-calculator',
@@ -22,11 +24,37 @@ export class SolarCalculatorComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   private seo = inject(SeoService);
   private calculatorService = inject(CalculatorService);
+  private locale = inject(LocaleService);
 
   // Inputs
   annualConsumption = 4000;
   electricityRate = 0.22;
   includeBattery = false;
+
+  constructor() {
+    // Switch country with the language: NZÚ vs Zelená domácnostiam + currency.
+    let firstRun = true;
+    effect(() => {
+      const c = this.country;
+      if (!firstRun) {
+        this.electricityRate = c === 'CZ' ? 5.0 : 0.22;
+      }
+      firstRun = false;
+      if (isPlatformBrowser(this.platformId)) this.calculate();
+    });
+  }
+
+  /** Engine country — SK + CZ implemented; other locales fall back to SK. */
+  get country(): 'SK' | 'CZ' {
+    return getCountryParams(this.locale.locale()).countryCode === 'CZ' ? 'CZ' : 'SK';
+  }
+  get isSK(): boolean { return this.country === 'SK'; }
+  get currency(): string { return this.isSK ? 'EUR' : 'CZK'; }
+  get currencySymbol(): string { return this.isSK ? '€' : 'Kč'; }
+  get countryName(): string { return this.isSK ? 'Slovensko' : 'Česko'; }
+  get programName(): string { return getCountryParams(this.locale.locale()).energyProgram.name; }
+  get programUrl(): string { return getCountryParams(this.locale.locale()).energyProgram.url; }
+  private get numberLocale(): string { return this.isSK ? 'sk-SK' : 'cs-CZ'; }
 
   result: SolarSubsidyCalculationResponse | null = null;
   loading = false;
@@ -62,9 +90,7 @@ export class SolarCalculatorComponent implements OnInit {
         },
       ],
     });
-    if (isPlatformBrowser(this.platformId)) {
-      this.calculate();
-    }
+    // Initial calculation driven by the locale effect (constructor).
   }
 
   setPreset(kwh: number): void {
@@ -82,6 +108,7 @@ export class SolarCalculatorComponent implements OnInit {
     this.calculatorService
       .calculateSolarSubsidy({
         annual_consumption_kwh: this.annualConsumption,
+        country: this.country,
         electricity_rate: this.electricityRate,
         include_battery: this.includeBattery,
       })
@@ -111,12 +138,12 @@ export class SolarCalculatorComponent implements OnInit {
   }
 
   formatCurrency(value: number | null | undefined): string {
-    if (value === undefined || value === null || isNaN(value)) return '0 €';
-    return value.toLocaleString('sk-SK', { maximumFractionDigits: 0 }) + ' €';
+    if (value === undefined || value === null || isNaN(value)) return '0 ' + this.currencySymbol;
+    return value.toLocaleString(this.numberLocale, { maximumFractionDigits: 0 }) + ' ' + this.currencySymbol;
   }
 
   formatNumber(value: number | null | undefined, digits = 0): string {
     if (value === undefined || value === null || isNaN(value)) return '0';
-    return value.toLocaleString('sk-SK', { maximumFractionDigits: digits });
+    return value.toLocaleString(this.numberLocale, { maximumFractionDigits: digits });
   }
 }

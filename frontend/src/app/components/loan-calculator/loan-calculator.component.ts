@@ -7,12 +7,13 @@ import { LoanCalculationResponse } from '../../models/calculator.models';
 import { SeoService } from '../../services/seo.service';
 import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.component';
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
+import { SaveCalculationComponent } from '../shared/save-calculation/save-calculation.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-loan-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, AffiliateCtaComponent, AdSlotComponent, TranslatePipe],
+  imports: [CommonModule, FormsModule, RouterLink, AffiliateCtaComponent, AdSlotComponent, SaveCalculationComponent, TranslatePipe],
   templateUrl: './loan-calculator.component.html',
   styleUrls: ['./loan-calculator.component.css']
 })
@@ -84,6 +85,11 @@ export class LoanCalculatorComponent implements OnInit {
     this.loanAmount = value;
     this.calculate();
   }
+
+  get saveParams(): Record<string, any> {
+    return { loan_amount: this.loanAmount, interest_rate: this.interestRate, loan_years: this.loanYears };
+  }
+  get saveName(): string { return `Úver · ${this.loanAmount} € · ${this.loanYears} r`; }
 
   formatCurrency(amount: number): string {
     return new Intl.NumberFormat('sk-SK', {

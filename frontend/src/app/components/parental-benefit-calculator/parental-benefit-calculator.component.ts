@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -6,6 +6,8 @@ import { CalculatorService } from '../../services/calculator.service';
 import { ParentalBenefitCalculationRequest, ParentalBenefitCalculationResponse } from '../../models/calculator.models';
 import { DatePickerComponent } from '../date-picker/date-picker.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
+import { getCountryParams } from '../../i18n/country-params';
 
 @Component({
   selector: 'app-parental-benefit-calculator',
@@ -37,6 +39,27 @@ export class ParentalBenefitCalculatorComponent implements OnInit {
   // UI helpers
   today: Date = new Date();
   maxDate: Date | null = null;
+
+  private locale = inject(LocaleService);
+
+  /** Engine country — SK + CZ implemented; other locales fall back to SK. */
+  get country(): string {
+    return getCountryParams(this.locale.locale()).countryCode === 'CZ' ? 'CZ' : 'SK';
+  }
+  get isSK(): boolean { return this.country === 'SK'; }
+  get currency(): string { return this.isSK ? 'EUR' : 'CZK'; }
+  get countryName(): string { return this.isSK ? 'Slovensko' : 'Česko'; }
+  private get numberLocale(): string { return this.isSK ? 'sk-SK' : 'cs-CZ'; }
+
+  constructor() {
+    effect(() => {
+      const c = this.country;
+      if (this.birthDate) {
+        if (this.grossSalary != null) this.grossSalary = c === 'CZ' ? 45000 : 1400;
+        if (isPlatformBrowser(this.platformId)) this.calculate();
+      }
+    });
+  }
 
   ngOnInit() {
     // Set today's date
@@ -84,6 +107,7 @@ export class ParentalBenefitCalculatorComponent implements OnInit {
 
     const request: ParentalBenefitCalculationRequest = {
       birth_date: this.birthDate,
+      country: this.country,
       gross_salary: this.grossSalary || undefined,
       benefit_type: this.benefitType,
       twins_or_more: this.twinsOrMore,
@@ -120,11 +144,12 @@ export class ParentalBenefitCalculatorComponent implements OnInit {
   }
 
   formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('sk-SK', {
+    const noDecimals = this.currency === 'CZK';
+    return new Intl.NumberFormat(this.numberLocale, {
       style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      currency: this.currency,
+      minimumFractionDigits: noDecimals ? 0 : 2,
+      maximumFractionDigits: noDecimals ? 0 : 2
     }).format(amount);
   }
 

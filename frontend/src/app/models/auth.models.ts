@@ -5,6 +5,7 @@ export interface User {
   is_active?: boolean;
   oauth_provider?: string | null;
   date_joined?: string;
+  email_notifications?: boolean;
 }
 
 export interface AuthTokens {

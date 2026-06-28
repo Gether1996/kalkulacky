@@ -8,8 +8,9 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'is_active', 'oauth_provider', 'date_joined']
-        read_only_fields = ['email', 'date_joined']
+        fields = ['email', 'first_name', 'last_name', 'is_active', 'oauth_provider',
+                  'date_joined', 'email_notifications']
+        read_only_fields = ['email', 'date_joined', 'oauth_provider', 'is_active']
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -132,8 +133,31 @@ class ChangePasswordSerializer(serializers.Serializer):
 
 class GoogleAuthSerializer(serializers.Serializer):
     """Serializer for Google OAuth authentication."""
-    
+
     token = serializers.CharField(required=True)
-    
+
     class Meta:
         fields = ['token']
+
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    """Request a password-reset email."""
+    email = serializers.EmailField(required=True)
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    """Set a new password using the emailed uid + token."""
+    uid = serializers.CharField(required=True)
+    token = serializers.CharField(required=True)
+    new_password = serializers.CharField(
+        required=True, write_only=True, min_length=8,
+        style={'input_type': 'password'},
+    )
+    new_password_confirm = serializers.CharField(
+        required=True, write_only=True, style={'input_type': 'password'},
+    )
+
+    def validate(self, attrs):
+        if attrs['new_password'] != attrs['new_password_confirm']:
+            raise serializers.ValidationError({'new_password_confirm': 'Passwords do not match.'})
+        return attrs

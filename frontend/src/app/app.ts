@@ -2,12 +2,13 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { NavbarComponent } from './components/navbar/navbar.component';
+import { DataReportComponent } from './components/shared/data-report/data-report.component';
 import { TranslatePipe } from './i18n/translate.pipe';
 import { LocaleService } from './i18n/locale.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NavbarComponent, TranslatePipe],
+  imports: [RouterOutlet, NavbarComponent, DataReportComponent, TranslatePipe],
   template: `
     @if (showChrome()) {
       <app-navbar />
@@ -16,6 +17,9 @@ import { LocaleService } from './i18n/locale.service';
       <div class="i18n-note">{{ 'i18n.skRulesNote' | t }}</div>
     }
     <router-outlet />
+    @if (showDataReport()) {
+      <app-data-report />
+    }
   `,
   styles: [],
 })
@@ -27,17 +31,35 @@ export class App {
   showChrome = signal(true);
   private isCalcRoute = signal(false);
 
-  // Localized "uses Slovak rules" note — only on calculator pages and only for
-  // locales where the Slovak SEO content is hidden (everything except sk/cs).
+  // "Report wrong data" — on calculators and tool/landing pages that show
+  // real-world figures (not on the home page, auth, blog or embeds).
+  showDataReport = signal(false);
+
+  // Calculators that already have a real per-country engine — no "Slovak rules"
+  // banner there (the figures are correct for the selected country).
+  private hasOwnCountryLogic = signal(false);
+
+  // Localized "uses Slovak rules" note — only on calculator pages that DON'T yet
+  // have a per-country engine, and only for locales where the Slovak SEO content
+  // is hidden (everything except sk/cs).
   showI18nNote = computed(() => {
     const loc = this.locale.locale();
-    return this.isCalcRoute() && loc !== 'sk' && loc !== 'cs';
+    return this.isCalcRoute() && !this.hasOwnCountryLogic() && loc !== 'sk' && loc !== 'cs';
   });
 
   constructor() {
+    // Routes whose calculations are already localized per country.
+    const perCountry = ['/calculator/salary', '/calculator/vat'];
     const update = (url: string) => {
-      this.showChrome.set(!url.startsWith('/embed'));
-      this.isCalcRoute.set(url.startsWith('/calculator'));
+      const path = url.split('?')[0];
+      this.showChrome.set(!path.startsWith('/embed'));
+      this.isCalcRoute.set(path.startsWith('/calculator'));
+      this.hasOwnCountryLogic.set(perCountry.includes(path));
+      this.showDataReport.set(
+        path.startsWith('/calculator') ||
+        path.startsWith('/energia') ||
+        path.startsWith('/cista-mzda')
+      );
     };
     update(this.router.url);
     this.router.events

@@ -69,8 +69,8 @@ CHILD_TAX_BONUS_UNDER_15 = Decimal('100.00')  # €100/month for children under 
 CHILD_TAX_BONUS_15_TO_18 = Decimal('50.00')   # €50/month for children 15-18 years old
 
 # --- MINIMUM WAGE (Minimálna mzda) - 2026 ---
-MINIMUM_WAGE_MONTHLY = Decimal('915')  # €915/month (2026)
-MINIMUM_WAGE_HOURLY = Decimal('5.28')  # €5.28/hour (2026)
+MINIMUM_WAGE_MONTHLY = Decimal('915')   # €915/month (2026, verified)
+MINIMUM_WAGE_HOURLY = Decimal('5.259')  # €5.259/hour (2026, verified)
 
 # --- AVERAGE WAGE (Priemerná mzda) - 2026 estimate ---
 AVERAGE_WAGE_MONTHLY = Decimal('1400')  # €1,400/month (estimated for 2026)
@@ -175,7 +175,7 @@ SICK_LEAVE_INSURANCE_RATE_CARE = Decimal('0.55')  # 55% for family member care
 # Assessment base limits for sick leave (2026)
 SICK_LEAVE_MAX_ASSESSMENT_BASE_YEARLY = Decimal('88200')  # €88,200/year
 SICK_LEAVE_MAX_ASSESSMENT_BASE_DAILY = SICK_LEAVE_MAX_ASSESSMENT_BASE_YEARLY / 365  # €241.64/day
-SICK_LEAVE_MIN_WAGE_MONTHLY = Decimal('750')  # €750/month (2026 estimate)
+SICK_LEAVE_MIN_WAGE_MONTHLY = Decimal('915')  # €915/month (2026 minimum wage)
 SICK_LEAVE_MIN_WAGE_DAILY = SICK_LEAVE_MIN_WAGE_MONTHLY * 12 / 365  # Daily minimum
 
 
@@ -196,25 +196,27 @@ FREELANCER_TAX_THRESHOLD_2 = TAX_THRESHOLD_1_YEARLY  # €43,983.32/year - Same 
 FREELANCER_TAX_THRESHOLD_3 = TAX_THRESHOLD_2_YEARLY  # €76,553.08/year
 FREELANCER_TAX_THRESHOLD_4 = TAX_THRESHOLD_3_YEARLY  # €165,005.40/year
 
-# Health insurance for freelancers
-FREELANCER_HEALTH_INSURANCE_RATE = Decimal('0.14')  # 14% - Total health insurance rate for SZČO
-FREELANCER_MIN_HEALTH_BASE_MONTHLY = Decimal('570')  # €570/month - Minimum assessment base (2026)
+# Health insurance for freelancers (SZČO) — verified 2026
+FREELANCER_HEALTH_INSURANCE_RATE = Decimal('0.16')  # 16% - SZČO health rate (raised from 15% in 2026)
+FREELANCER_MIN_HEALTH_BASE_MONTHLY = Decimal('762')  # €762/month - 50% of avg wage €1,524 (min health base 2026)
 
-# Social insurance contributions for freelancers (SZČO)
-FREELANCER_SOCIAL_SICKNESS_RATE = Decimal('0.014')  # 1.4% - Voluntary sickness insurance
+# Social insurance contributions for freelancers (SZČO) — total 33.15% (2026).
+# Note: sole traders do NOT pay accident/guarantee insurance (employer-only).
+FREELANCER_SOCIAL_SICKNESS_RATE = Decimal('0.044')  # 4.4% - Sickness insurance (SZČO)
 FREELANCER_SOCIAL_PENSION_RATE = Decimal('0.18')  # 18% - Old-age pension insurance
 FREELANCER_SOCIAL_DISABILITY_RATE = Decimal('0.06')  # 6% - Disability insurance
-FREELANCER_SOCIAL_ACCIDENT_RATE = Decimal('0.008')  # 0.8% - Accident insurance
-FREELANCER_SOCIAL_GUARANTEE_RATE = Decimal('0.0025')  # 0.25% - Guarantee insurance
-FREELANCER_SOCIAL_RESERVE_RATE = Decimal('0.0475')  # 4.75% - Reserve fund
-FREELANCER_MIN_SOCIAL_BASE_MONTHLY = Decimal('570')  # €570/month - Minimum assessment base (2026)
+FREELANCER_SOCIAL_ACCIDENT_RATE = Decimal('0')  # 0% - SZČO do not pay accident insurance
+FREELANCER_SOCIAL_GUARANTEE_RATE = Decimal('0')  # 0% - SZČO do not pay guarantee insurance
+FREELANCER_SOCIAL_RESERVE_RATE = Decimal('0.0475')  # 4.75% - Reserve fund of solidarity
+# Total SZČO social = 18 + 6 + 4.75 + 4.4 = 33.15%
+FREELANCER_MIN_SOCIAL_BASE_MONTHLY = Decimal('914.40')  # €914.40/month - Minimum social base (2026)
 
 # Flat expense rate
 FREELANCER_FLAT_EXPENSE_RATE = Decimal('0.60')  # 60% - Paušálne výdavky (flat expense deduction)
 
-# Non-taxable amount for freelancers (same as employees)
-FREELANCER_NON_TAXABLE_AMOUNT_ANNUAL = Decimal('4579.26')  # €4,579.26/year (2026)
-FREELANCER_NON_TAXABLE_AMOUNT_MONTHLY = Decimal('381.61')  # €381.61/month
+# Non-taxable amount for freelancers (same NČZD as employees, 2026)
+FREELANCER_NON_TAXABLE_AMOUNT_ANNUAL = Decimal('5966.76')  # €5,966.76/year (2026)
+FREELANCER_NON_TAXABLE_AMOUNT_MONTHLY = Decimal('497.23')  # €497.23/month
 
 
 # ===========================
@@ -253,7 +255,7 @@ PARENTAL_WORK_INCOME_LIMIT_BASIC = Decimal('635.70')  # €635.70/month for osno
 PARENTAL_WORK_INCOME_LIMIT_ALT = Decimal('635.70')  # €635.70/month for alternatíva (2026)
 
 # Minimum assessment base (Minimálny vymeriavací základ)
-PARENTAL_MIN_ASSESSMENT_BASE = Decimal('750.00')  # €750/month - Minimum wage 2026
+PARENTAL_MIN_ASSESSMENT_BASE = Decimal('915.00')  # €915/month - Minimum wage 2026
 
 
 # ===========================

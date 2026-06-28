@@ -1,5 +1,13 @@
 from django.contrib import admin
-from .models import BlogCategory, BlogPost, Lead, AffiliateClick
+from .models import BlogCategory, BlogPost, Lead, AffiliateClick, DataReport, UserReminder
+
+
+@admin.register(UserReminder)
+class UserReminderAdmin(admin.ModelAdmin):
+    list_display = ['title', 'user', 'category', 'remind_date', 'sent', 'email_enabled']
+    list_filter = ['category', 'sent', 'email_enabled', 'remind_date']
+    search_fields = ['title', 'note', 'user__email']
+    date_hierarchy = 'remind_date'
 
 
 @admin.register(BlogCategory)
@@ -74,4 +82,25 @@ class AffiliateClickAdmin(admin.ModelAdmin):
     search_fields = ['partner', 'offer_id', 'target_url']
     date_hierarchy = 'created_at'
     readonly_fields = [f.name for f in AffiliateClick._meta.fields]
+
+
+@admin.register(DataReport)
+class DataReportAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'calculator_type', 'status', 'emailed',
+                    'reporter_email', 'locale', 'created_at']
+    list_filter = ['status', 'calculator_type', 'emailed', 'locale', 'created_at']
+    list_editable = ['status']
+    search_fields = ['message', 'reporter_email', 'page_url', 'calculator_type']
+    date_hierarchy = 'created_at'
+    readonly_fields = ['calculator_type', 'page_url', 'message', 'reporter_email',
+                       'locale', 'emailed', 'session_key', 'ip_address',
+                       'user_agent', 'created_at', 'updated_at']
+    fieldsets = (
+        ('Hlásenie', {'fields': ('calculator_type', 'page_url', 'message',
+                                 'reporter_email', 'locale')}),
+        ('Stav', {'fields': ('status', 'emailed', 'admin_notes')}),
+        ('Atribúcia', {'fields': ('session_key', 'ip_address', 'user_agent',
+                                  'created_at', 'updated_at'),
+                       'classes': ('collapse',)}),
+    )
 

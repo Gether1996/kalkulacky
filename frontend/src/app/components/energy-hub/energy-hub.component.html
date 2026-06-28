@@ -1,0 +1,68 @@
+<div class="hub-container">
+  <header class="hub-hero">
+    <h1>{{ 'energyhub.title' | t }}</h1>
+    <p class="hub-subtitle">{{ 'energyhub.subtitle' | t }}</p>
+  </header>
+
+  <section class="pillars">
+    <a *ngFor="let p of pillars" [routerLink]="p.route" class="pillar-card" [attr.data-accent]="p.accent">
+      <span class="pillar-icon">{{ p.icon }}</span>
+      <h2 class="pillar-name">{{ ('calc.' + p.id + '.name') | t }}</h2>
+      <p class="pillar-desc">{{ ('calc.' + p.id + '.desc') | t }}</p>
+      <span class="pillar-cta">{{ 'energyhub.open' | t }} →</span>
+    </a>
+  </section>
+
+  <app-ad-slot slot="energy-hub-mid"></app-ad-slot>
+
+  <!-- Long-form SEO content (Slovak/Czech only; hidden for EN/PL/HU via global CSS) -->
+  <section class="info-section">
+    <h2>Úspora energie v rodinnom dome – kompletný sprievodca 2026</h2>
+    <p>
+      Ceny energií posledných rokov natrvalo zvýšili záujem domácností o vlastnú výrobu
+      a nižšiu spotrebu. Dobrá správa je, že štát na to prispieva hneď dvoma programami –
+      <strong>Zelená domácnostiam</strong> (fotovoltika, tepelné čerpadlá, solárne kolektory) a
+      <strong>Obnov dom</strong> (komplexná obnova starších rodinných domov). Na tejto stránke
+      nájdete kalkulačky, ktoré vám orientačne spočítajú dotáciu, náklady, ročnú úsporu a
+      návratnosť – a v prípade záujmu vás spoja s overenou montážnou firmou alebo
+      energetickým audítorom.
+    </p>
+
+    <h3>1. Zateplenie a obnova domu (Obnov dom)</h3>
+    <p>
+      Najlepší pomer ceny a úspory má zvyčajne zateplenie obvodových stien a strechy spolu s
+      výmenou okien. Program Obnov dom prepláca orientačne do 60 % oprávnených nákladov,
+      pričom strop dotácie závisí od dosiahnutej úspory primárnej energie (vyššia úspora =
+      vyššia dotácia). Použite
+      <a routerLink="/calculator/renovation">kalkulačku dotácie Obnov dom</a>, ktorá vám
+      povie, či máte nárok a koľko môžete získať.
+    </p>
+
+    <h3>2. Tepelné čerpadlo namiesto plynu alebo elektriny</h3>
+    <p>
+      Tepelné čerpadlo vzduch–voda vyrobí z 1 kWh elektriny približne 3,5 kWh tepla, čím
+      dokáže výrazne znížiť náklady na vykurovanie. V kombinácii s dotáciou Zelená
+      domácnostiam býva návratnosť orientačne 7–12 rokov. Vyskúšajte
+      <a routerLink="/calculator/heat-pump">kalkulačku tepelného čerpadla</a> – odhadne
+      potrebný výkon, cenu, úsporu aj dotáciu.
+    </p>
+
+    <h3>3. Fotovoltika na pokrytie spotreby</h3>
+    <p>
+      Fotovoltika dáva najväčší zmysel vtedy, keď viete vyrobenú elektrinu sami spotrebovať –
+      napríklad na tepelné čerpadlo, ohrev vody alebo nabíjanie auta. Dotácia 500 €/kW cez
+      Zelená domácnostiam výrazne skracuje návratnosť. Spočítajte si ju v
+      <a routerLink="/calculator/solar">kalkulačke fotovoltiky</a>.
+    </p>
+
+    <h3>Prečo riešiť opatrenia spolu</h3>
+    <p>
+      Jednotlivé opatrenia sa navzájom dopĺňajú: zateplenie zníži potrebu tepla, tepelné
+      čerpadlo lacno vykuruje a fotovoltika pokryje jeho spotrebu. Pri komplexnej obnove navyše
+      dosiahnete vyššiu úsporu energie, čo zvyšuje aj maximálnu možnú dotáciu. Výsledky
+      kalkulačiek sú orientačné – presné podmienky aktuálnych kôl nájdete na
+      <a href="https://zelenadomacnostiam.sk" target="_blank" rel="noopener">zelenadomacnostiam.sk</a>
+      a <a href="https://obnovdom.sk" target="_blank" rel="noopener">obnovdom.sk</a>.
+    </p>
+  </section>
+</div>

@@ -6,6 +6,8 @@ from .views import (
     LogoutView,
     UserProfileView,
     ChangePasswordView,
+    ForgotPasswordView,
+    ResetPasswordView,
     GoogleAuthView,
     CheckAuthView
 )
@@ -24,6 +26,8 @@ urlpatterns = [
     # User profile endpoints
     path('profile/', UserProfileView.as_view(), name='profile'),
     path('change-password/', ChangePasswordView.as_view(), name='change_password'),
+    path('forgot-password/', ForgotPasswordView.as_view(), name='forgot_password'),
+    path('reset-password/', ResetPasswordView.as_view(), name='reset_password'),
     
     # OAuth endpoints
     path('google/', GoogleAuthView.as_view(), name='google_auth'),

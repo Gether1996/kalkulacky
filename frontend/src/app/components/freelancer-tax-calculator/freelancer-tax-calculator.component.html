@@ -5,6 +5,7 @@
       Vypočítajte dane a odvody pre samostatne zárobkovo činné osoby (SZČO) na Slovensku.
       Zahŕňa daň z príjmu, zdravotné poistenie a sociálne odvody.
     </p>
+    <p class="country-badge">🌍 {{ 'salary.rulesFor' | t }}: <strong>{{ countryName }}</strong> · {{ currency }}</p>
   </div>
 
   <div class="calculator-content">
@@ -22,7 +23,7 @@
             min="0"
             step="1000"
           />
-          <span class="unit">€</span>
+          <span class="unit">{{ currencySymbol }}</span>
         </div>
         <small>Celkové príjmy za rok pred odpočítaním výdavkov</small>
       </div>
@@ -62,7 +63,7 @@
             min="0"
             step="1000"
           />
-          <span class="unit">€</span>
+          <span class="unit">{{ currencySymbol }}</span>
         </div>
         <small>Oprávnené výdavky na podnikanie</small>
       </div>
@@ -256,7 +257,7 @@
               </div>
             </div>
 
-            <div class="breakdown-item">
+            <div class="breakdown-item" *ngIf="isSK">
               <div class="breakdown-header">
                 <span class="breakdown-name">♿ Invalidné</span>
                 <span class="breakdown-rate">{{ formatPercent(result.social_insurance.breakdown.disability.rate) }}</span>
@@ -268,7 +269,7 @@
               </div>
             </div>
 
-            <div class="breakdown-item">
+            <div class="breakdown-item" *ngIf="isSK">
               <div class="breakdown-header">
                 <span class="breakdown-name">🚑 Úrazové</span>
                 <span class="breakdown-rate">{{ formatPercent(result.social_insurance.breakdown.accident.rate) }}</span>
@@ -280,7 +281,7 @@
               </div>
             </div>
 
-            <div class="breakdown-item">
+            <div class="breakdown-item" *ngIf="isSK">
               <div class="breakdown-header">
                 <span class="breakdown-name">🏦 Garančné</span>
                 <span class="breakdown-rate">{{ formatPercent(result.social_insurance.breakdown.guarantee.rate) }}</span>
@@ -292,7 +293,7 @@
               </div>
             </div>
 
-            <div class="breakdown-item">
+            <div class="breakdown-item" *ngIf="isSK">
               <div class="breakdown-header">
                 <span class="breakdown-name">💾 Rezervný fond</span>
                 <span class="breakdown-rate">{{ formatPercent(result.social_insurance.breakdown.reserve.rate) }}</span>
@@ -321,6 +322,14 @@
       </div>
     </div>
   </div>
+
+  <app-save-calculation
+    *ngIf="result && !loading"
+    calculatorType="freelancer-tax"
+    [params]="saveParams"
+    [result]="result"
+    [defaultName]="saveName">
+  </app-save-calculation>
 
   <!-- Monetization: accounting lead capture + partner offers -->
   <div class="monetization-zone" *ngIf="result && !loading">

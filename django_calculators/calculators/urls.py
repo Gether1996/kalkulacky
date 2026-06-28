@@ -46,8 +46,15 @@ from .views import (
     TipSuggestionsView,
     ParentalBenefitCalculatorView,
     SolarSubsidyCalculatorView,
+    SavedCalculationViewSet,
+    SavedCalculationDetailView,
+    NotificationListView,
+    MyDashboardView,
+    UserReminderListCreateView,
+    UserReminderDetailView,
     LeadCreateView,
     AffiliateClickView,
+    DataReportCreateView,
     HealthCheckView,
     BlogCategoryListView,
     BlogPostListView,
@@ -105,9 +112,20 @@ urlpatterns = [
     # Solar / PV subsidy & payback calculator
     path('solar/', SolarSubsidyCalculatorView.as_view(), name='solar-subsidy-calculator'),
     
+    # Saved calculations + tracking/notifications (logged-in dashboard + anon)
+    path('saved-calculations/', SavedCalculationViewSet.as_view(), name='saved-calculations'),
+    path('saved-calculations/<int:pk>/', SavedCalculationDetailView.as_view(), name='saved-calculation-detail'),
+    path('saved-calculations/<int:calculation_id>/notifications/', NotificationListView.as_view(), name='saved-calculation-notifications'),
+    path('my/dashboard/', MyDashboardView.as_view(), name='my-dashboard'),
+    path('my/reminders/', UserReminderListCreateView.as_view(), name='my-reminders'),
+    path('my/reminders/<int:pk>/', UserReminderDetailView.as_view(), name='my-reminder-detail'),
+
     # Monetization (lead-gen + affiliate tracking)
     path('leads/', LeadCreateView.as_view(), name='lead-create'),
     path('affiliate-click/', AffiliateClickView.as_view(), name='affiliate-click'),
+
+    # Data-correction reports (user flags wrong/outdated figures → emails operator)
+    path('data-report/', DataReportCreateView.as_view(), name='data-report'),
 
     # Health check
     path('health/', HealthCheckView.as_view(), name='health-check'),

@@ -3,6 +3,7 @@
   <div class="calculator-header">
     <h1>{{ 'pension.title' | t }}</h1>
     <p class="subtitle">{{ 'calc.pension.desc' | t }}</p>
+    <p class="country-badge">🌍 {{ 'salary.rulesFor' | t }}: <strong>{{ countryName }}</strong> · {{ currency }}</p>
     <div class="seo-keywords">
       <span class="keyword">Dôchodok</span>
       <span class="keyword">Starobný dôchodok</span>
@@ -103,11 +104,11 @@
         </div>
       </div>
 
-      <!-- Second Pillar Options -->
-      <div class="input-group">
+      <!-- Second Pillar Options (SK-specific; CZ has no mandatory 2nd pillar) -->
+      <div class="input-group" *ngIf="isSK">
         <label class="checkbox-label">
-          <input 
-            type="checkbox" 
+          <input
+            type="checkbox"
             [(ngModel)]="includeSecondPillar"
             (change)="calculate()"
           />
@@ -115,7 +116,7 @@
         </label>
       </div>
 
-      <div class="input-group" *ngIf="includeSecondPillar">
+      <div class="input-group" *ngIf="isSK && includeSecondPillar">
         <label for="secondPillarRate">
           Príspevok do II. piliera (%)
           <span class="tooltip" title="Percento zo mzdy, ktoré ide do II. piliera">ⓘ</span>
@@ -265,6 +266,14 @@
       </div>
     </div>
   </div>
+
+  <app-save-calculation
+    *ngIf="result && !loading"
+    calculatorType="pension"
+    [params]="saveParams"
+    [result]="result"
+    [defaultName]="saveName">
+  </app-save-calculation>
 
   <!-- Monetization: partner offers + display ad -->
   <div class="monetization-zone" *ngIf="result && !loading">

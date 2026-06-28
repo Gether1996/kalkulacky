@@ -1,0 +1,38 @@
+<div class="calculator-container">
+  <header class="calc-header">
+    <h1>{{ 'pzp.title' | t }}</h1>
+    <p class="calc-subtitle">{{ 'pzp.subtitle' | t }}</p>
+  </header>
+
+  <section class="input-section">
+    <div class="field">
+      <label for="power">{{ 'pzp.power' | t }}</label>
+      <input id="power" type="number" min="0" [(ngModel)]="power" (ngModelChange)="calculate()" />
+    </div>
+    <div class="field">
+      <label for="age">{{ 'pzp.age' | t }}</label>
+      <input id="age" type="number" min="18" [(ngModel)]="driverAge" (ngModelChange)="calculate()" />
+    </div>
+    <div class="field">
+      <label for="region">{{ 'pzp.region' | t }}</label>
+      <select id="region" [(ngModel)]="region" (ngModelChange)="calculate()">
+        <option value="city">{{ 'pzp.region.city' | t }}</option>
+        <option value="rural">{{ 'pzp.region.rural' | t }}</option>
+      </select>
+    </div>
+  </section>
+
+  <section class="results-section" *ngIf="estLow">
+    <div class="est-card">
+      <div class="est-label">{{ 'pzp.estLabel' | t }}</div>
+      <div class="est-value">{{ formatCurrency(estLow) }} – {{ formatCurrency(estHigh) }} / {{ 'common.years' | t }}</div>
+      <div class="est-hint">{{ 'pzp.estHint' | t }}</div>
+    </div>
+  </section>
+
+  <div class="monetization-zone" *ngIf="estLow">
+    <app-lead-form calculatorType="car-insurance" [context]="leadContext"></app-lead-form>
+    <app-affiliate-cta calculatorType="car-insurance"></app-affiliate-cta>
+    <app-ad-slot slot="car-insurance-after-result"></app-ad-slot>
+  </div>
+</div>

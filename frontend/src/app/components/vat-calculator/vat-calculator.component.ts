@@ -1,10 +1,12 @@
-import { Component, OnInit, PLATFORM_ID, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, inject, ChangeDetectorRef, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { VATCalculationRequest, VATCalculationResponse } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
+import { getCountryParams } from '../../i18n/country-params';
 
 @Component({
   selector: 'app-vat-calculator',
@@ -16,9 +18,10 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
 export class VatCalculatorComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
-  // Inputs
+  private locale = inject(LocaleService);
+  // Inputs — VAT rate defaults to the current country's standard rate.
   amount: number = 1000;
-  vatRate: number = 23;  // Updated for 2026: 23% standard rate
+  vatRate: number = getCountryParams(this.locale.locale()).vat.standard;
   calculation_type: 'add_vat' | 'remove_vat' = 'add_vat';
   
   // Results
@@ -34,7 +37,34 @@ export class VatCalculatorComponent implements OnInit {
     { label: 'Služba/freelance', icon: '💼', amount: 1500 }
   ];
 
-  constructor(private calculatorService: CalculatorService) {}
+  constructor(private calculatorService: CalculatorService) {
+    // When the user switches language/country, snap the VAT rate to that
+    // country's standard rate and recompute. VAT is just a rate, so this is
+    // genuinely correct per country (unlike the SK-only tax calculators).
+    effect(() => {
+      const params = getCountryParams(this.locale.locale());
+      this.vatRate = params.vat.standard;
+      if (isPlatformBrowser(this.platformId)) {
+        this.calculate();
+      }
+    });
+  }
+
+  /** Current country's VAT parameters, driven by the selected language. */
+  get countryParams() {
+    return getCountryParams(this.locale.locale());
+  }
+
+  /** Standard + reduced VAT rates offered as quick presets for this country. */
+  get vatRatePresets(): number[] {
+    const p = this.countryParams.vat;
+    return [p.standard, ...p.reduced];
+  }
+
+  setVatRate(rate: number) {
+    this.vatRate = rate;
+    this.calculate();
+  }
 
   ngOnInit() {
     // Auto-calculate on component init (browser only)
@@ -82,7 +112,7 @@ export class VatCalculatorComponent implements OnInit {
     if (value === undefined || value === null || isNaN(value)) {
       return '0.00';
     }
-    return new Intl.NumberFormat('sk-SK', {
+    return new Intl.NumberFormat(this.countryParams.numberLocale, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(value);

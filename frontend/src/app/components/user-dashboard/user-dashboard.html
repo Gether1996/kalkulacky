@@ -1,69 +1,172 @@
 <div class="dashboard-container">
   <div class="dashboard-header">
-    <h1>Môj účet</h1>
-    <p class="subtitle">Vitajte späť! Tu nájdete prehľad vášho účtu</p>
+    <h1>{{ 'dash.title' | t }}</h1>
+    <p class="subtitle">{{ 'dash.subtitle' | t }}</p>
   </div>
 
   <div class="user-info-card" *ngIf="currentUser">
-    <div class="user-avatar-large">
-      {{ getUserInitials() }}
-    </div>
+    <div class="user-avatar-large">{{ getUserInitials() }}</div>
     <div class="user-details">
       <h2>{{ getUserDisplayName() }}</h2>
       <p class="user-email">{{ currentUser.email }}</p>
-      <p class="account-created">Účet vytvorený: {{ formatDate(accountCreatedDate) }}</p>
+      <p class="account-created" *ngIf="accountCreatedDate">{{ 'dash.memberSince' | t }}: {{ formatDate(accountCreatedDate) }}</p>
     </div>
     <div class="user-actions">
-      <a routerLink="/profile" class="btn btn-primary">
-        <span class="icon">👤</span>
-        Upraviť profil
-      </a>
+      <a routerLink="/profile" class="btn btn-primary"><span class="icon">👤</span> {{ 'dash.editProfile' | t }}</a>
     </div>
   </div>
 
+  <!-- Stats -->
   <div class="stats-grid">
     <div class="stat-card">
       <div class="stat-icon">📊</div>
-      <div class="stat-content">
-        <h3>{{ stats.totalCalculations }}</h3>
-        <p>Celkové výpočty</p>
-      </div>
+      <div class="stat-content"><h3>{{ stats.totalCalculations }}</h3><p>{{ 'dash.stat.saved' | t }}</p></div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon">💾</div>
-      <div class="stat-content">
-        <h3>{{ stats.savedCalculations }}</h3>
-        <p>Uložené výpočty</p>
-      </div>
+      <div class="stat-icon">🔔</div>
+      <div class="stat-content"><h3>{{ stats.trackedCalculations }}</h3><p>{{ 'dash.stat.tracked' | t }}</p></div>
     </div>
     <div class="stat-card">
       <div class="stat-icon">⭐</div>
-      <div class="stat-content">
-        <h3>{{ stats.favoritesCount }}</h3>
-        <p>Obľúbené kalkulačky</p>
+      <div class="stat-content"><h3>{{ stats.favoritesCount }}</h3><p>{{ 'dash.stat.favorites' | t }}</p></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📨</div>
+      <div class="stat-content"><h3>{{ stats.upcomingNotifications }}</h3><p>{{ 'dash.stat.upcoming' | t }}</p></div>
+    </div>
+  </div>
+
+  <!-- Saved calculations -->
+  <div class="dashboard-section">
+    <div class="section-head">
+      <h2 class="section-title">{{ 'dash.saved.title' | t }}</h2>
+      <div class="export-actions" *ngIf="calculations.length > 0 || reminders.length > 0">
+        <button type="button" class="btn-mini" (click)="exportCsv()">⬇️ {{ 'dash.export.csv' | t }}</button>
+        <button type="button" class="btn-mini" (click)="printPdf()">🖨️ {{ 'dash.export.pdf' | t }}</button>
+      </div>
+    </div>
+
+    <div class="loading-state" *ngIf="loading">{{ 'common.loading' | t }}…</div>
+
+    <div class="empty-state" *ngIf="!loading && calculations.length === 0">
+      <div class="empty-icon">📭</div>
+      <p>{{ 'dash.saved.empty' | t }}</p>
+      <p class="empty-subtitle">{{ 'dash.saved.emptyHint' | t }}</p>
+      <a routerLink="/" class="btn btn-outline">{{ 'dash.explore' | t }}</a>
+    </div>
+
+    <div class="saved-list" *ngIf="!loading && calculations.length > 0">
+      <div class="saved-row-wrap" *ngFor="let c of calculations">
+        <div class="saved-row">
+          <div class="saved-main">
+            <span class="saved-name">{{ c.name }}</span>
+            <span class="saved-meta">{{ c.calculator_type_display || c.calculator_type }} · {{ formatDate(c.created_at || null) }}</span>
+          </div>
+          <div class="saved-actions">
+            <button type="button" class="icon-btn" [class.on]="c.is_favorite"
+                    (click)="toggleFavorite(c)" [title]="'dash.action.favorite' | t">⭐</button>
+            <button type="button" class="icon-btn" [class.on]="c.is_tracking"
+                    (click)="toggleTracking(c)" [title]="'dash.action.track' | t">🔔</button>
+            <button type="button" class="icon-btn" [class.on]="!!c.note"
+                    (click)="startEditNote(c)" [title]="'dash.action.note' | t">📝</button>
+            <button type="button" class="icon-btn danger"
+                    (click)="remove(c)" [title]="'dash.action.delete' | t">🗑️</button>
+          </div>
+        </div>
+
+        <!-- Note: display or inline editor -->
+        <p class="saved-note" *ngIf="c.note && editingNoteId !== c.id">{{ c.note }}</p>
+        <div class="note-editor" *ngIf="editingNoteId === c.id">
+          <textarea class="note-input" rows="2" [(ngModel)]="noteDraft"
+                    [placeholder]="'dash.note.placeholder' | t"></textarea>
+          <div class="note-actions">
+            <button type="button" class="btn-mini primary" (click)="saveNote(c)">{{ 'common.save' | t }}</button>
+            <button type="button" class="btn-mini" (click)="cancelNote()">{{ 'report.cancel' | t }}</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- My custom reminders -->
   <div class="dashboard-section">
-    <h2 class="section-title">Populárne kalkulačky</h2>
-    <div class="calculators-grid">
-      <a *ngFor="let calculator of popularCalculators" 
-         [routerLink]="calculator.route" 
-         class="calculator-card">
-        <div class="calculator-icon">{{ calculator.icon }}</div>
-        <div class="calculator-name">{{ calculator.name }}</div>
-      </a>
+    <h2 class="section-title">{{ 'dash.myReminders.title' | t }}</h2>
+    <p class="section-hint">{{ 'dash.myReminders.hint' | t }}</p>
+
+    <div class="reminder-presets">
+      <span class="preset-caption">{{ 'dash.myReminders.presets' | t }}</span>
+      <button *ngFor="let p of reminderPresets" type="button" class="preset-chip"
+              (click)="applyPreset(p)">+ {{ p.titleKey | t }}</button>
     </div>
+
+    <div class="reminder-form">
+      <input class="rf-input rf-title" type="text" [(ngModel)]="newReminder.title"
+             [placeholder]="'dash.myReminders.titlePh' | t" />
+      <input class="rf-input rf-date" type="date" [(ngModel)]="newReminder.remind_date" />
+      <input class="rf-input rf-note" type="text" [(ngModel)]="newReminder.note"
+             [placeholder]="'dash.myReminders.notePh' | t" />
+      <button class="rf-btn" type="button" (click)="addReminder()"
+              [disabled]="reminderSaving || !newReminder.title || !newReminder.remind_date">
+        + {{ 'dash.myReminders.add' | t }}
+      </button>
+    </div>
+
+    <div class="reminders-list" *ngIf="reminders.length > 0">
+      <div class="reminder-wrap" *ngFor="let r of reminders">
+        <!-- Display row -->
+        <div class="reminder-row" *ngIf="editingReminderId !== r.id" [attr.data-priority]="'medium'">
+          <div class="reminder-date">{{ formatDate(r.remind_date) }}</div>
+          <div class="reminder-body">
+            <span class="reminder-title">{{ r.title }}</span>
+            <span class="reminder-msg" *ngIf="r.note">{{ r.note }}</span>
+          </div>
+          <div class="reminder-actions">
+            <button type="button" class="icon-btn" (click)="startEditReminder(r)"
+                    [title]="'dash.action.edit' | t">✏️</button>
+            <button type="button" class="icon-btn danger" (click)="removeReminder(r)"
+                    [title]="'dash.action.delete' | t">🗑️</button>
+          </div>
+        </div>
+        <!-- Inline editor -->
+        <div class="reminder-editor" *ngIf="editingReminderId === r.id">
+          <input class="rf-input rf-title" type="text" [(ngModel)]="reminderEdit.title"
+                 [placeholder]="'dash.myReminders.titlePh' | t" />
+          <input class="rf-input rf-date" type="date" [(ngModel)]="reminderEdit.remind_date" />
+          <input class="rf-input rf-note" type="text" [(ngModel)]="reminderEdit.note"
+                 [placeholder]="'dash.myReminders.notePh' | t" />
+          <div class="note-actions">
+            <button type="button" class="btn-mini primary" (click)="saveReminderEdit(r)">{{ 'common.save' | t }}</button>
+            <button type="button" class="btn-mini" (click)="cancelEditReminder()">{{ 'report.cancel' | t }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="reminders-note">📧 {{ 'dash.reminders.emailNote' | t }}</p>
   </div>
 
+  <!-- Upcoming reminders -->
+  <div class="dashboard-section" *ngIf="!loading && upcoming.length > 0">
+    <h2 class="section-title">{{ 'dash.reminders.title' | t }}</h2>
+    <div class="reminders-list">
+      <div class="reminder-row" *ngFor="let n of upcoming" [attr.data-priority]="n.priority">
+        <div class="reminder-date">{{ formatDate(n.scheduled_date) }}</div>
+        <div class="reminder-body">
+          <span class="reminder-title">{{ n.title }}</span>
+          <span class="reminder-msg">{{ n.message }}</span>
+        </div>
+      </div>
+    </div>
+    <p class="reminders-note">📧 {{ 'dash.reminders.emailNote' | t }}</p>
+  </div>
+
+  <!-- Quick links -->
   <div class="dashboard-section">
-    <h2 class="section-title">Nedávna aktivita</h2>
-    <div class="empty-state">
-      <div class="empty-icon">📭</div>
-      <p>Zatiaľ nemáte žiadnu aktivitu</p>
-      <p class="empty-subtitle">Začnite používať kalkulačky a vaša história sa zobrazí tu</p>
-      <a routerLink="/" class="btn btn-outline">Preskúmať kalkulačky</a>
+    <h2 class="section-title">{{ 'dash.popular' | t }}</h2>
+    <div class="calculators-grid">
+      <a *ngFor="let calc of popularCalculators" [routerLink]="calc.route" class="calculator-card">
+        <div class="calculator-icon">{{ calc.icon }}</div>
+        <div class="calculator-name">{{ ('calc.' + calc.id + '.name') | t }}</div>
+      </a>
     </div>
   </div>
 </div>

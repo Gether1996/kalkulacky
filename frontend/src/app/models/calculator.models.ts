@@ -12,6 +12,7 @@ export interface CalculatorCard {
 // Salary Calculator
 export interface SalaryCalculationRequest {
   gross_salary: number;
+  country?: string;            // 'SK' (default) | 'CZ' | 'PL' | 'HU'
   children_under_15?: number;  // Optional: children under 15 years (100 EUR/month each)
   children_15_to_18?: number;  // Optional: children 15-18 years (50 EUR/month each)
   apply_nontaxable_amount?: boolean;  // Optional: apply NČZD 497.23 EUR (default: true)
@@ -37,6 +38,8 @@ export interface SalaryCalculationResponse {
   effective_tax_rate: number;
   super_gross_salary: number;
   total_employer_contributions: number;
+  country?: string;            // country whose rules were applied
+  currency?: string;           // ISO currency of the figures (EUR/CZK/PLN/HUF)
 }
 
 // Mortgage Calculator
@@ -214,6 +217,7 @@ export interface PensionCalculationRequest {
   gender?: 'male' | 'female';
   include_second_pillar?: boolean;
   second_pillar_rate?: number;
+  country?: string;            // 'SK' (default) | 'CZ'
 }
 
 export interface PensionContributions {
@@ -263,6 +267,7 @@ export interface VacationCalculationRequest {
   vacation_days_used?: number;
   days_carried_over?: number;
   planned_vacation_days?: number;
+  country?: string;            // 'SK' (default) | 'CZ'
 }
 
 export interface VacationEntitlement {
@@ -529,6 +534,7 @@ export interface AmortizationScheduleItem {
 
 export interface FreelancerTaxCalculationRequest {
   annual_revenue: number;
+  country?: string;            // 'SK' (default) | 'CZ'
   annual_expenses?: number;
   use_flat_expenses?: boolean;
   include_sickness?: boolean;
@@ -541,6 +547,8 @@ export interface FreelancerTaxCalculationResponse {
   health_insurance: HealthInsuranceDetails;
   social_insurance: SocialInsuranceDetails;
   summary: TaxSummary;
+  country?: string;
+  currency?: string;
 }
 
 export interface IncomeDetails {
@@ -828,6 +836,7 @@ export interface BlogPostDetail {
 // Solar / PV Subsidy & Payback Calculator
 export interface SolarSubsidyCalculationRequest {
   annual_consumption_kwh: number;
+  country?: string;            // 'SK' (default) | 'CZ'
   electricity_rate?: number;
   system_size_kwp?: number;
   include_battery?: boolean;
@@ -909,6 +918,7 @@ export interface SickLeaveCalculationRequest {
   gross_salary: number;
   days_sick: number;
   leave_type: 'illness' | 'care';
+  country?: string;            // 'SK' (default) | 'CZ'
 }
 
 export interface SickLeaveCalculationResponse {
@@ -1071,6 +1081,7 @@ export interface TipSuggestionsResponse {
 // Parental Benefit Calculator
 export interface ParentalBenefitCalculationRequest {
   birth_date: string;  // ISO format YYYY-MM-DD
+  country?: string;            // 'SK' (default) | 'CZ'
   gross_salary?: number | null;
   benefit_type: 'basic' | 'alternative';
   twins_or_more?: boolean;

@@ -29,9 +29,10 @@
             min="1000"
             step="1000"
           />
-          <span class="currency-symbol">€</span>
+          <span class="currency-symbol">{{ currencySymbol }}</span>
         </div>
         <input
+          *ngIf="!isCZK"
           type="range"
           [(ngModel)]="loanAmount"
           (ngModelChange)="calculate()"
@@ -40,7 +41,7 @@
           step="5000"
           class="slider"
         />
-        <div class="slider-labels">
+        <div class="slider-labels" *ngIf="!isCZK">
           <span>10 000 €</span>
           <span>500 000 €</span>
         </div>
@@ -120,7 +121,7 @@
             class="benchmark-button"
           >
             {{ scenario.label }}<br/>
-            <strong>{{ scenario.amount.toLocaleString() }} €</strong><br/>
+            <strong>{{ formatCurrency(scenario.amount) }}</strong><br/>
             <small>{{ scenario.rate }}% • {{ scenario.years }}r</small>
           </button>
         </div>
@@ -278,6 +279,15 @@
       <p>{{ error }}</p>
     </div>
   </div>
+
+  <!-- Save & track (logged-in users get payment reminders by email) -->
+  <app-save-calculation
+    *ngIf="result && !loading"
+    calculatorType="mortgage"
+    [params]="saveParams"
+    [result]="result"
+    [defaultName]="saveName">
+  </app-save-calculation>
 
   <!-- Monetization: qualified lead capture + partner offers -->
   <div class="monetization-zone" *ngIf="result && !loading">

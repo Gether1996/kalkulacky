@@ -135,6 +135,24 @@ export class AuthService {
   }
 
   /**
+   * Request a password-reset email (forgot password).
+   */
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.API_URL}/forgot-password/`, { email }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Set a new password using the emailed uid + token.
+   */
+  resetPassword(data: { uid: string; token: string; new_password: string; new_password_confirm: string }): Observable<any> {
+    return this.http.post(`${this.API_URL}/reset-password/`, data).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
    * Refresh access token
    */
   refreshToken(): Observable<any> {

@@ -4,6 +4,7 @@
     <p class="calc-subtitle">
       {{ 'calc.solar.desc' | t }}
     </p>
+    <p class="country-badge">🌍 {{ 'salary.rulesFor' | t }}: <strong>{{ countryName }}</strong> · {{ programName }} · {{ currency }}</p>
   </header>
 
   <section class="input-section">
@@ -88,14 +89,13 @@
 
     <p class="subsidy-note">
       💶 Dotácia <strong>{{ result.subsidy.scheme }}</strong>:
-      {{ result.subsidy.rate_per_kwp }} €/kW (oprávnené do 7 kW),
       max {{ formatCurrency(result.subsidy.max_subsidy) }} a zároveň 50 % nákladov.
       Vo vašom prípade limituje: <strong>{{ result.subsidy.limited_by }}</strong>.
     </p>
     <p class="disclaimer">
-      ⚠️ Výsledky sú orientačné a závisia od konkrétneho projektu a aktuálneho kola
-      dotácií SIEA. So zvýhodnením (+15 %) môže byť max. dotácia až 4 025 €.
-      Overte si aktuálne podmienky na <a href="https://zelenadomacnostiam.sk" target="_blank" rel="noopener">zelenadomacnostiam.sk</a>.
+      ⚠️ Výsledky sú orientačné a závisia od konkrétneho projektu a aktuálneho kola dotácií.
+      <ng-container *ngIf="isSK">So zvýhodnením (+15 %) môže byť max. dotácia až 4 025 €. </ng-container>
+      Overte si aktuálne podmienky na <a [href]="programUrl" target="_blank" rel="noopener">{{ programUrl }}</a>.
     </p>
   </section>
 

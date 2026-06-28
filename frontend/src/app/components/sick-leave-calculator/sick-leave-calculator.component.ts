@@ -1,4 +1,4 @@
-import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, inject, effect } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +6,8 @@ import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { SickLeaveCalculationResponse } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
+import { getCountryParams } from '../../i18n/country-params';
 
 @Component({
   selector: 'app-sick-leave-calculator',
@@ -27,12 +29,33 @@ export class SickLeaveCalculatorComponent implements OnInit {
   isLoading: boolean = false;
   error: string = '';
 
-  constructor(private calculatorService: CalculatorService) {}
+  private locale = inject(LocaleService);
+
+  constructor(private calculatorService: CalculatorService) {
+    let firstRun = true;
+    effect(() => {
+      const c = this.country;
+      if (!firstRun) {
+        this.gross_salary = c === 'CZ' ? 45000 : 1500;
+      }
+      firstRun = false;
+      if (isPlatformBrowser(this.platformId)) {
+        this.calculate();
+      }
+    });
+  }
+
+  /** Engine country — SK + CZ implemented; other locales fall back to SK. */
+  get country(): string {
+    return getCountryParams(this.locale.locale()).countryCode === 'CZ' ? 'CZ' : 'SK';
+  }
+  get isSK(): boolean { return this.country === 'SK'; }
+  get currency(): string { return this.isSK ? 'EUR' : 'CZK'; }
+  get countryName(): string { return this.isSK ? 'Slovensko' : 'Česko'; }
+  private get numberLocale(): string { return this.isSK ? 'sk-SK' : 'cs-CZ'; }
 
   ngOnInit() {
-    if (isPlatformBrowser(this.platformId)) {
-      this.calculate();
-    }
+    // Initial calculation driven by the locale effect (constructor).
   }
 
   calculate() {
@@ -52,7 +75,8 @@ export class SickLeaveCalculatorComponent implements OnInit {
     this.calculatorService.calculateSickLeave({
       gross_salary: this.gross_salary,
       days_sick: this.days_sick,
-      leave_type: this.leave_type
+      leave_type: this.leave_type,
+      country: this.country
     }).subscribe({
       next: (response) => {
         this.result = response;
@@ -94,18 +118,19 @@ export class SickLeaveCalculatorComponent implements OnInit {
     this.calculate();
   }
 
-  // Helper to get payer badge color
+  // Helper to get payer badge color (SK "Zamestnávateľ" / CZ "Zaměstnavatel")
   getPayerBadgeClass(payer: string): string {
-    return payer === 'Zamestnávateľ' ? 'payer-employer' : 'payer-insurance';
+    return (payer || '').toLowerCase().startsWith('zam') ? 'payer-employer' : 'payer-insurance';
   }
 
-  // Format currency
+  // Format currency in the active country's currency
   formatCurrency(value: number): string {
-    return new Intl.NumberFormat('sk-SK', {
+    const noDecimals = this.currency === 'CZK';
+    return new Intl.NumberFormat(this.numberLocale, {
       style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      currency: this.currency,
+      minimumFractionDigits: noDecimals ? 0 : 2,
+      maximumFractionDigits: noDecimals ? 0 : 2
     }).format(value);
   }
 

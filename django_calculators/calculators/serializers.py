@@ -8,13 +8,18 @@ from rest_framework import serializers
 
 
 class SalaryCalculatorSerializer(serializers.Serializer):
-    """Serializer for Salary Calculator API"""
+    """Serializer for Salary Calculator API (SK + CZ/PL/HU via `country`)."""
+    country = serializers.ChoiceField(
+        choices=['SK', 'CZ', 'PL', 'HU'],
+        required=False, default='SK',
+        help_text="Country whose payroll rules to apply (default SK)",
+    )
     gross_salary = serializers.DecimalField(
-        max_digits=10, 
+        max_digits=14,
         decimal_places=2,
         min_value=0,
-        max_value=50000,
-        help_text="Gross monthly salary in EUR"
+        max_value=100000000,
+        help_text="Gross monthly salary in the country's currency (EUR/CZK/PLN/HUF)"
     )
     children_under_15 = serializers.IntegerField(
         required=False,
@@ -252,17 +257,21 @@ class PregnancyCalculatorSerializer(serializers.Serializer):
 
 
 class PensionCalculatorSerializer(serializers.Serializer):
-    """Serializer for Pension Calculator API"""
+    """Serializer for Pension Calculator API (SK + CZ via `country`)."""
+    country = serializers.ChoiceField(
+        choices=['SK', 'CZ'], required=False, default='SK',
+        help_text="Country whose pension rules to apply (default SK)",
+    )
     current_age = serializers.IntegerField(
         min_value=18,
         max_value=70,
         help_text="Current age in years"
     )
     gross_salary = serializers.DecimalField(
-        max_digits=10,
+        max_digits=14,
         decimal_places=2,
         min_value=0,
-        help_text="Monthly gross salary in EUR"
+        help_text="Monthly gross salary (EUR for SK, CZK for CZ)"
     )
     years_worked = serializers.IntegerField(
         min_value=0,
@@ -289,7 +298,11 @@ class PensionCalculatorSerializer(serializers.Serializer):
 
 
 class VacationCalculatorSerializer(serializers.Serializer):
-    """Serializer for Vacation Days Calculator API"""
+    """Serializer for Vacation Days Calculator API (SK + CZ via `country`)."""
+    country = serializers.ChoiceField(
+        choices=['SK', 'CZ'], required=False, default='SK',
+        help_text="Country whose vacation rules to apply (default SK)",
+    )
     age = serializers.IntegerField(
         min_value=15,
         max_value=100,
@@ -459,9 +472,13 @@ class PaymentCalculatorSerializer(serializers.Serializer):
 
 
 class FreelancerTaxCalculatorSerializer(serializers.Serializer):
-    """Serializer for Freelancer Tax Calculator API"""
+    """Serializer for Freelancer Tax Calculator API (SK + CZ via `country`)."""
+    country = serializers.ChoiceField(
+        choices=['SK', 'CZ'], required=False, default='SK',
+        help_text="Country whose self-employed rules to apply (default SK)",
+    )
     annual_revenue = serializers.DecimalField(
-        max_digits=12,
+        max_digits=14,
         decimal_places=2,
         min_value=0,
         help_text="Annual revenue (total income)"
@@ -729,13 +746,17 @@ class UnitConverterSerializer(serializers.Serializer):
 
 
 class SickLeaveCalculatorSerializer(serializers.Serializer):
-    """Serializer for Sick Leave (Pracovná neschopnosť / PN) Calculator API"""
+    """Serializer for Sick Leave (PN / nemocenská) Calculator API (SK + CZ)."""
+    country = serializers.ChoiceField(
+        choices=['SK', 'CZ'], required=False, default='SK',
+        help_text="Country whose sick-leave rules to apply (default SK)",
+    )
     gross_salary = serializers.DecimalField(
-        max_digits=10,
+        max_digits=14,
         decimal_places=2,
         min_value=0,
-        max_value=50000,
-        help_text="Hrubá mesačná mzda v EUR"
+        max_value=10000000,
+        help_text="Hrubá mesačná mzda (EUR pre SK, CZK pre CZ)"
     )
     days_sick = serializers.IntegerField(
         min_value=1,
@@ -909,17 +930,21 @@ class SplitBillCalculatorSerializer(serializers.Serializer):
 
 
 class ParentalBenefitCalculatorSerializer(serializers.Serializer):
-    """Serializer for Parental Benefit Calculator API"""
+    """Serializer for Parental Benefit Calculator API (SK + CZ via `country`)."""
+    country = serializers.ChoiceField(
+        choices=['SK', 'CZ'], required=False, default='SK',
+        help_text="Country whose parental rules to apply (default SK)",
+    )
     birth_date = serializers.DateField(
         help_text="Child's date of birth (YYYY-MM-DD)"
     )
     gross_salary = serializers.DecimalField(
         required=False,
-        max_digits=10,
+        max_digits=14,
         decimal_places=2,
         min_value=0,
-        max_value=10000,
-        help_text="Mother's gross monthly salary before maternity (for materské calculation)"
+        max_value=10000000,
+        help_text="Mother's gross monthly salary before maternity (EUR for SK, CZK for CZ)"
     )
     benefit_type = serializers.ChoiceField(
         choices=['basic', 'alternative'],
@@ -963,7 +988,12 @@ class ParentalBenefitCalculatorSerializer(serializers.Serializer):
 class SavedCalculationSerializer(serializers.Serializer):
     """Serializer for SavedCalculation model"""
     id = serializers.IntegerField(read_only=True)
-    session_key = serializers.CharField(max_length=100)
+    session_key = serializers.CharField(
+        max_length=100, required=False, allow_blank=True, default=''
+    )
+    calculator_type_display = serializers.CharField(
+        source='get_calculator_type_display', read_only=True
+    )
     email = serializers.EmailField(
         required=False,
         allow_null=True,
@@ -997,6 +1027,10 @@ class SavedCalculationSerializer(serializers.Serializer):
     is_favorite = serializers.BooleanField(
         default=False,
         help_text="Mark as favorite"
+    )
+    note = serializers.CharField(
+        required=False, allow_blank=True, default='',
+        help_text="User's personal note about this calculation"
     )
     notification_enabled = serializers.BooleanField(
         default=True,
@@ -1045,7 +1079,7 @@ class ScheduledNotificationSerializer(serializers.Serializer):
 # MONETIZATION SERIALIZERS
 # ============================================================================
 
-from .models import Lead, AffiliateClick
+from .models import Lead, AffiliateClick, DataReport, UserReminder
 
 
 class LeadSerializer(serializers.ModelSerializer):
@@ -1084,8 +1118,48 @@ class AffiliateClickSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at']
 
 
+class DataReportSerializer(serializers.ModelSerializer):
+    """Validates a 'this data is wrong' report submitted from a calculator."""
+
+    class Meta:
+        model = DataReport
+        fields = [
+            'id', 'calculator_type', 'page_url', 'message',
+            'reporter_email', 'locale', 'created_at',
+        ]
+        read_only_fields = ['id', 'created_at']
+
+    def validate_message(self, value):
+        value = (value or '').strip()
+        if len(value) < 5:
+            raise serializers.ValidationError('Napíšte prosím, čo je nesprávne (aspoň pár slov).')
+        return value
+
+
+class UserReminderSerializer(serializers.ModelSerializer):
+    """A custom user-created reminder."""
+
+    class Meta:
+        model = UserReminder
+        fields = [
+            'id', 'title', 'note', 'category', 'remind_date', 'remind_time',
+            'related_calculator', 'email_enabled', 'sent', 'created_at',
+        ]
+        read_only_fields = ['id', 'sent', 'created_at']
+
+    def validate_title(self, value):
+        value = (value or '').strip()
+        if len(value) < 2:
+            raise serializers.ValidationError('Zadajte názov pripomienky.')
+        return value
+
+
 class SolarSubsidyCalculatorSerializer(serializers.Serializer):
-    """Serializer for Solar/PV Subsidy & Payback Calculator API"""
+    """Serializer for Solar/PV Subsidy & Payback Calculator API (SK + CZ)."""
+    country = serializers.ChoiceField(
+        choices=['SK', 'CZ'], required=False, default='SK',
+        help_text="Country whose PV subsidy programme to apply (default SK)",
+    )
     annual_consumption_kwh = serializers.DecimalField(
         max_digits=10, decimal_places=2, min_value=0,
         help_text="Annual electricity consumption in kWh"

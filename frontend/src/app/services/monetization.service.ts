@@ -77,6 +77,33 @@ export class MonetizationService {
       .subscribe();
   }
 
+  /**
+   * Submit a "this data is wrong" report. The backend stores it and emails the
+   * operator so real-world figures (tax rates, subsidies, prices) stay correct.
+   */
+  submitDataReport(report: {
+    calculator_type: string;
+    message: string;
+    reporter_email?: string;
+    locale?: string;
+  }): Observable<{ success: boolean; message?: string; errors?: any }> {
+    const payload = { ...report, page_url: this.currentUrl() };
+    return this.http
+      .post<{ success: boolean; message?: string; errors?: any }>(
+        `${this.apiUrl}/calculators/data-report/`,
+        payload,
+        { withCredentials: true }
+      )
+      .pipe(
+        catchError((err) =>
+          of({
+            success: false,
+            errors: err?.error?.errors ?? { detail: 'Network error' },
+          })
+        )
+      );
+  }
+
   private currentUrl(): string {
     if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
       return window.location.href;

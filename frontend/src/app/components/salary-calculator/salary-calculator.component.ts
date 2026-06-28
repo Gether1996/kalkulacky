@@ -1,4 +1,4 @@
-import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
@@ -7,12 +7,15 @@ import { SeoService } from '../../services/seo.service';
 import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.component';
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
 import { EmbedSnippetComponent } from '../shared/embed-snippet/embed-snippet.component';
+import { SaveCalculationComponent } from '../shared/save-calculation/save-calculation.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
+import { getCountryParams } from '../../i18n/country-params';
 
 @Component({
   selector: 'app-salary-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule, AffiliateCtaComponent, AdSlotComponent, EmbedSnippetComponent, TranslatePipe],
+  imports: [CommonModule, FormsModule, AffiliateCtaComponent, AdSlotComponent, EmbedSnippetComponent, SaveCalculationComponent, TranslatePipe],
   templateUrl: './salary-calculator.component.html',
   styleUrls: ['./salary-calculator.component.css']
 })
@@ -20,6 +23,7 @@ export class SalaryCalculatorComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   private seo = inject(SeoService);
+  private locale = inject(LocaleService);
   grossSalary: number = 1500;
   childrenUnder15: number = 0;
   children15To18: number = 0;
@@ -29,13 +33,49 @@ export class SalaryCalculatorComponent implements OnInit {
   loading: boolean = false;
   error: string | null = null;
 
-  // Common salary benchmarks for quick selection
-  benchmarks = [
-    { label: 'Min. mzda', value: 915 },
-    { label: 'Priemer SK', value: 1400 }
-  ];
+  constructor(private calculatorService: CalculatorService) {
+    // Switching language switches the country: load that country's payroll
+    // rules + currency and reset the gross to a sensible local amount.
+    let firstRun = true;
+    effect(() => {
+      const params = getCountryParams(this.locale.locale());
+      if (!firstRun) {
+        this.grossSalary = params.salaryPresets[1] ?? this.grossSalary;
+      }
+      firstRun = false;
+      if (isPlatformBrowser(this.platformId)) {
+        this.calculate();
+      }
+    });
+  }
 
-  constructor(private calculatorService: CalculatorService) {}
+  /** ISO country code whose payroll rules apply, from the active language. */
+  get country(): string { return getCountryParams(this.locale.locale()).countryCode; }
+  get isSK(): boolean { return this.country === 'SK'; }
+  get countryName(): string { return getCountryParams(this.locale.locale()).countryName; }
+  get currency(): string { return getCountryParams(this.locale.locale()).currency; }
+  get currencySymbol(): string { return getCountryParams(this.locale.locale()).currencySymbol; }
+  private get numberLocale(): string { return getCountryParams(this.locale.locale()).numberLocale; }
+
+  /** Snapshot persisted when a logged-in user saves this calculation. */
+  get saveParams(): Record<string, any> {
+    return {
+      gross_salary: this.grossSalary,
+      country: this.country,
+      children_under_15: this.childrenUnder15,
+      children_15_to_18: this.children15To18,
+    };
+  }
+  get saveName(): string { return `${this.locale.t('salary.net')} · ${this.grossSalary} ${this.currencySymbol}`; }
+
+  /** Country-appropriate quick-select gross amounts [minimum, average]. */
+  get benchmarks(): { labelKey: string; value: number }[] {
+    const p = getCountryParams(this.locale.locale()).salaryPresets;
+    return [
+      { labelKey: 'salary.benchmarkMin', value: p[0] },
+      { labelKey: 'salary.benchmarkAvg', value: p[1] },
+    ];
+  }
 
   ngOnInit(): void {
     this.seo.apply({
@@ -56,10 +96,8 @@ export class SalaryCalculatorComponent implements OnInit {
       ],
     });
 
-    // Calculate on init only if running in browser
-    if (isPlatformBrowser(this.platformId)) {
-      this.calculate();
-    }
+    // Initial calculation is driven by the locale effect (constructor), which
+    // runs on init and whenever the country/language changes.
   }
 
   calculate(): void {
@@ -68,12 +106,12 @@ export class SalaryCalculatorComponent implements OnInit {
       return;
     }
 
-    console.log('📊 Calculating salary for:', this.grossSalary, 'children under 15:', this.childrenUnder15, '15-18:', this.children15To18, 'NČZD:', this.applyNontaxableAmount, 'ZŤP:', this.hasDisability);
     this.loading = true;
     this.error = null;
 
-    this.calculatorService.calculateSalary({ 
+    this.calculatorService.calculateSalary({
       gross_salary: this.grossSalary,
+      country: this.country,
       children_under_15: this.childrenUnder15,
       children_15_to_18: this.children15To18,
       apply_nontaxable_amount: this.applyNontaxableAmount,
@@ -102,9 +140,15 @@ export class SalaryCalculatorComponent implements OnInit {
 
   formatCurrency(value: number | undefined): string {
     if (value === undefined || value === null || isNaN(value)) {
-      return '0.00 €';
+      return '0.00 ' + this.currencySymbol;
     }
-    return value.toFixed(2) + ' €';
+    // HUF/CZK are typically shown without decimals; EUR/PLN with two.
+    const noDecimals = this.country === 'HU';
+    const formatted = new Intl.NumberFormat(this.numberLocale, {
+      minimumFractionDigits: noDecimals ? 0 : 2,
+      maximumFractionDigits: noDecimals ? 0 : 2,
+    }).format(value);
+    return formatted + ' ' + this.currencySymbol;
   }
 
   formatPercentage(value: number | undefined): string {

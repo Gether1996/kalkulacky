@@ -25,13 +25,13 @@
             min="0"
             step="0.01"
           />
-          <span class="currency-symbol">€</span>
+          <span class="currency-symbol">{{ countryParams.currencySymbol }}</span>
         </div>
       </div>
 
-      <!-- VAT Rate Input -->
+      <!-- VAT Rate Input — rates load for the country of the current language -->
       <div class="input-group">
-        <label class="input-label">Sazba DPH (%)</label>
+        <label class="input-label">{{ 'vat.rateLabel' | t }} ({{ countryParams.countryName }})</label>
         <div class="vat-rate-group">
           <input
             type="number"
@@ -44,36 +44,21 @@
           />
           <div class="vat-rate-presets">
             <button
+              *ngFor="let r of vatRatePresets; let i = index"
               type="button"
               class="preset-btn"
-              [class.active]="vatRate === 23"
-              (click)="vatRate = 23; calculate()"
+              [class.active]="vatRate === r"
+              (click)="setVatRate(r)"
             >
-              23% (Základná)
-            </button>
-            <button
-              type="button"
-              class="preset-btn"
-              [class.active]="vatRate === 19"
-              (click)="vatRate = 19; calculate()"
-            >
-              19% (Znížená 1)
-            </button>
-            <button
-              type="button"
-              class="preset-btn"
-              [class.active]="vatRate === 5"
-              (click)="vatRate = 5; calculate()"
-            >
-              5% (Znížená 2)
+              {{ r }}% {{ i === 0 ? ('vat.rateStandard' | t) : ('vat.rateReduced' | t) }}
             </button>
             <button
               type="button"
               class="preset-btn"
               [class.active]="vatRate === 0"
-              (click)="vatRate = 0; calculate()"
+              (click)="setVatRate(0)"
             >
-              0% (Oslobodené)
+              0% {{ 'vat.rateZero' | t }}
             </button>
           </div>
         </div>
@@ -141,7 +126,7 @@
           {{ calculation_type === 'add_vat' ? 'CELKOVÁ SUMA S DPH' : 'SUMA BEZ DPH' }}
         </div>
         <div class="result-value">
-          {{ formatCurrency(calculation_type === 'add_vat' ? result.amount_with_vat : result.amount_without_vat) }} €
+          {{ formatCurrency(calculation_type === 'add_vat' ? result.amount_with_vat : result.amount_without_vat) }} {{ countryParams.currencySymbol }}
         </div>
         <div class="result-comparison">
           {{ calculation_type === 'add_vat' ? 'Včetně DPH' : 'Bez DPH' }} {{ vatRate }}%
@@ -153,20 +138,20 @@
         <div class="breakdown-card">
           <div class="breakdown-icon">💰</div>
           <div class="breakdown-label">Suma bez DPH</div>
-          <div class="breakdown-value">{{ formatCurrency(result.amount_without_vat) }} €</div>
+          <div class="breakdown-value">{{ formatCurrency(result.amount_without_vat) }} {{ countryParams.currencySymbol }}</div>
         </div>
 
         <div class="breakdown-card highlight">
           <div class="breakdown-icon">🧾</div>
           <div class="breakdown-label">Výška DPH ({{ vatRate }}%)</div>
-          <div class="breakdown-value">{{ formatCurrency(result.vat_amount) }} €</div>
+          <div class="breakdown-value">{{ formatCurrency(result.vat_amount) }} {{ countryParams.currencySymbol }}</div>
           <div class="breakdown-hint">Daň z pridanej hodnoty</div>
         </div>
 
         <div class="breakdown-card">
           <div class="breakdown-icon">📊</div>
           <div class="breakdown-label">Suma s DPH</div>
-          <div class="breakdown-value">{{ formatCurrency(result.amount_with_vat) }} €</div>
+          <div class="breakdown-value">{{ formatCurrency(result.amount_with_vat) }} {{ countryParams.currencySymbol }}</div>
         </div>
       </div>
 

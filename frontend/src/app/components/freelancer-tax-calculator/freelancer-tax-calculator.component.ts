@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, ChangeDetectorRef, inject, OnInit, PLATFORM_ID, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -11,12 +11,15 @@ import { SeoService } from '../../services/seo.service';
 import { LeadFormComponent } from '../shared/lead-form/lead-form.component';
 import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.component';
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
+import { SaveCalculationComponent } from '../shared/save-calculation/save-calculation.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
+import { getCountryParams } from '../../i18n/country-params';
 
 @Component({
   selector: 'app-freelancer-tax-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LeadFormComponent, AffiliateCtaComponent, AdSlotComponent, TranslatePipe],
+  imports: [CommonModule, FormsModule, RouterLink, LeadFormComponent, AffiliateCtaComponent, AdSlotComponent, SaveCalculationComponent, TranslatePipe],
   templateUrl: './freelancer-tax-calculator.component.html',
   styleUrl: './freelancer-tax-calculator.component.css'
 })
@@ -25,6 +28,7 @@ export class FreelancerTaxCalculatorComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
   private seo = inject(SeoService);
+  private locale = inject(LocaleService);
 
   // Input values
   annualRevenue: number = 30000;
@@ -37,6 +41,32 @@ export class FreelancerTaxCalculatorComponent implements OnInit {
   result: FreelancerTaxCalculationResponse | null = null;
   loading: boolean = false;
   error: string | null = null;
+
+  constructor() {
+    // Switching language switches the country. Freelancer rules exist for SK + CZ
+    // only; other locales fall back to SK (the "Slovak rules" banner then shows).
+    let firstRun = true;
+    effect(() => {
+      const c = this.country;
+      if (!firstRun) {
+        this.annualRevenue = c === 'CZ' ? 600000 : 30000;
+      }
+      firstRun = false;
+      if (isPlatformBrowser(this.platformId)) {
+        this.calculate();
+      }
+    });
+  }
+
+  /** Engine country — only SK and CZ are implemented; everything else → SK. */
+  get country(): string {
+    return getCountryParams(this.locale.locale()).countryCode === 'CZ' ? 'CZ' : 'SK';
+  }
+  get isSK(): boolean { return this.country === 'SK'; }
+  get currencySymbol(): string { return this.isSK ? '€' : 'Kč'; }
+  get currency(): string { return this.isSK ? 'EUR' : 'CZK'; }
+  get countryName(): string { return this.isSK ? 'Slovensko' : 'Česko'; }
+  private get numberLocale(): string { return this.isSK ? 'sk-SK' : 'cs-CZ'; }
 
   ngOnInit() {
     this.seo.apply({
@@ -56,10 +86,18 @@ export class FreelancerTaxCalculatorComponent implements OnInit {
         },
       ],
     });
-    if (isPlatformBrowser(this.platformId)) {
-      this.calculate();
-    }
+    // Initial calculation is driven by the locale effect (constructor).
   }
+
+  get saveParams(): Record<string, any> {
+    return {
+      annual_revenue: this.annualRevenue,
+      country: this.country,
+      use_flat_expenses: this.useFlatExpenses,
+      annual_expenses: this.annualExpenses,
+    };
+  }
+  get saveName(): string { return `SZČO / OSVČ · ${this.annualRevenue} ${this.currencySymbol}`; }
 
   /** Calculation snapshot attached to an accounting lead. */
   get leadContext(): Record<string, any> {
@@ -76,6 +114,7 @@ export class FreelancerTaxCalculatorComponent implements OnInit {
 
     const request: FreelancerTaxCalculationRequest = {
       annual_revenue: this.annualRevenue,
+      country: this.country,
       annual_expenses: this.annualExpenses,
       use_flat_expenses: this.useFlatExpenses,
       include_sickness: this.includeSickness,
@@ -103,11 +142,12 @@ export class FreelancerTaxCalculatorComponent implements OnInit {
 
   formatCurrency(value: number | string): string {
     const num = typeof value === 'string' ? parseFloat(value) : value;
-    return new Intl.NumberFormat('sk-SK', {
+    const noDecimals = this.currency === 'CZK';
+    return new Intl.NumberFormat(this.numberLocale, {
       style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      currency: this.currency,
+      minimumFractionDigits: noDecimals ? 0 : 2,
+      maximumFractionDigits: noDecimals ? 0 : 2
     }).format(num);
   }
 

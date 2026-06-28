@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models/auth.models';
 
 @Component({
   selector: 'app-user-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './user-profile.html',
   styleUrl: './user-profile.css',
 })
@@ -30,7 +31,8 @@ export class UserProfile implements OnInit {
   ) {
     this.profileForm = this.fb.group({
       first_name: [''],
-      last_name: ['']
+      last_name: [''],
+      email_notifications: [true]
     });
 
     this.passwordForm = this.fb.group({
@@ -50,7 +52,8 @@ export class UserProfile implements OnInit {
         this.user = user;
         this.profileForm.patchValue({
           first_name: user.first_name || '',
-          last_name: user.last_name || ''
+          last_name: user.last_name || '',
+          email_notifications: user.email_notifications !== false
         });
       },
       error: (error) => {

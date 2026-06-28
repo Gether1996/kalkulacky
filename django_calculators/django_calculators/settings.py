@@ -207,20 +207,43 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # EMAIL CONFIGURATION
 # ============================================================================
 
-# Email backend (for development, use console backend)
-# For production, use SMTP backend
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Email backend is env-driven. By default (dev / no SMTP host configured) emails
+# print to the console. Set EMAIL_HOST (+ user/password) in the environment and
+# real SMTP sending switches on automatically — no code change at deploy.
+#
+# To enable production email, set in the environment (.env):
+#   EMAIL_HOST=smtp.your-provider.com
+#   EMAIL_PORT=587
+#   EMAIL_USE_TLS=True
+#   EMAIL_HOST_USER=your-smtp-user
+#   EMAIL_HOST_PASSWORD=your-smtp-password
+#   DEFAULT_FROM_EMAIL=noreply@kalkulacky.sk
+EMAIL_HOST = config('EMAIL_HOST', default='')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=15, cast=int)
 
-# For production SMTP (uncomment and configure):
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'  # or your SMTP server
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'your-email@gmail.com'
-# EMAIL_HOST_PASSWORD = 'your-app-password'
+# Explicit override wins; otherwise SMTP when a host is configured, else console.
+EMAIL_BACKEND = config(
+    'EMAIL_BACKEND',
+    default=(
+        'django.core.mail.backends.smtp.EmailBackend'
+        if EMAIL_HOST
+        else 'django.core.mail.backends.console.EmailBackend'
+    ),
+)
 
-DEFAULT_FROM_EMAIL = 'noreply@kalkulacky.sk'
-SERVER_EMAIL = 'server@kalkulacky.sk'
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@kalkulacky.sk')
+SERVER_EMAIL = config('SERVER_EMAIL', default='server@kalkulacky.sk')
+
+# Where user "wrong data" reports are emailed (env-overridable).
+DATA_REPORT_RECIPIENT = config('DATA_REPORT_RECIPIENT', default='pat.kredatus@gmail.com')
+
+# Public site URL used to build links in emails (e.g. password reset).
+FRONTEND_URL = config('FRONTEND_URL', default='https://kalkulacky.sk')
 
 # Email subject prefix
 EMAIL_SUBJECT_PREFIX = '[Kalkulačky.sk] '

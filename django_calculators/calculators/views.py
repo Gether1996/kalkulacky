@@ -8,7 +8,7 @@ with calculation parameters and returns results.
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .serializers import (
     SalaryCalculatorSerializer,
@@ -340,16 +340,28 @@ class SalaryCalculatorView(APIView):
             )
         
         try:
-            calculator = SalaryCalculator()
-            result = calculator.calculate(**serializer.validated_data)
-            
+            data = dict(serializer.validated_data)
+            country = (data.pop('country', 'SK') or 'SK').upper()
+
+            if country == 'SK':
+                calculator = SalaryCalculator()
+                result = calculator.calculate(**data)
+                result.setdefault('country', 'SK')
+                result.setdefault('currency', 'EUR')
+            else:
+                # CZ / PL / HU — structurally different payroll systems.
+                from .services.salary_international import calculate_international
+                data['gross_salary'] = float(data['gross_salary'])
+                result = calculate_international(country, **data)
+
             return Response({
                 'success': True,
                 'data': result,
                 'calculator': 'salary',
+                'country': country,
                 'version': '2026'
             }, status=status.HTTP_200_OK)
-            
+
         except Exception as e:
             return Response(
                 {'success': False, 'error': str(e)},
@@ -683,13 +695,21 @@ class PensionCalculatorView(APIView):
             )
         
         try:
-            calculator = PensionCalculator()
-            result = calculator.calculate(**serializer.validated_data)
-            
+            data = dict(serializer.validated_data)
+            country = (data.pop('country', 'SK') or 'SK').upper()
+            if country == 'CZ':
+                from .services.international_benefits import calculate_cz_pension
+                result = calculate_cz_pension(**data)
+            else:
+                result = PensionCalculator().calculate(**data)
+                result.setdefault('country', 'SK')
+                result.setdefault('currency', 'EUR')
+
             return Response({
                 'success': True,
                 'data': result,
                 'calculator': 'pension',
+                'country': country,
                 'version': '2026'
             }, status=status.HTTP_200_OK)
             
@@ -726,13 +746,21 @@ class VacationCalculatorView(APIView):
             )
         
         try:
-            calculator = VacationCalculator()
-            result = calculator.calculate(**serializer.validated_data)
-            
+            data = dict(serializer.validated_data)
+            country = (data.pop('country', 'SK') or 'SK').upper()
+            if country == 'CZ':
+                from .services.international_benefits import calculate_cz_vacation
+                result = calculate_cz_vacation(**data)
+            else:
+                result = VacationCalculator().calculate(**data)
+                result.setdefault('country', 'SK')
+                result.setdefault('currency', 'EUR')
+
             return Response({
                 'success': True,
                 'data': result,
                 'calculator': 'vacation',
+                'country': country,
                 'version': '2026'
             }, status=status.HTTP_200_OK)
             
@@ -900,13 +928,26 @@ class FreelancerTaxCalculatorView(APIView):
             )
         
         try:
-            calculator = FreelancerTaxCalculator()
-            result = calculator.calculate(**serializer.validated_data)
-            
+            data = dict(serializer.validated_data)
+            country = (data.pop('country', 'SK') or 'SK').upper()
+
+            if country == 'CZ':
+                from .services.freelancer_international import calculate_cz_freelancer
+                data['annual_revenue'] = float(data['annual_revenue'])
+                if data.get('annual_expenses') is not None:
+                    data['annual_expenses'] = float(data['annual_expenses'])
+                result = calculate_cz_freelancer(**data)
+            else:
+                calculator = FreelancerTaxCalculator()
+                result = calculator.calculate(**data)
+                result.setdefault('country', 'SK')
+                result.setdefault('currency', 'EUR')
+
             return Response({
                 'success': True,
                 'data': result,
                 'calculator': 'freelancer_tax',
+                'country': country,
                 'version': '2026'
             }, status=status.HTTP_200_OK)
             
@@ -1276,13 +1317,24 @@ class SickLeaveCalculatorView(APIView):
         
         try:
             from decimal import Decimal
-            
-            result = SickLeaveCalculator.calculate_sick_leave(
-                gross_salary=Decimal(str(serializer.validated_data['gross_salary'])),
-                days_sick=serializer.validated_data['days_sick'],
-                leave_type=serializer.validated_data.get('leave_type', 'illness')
-            )
-            
+            vd = serializer.validated_data
+            country = (vd.get('country', 'SK') or 'SK').upper()
+            if country == 'CZ':
+                from .services.international_benefits import calculate_cz_sick_leave
+                result = calculate_cz_sick_leave(
+                    gross_salary=float(vd['gross_salary']),
+                    days_sick=vd['days_sick'],
+                    leave_type=vd.get('leave_type', 'illness'),
+                )
+            else:
+                result = SickLeaveCalculator.calculate_sick_leave(
+                    gross_salary=Decimal(str(vd['gross_salary'])),
+                    days_sick=vd['days_sick'],
+                    leave_type=vd.get('leave_type', 'illness')
+                )
+                result.setdefault('country', 'SK')
+                result.setdefault('currency', 'EUR')
+
             return Response({
                 'success': True,
                 'data': result
@@ -1554,9 +1606,22 @@ class ParentalBenefitCalculatorView(APIView):
             )
         
         try:
-            calculator = ParentalBenefitCalculator()
-            result = calculator.calculate(**serializer.validated_data)
-            
+            data = dict(serializer.validated_data)
+            country = (data.pop('country', 'SK') or 'SK').upper()
+            if country == 'CZ':
+                from .services.international_benefits import calculate_cz_parental
+                # CZ engine accepts birth_date, gross_salary, twins_or_more, current_date.
+                result = calculate_cz_parental(
+                    birth_date=data.get('birth_date'),
+                    gross_salary=data.get('gross_salary'),
+                    twins_or_more=data.get('twins_or_more', False),
+                    current_date=data.get('current_date'),
+                )
+            else:
+                result = ParentalBenefitCalculator().calculate(**data)
+                result.setdefault('country', 'SK')
+                result.setdefault('currency', 'EUR')
+
             return Response({
                 'success': True,
                 'data': result
@@ -1590,36 +1655,42 @@ class SavedCalculationViewSet(APIView):
     """
     
     def get(self, request):
-        """List all saved calculations for a session_key"""
-        session_key = request.query_params.get('session_key')
-        if not session_key:
-            return Response(
-                {'success': False, 'error': 'session_key je povinný parameter'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
+        """List saved calculations — for the logged-in user, or by session_key."""
         from calculators.models import SavedCalculation
-        calculations = SavedCalculation.objects.filter(session_key=session_key)
-        
+
+        if request.user and request.user.is_authenticated:
+            calculations = SavedCalculation.objects.filter(user=request.user)
+        else:
+            session_key = request.query_params.get('session_key')
+            if not session_key:
+                return Response(
+                    {'success': False, 'error': 'session_key je povinný parameter'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            calculations = SavedCalculation.objects.filter(session_key=session_key)
+
         serializer = SavedCalculationSerializer(calculations, many=True)
         return Response({
             'success': True,
             'data': serializer.data,
             'count': calculations.count()
         })
-    
+
     def post(self, request):
         """Create a new saved calculation"""
         serializer = SavedCalculationSerializer(data=request.data)
-        
+
         if not serializer.is_valid():
             return Response(
                 {'success': False, 'errors': serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         try:
-            calculation = serializer.save()
+            # Attach the owner when the request is authenticated so it shows in
+            # their dashboard; anonymous saves fall back to session_key.
+            owner = request.user if (request.user and request.user.is_authenticated) else None
+            calculation = serializer.save(user=owner)
             
             # Generate notifications if tracking is enabled
             if calculation.is_tracking:
@@ -1679,7 +1750,14 @@ class SavedCalculationDetailView(APIView):
         try:
             from calculators.models import SavedCalculation
             calculation = SavedCalculation.objects.get(pk=pk)
-            
+
+            # Owner-scoped: a calc owned by a user can only be changed by that user.
+            if calculation.user_id and calculation.user_id != getattr(request.user, 'id', None):
+                return Response(
+                    {'success': False, 'error': 'Prístup zamietnutý'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
             serializer = SavedCalculationSerializer(calculation, data=request.data, partial=True)
             if not serializer.is_valid():
                 return Response(
@@ -1720,6 +1798,13 @@ class SavedCalculationDetailView(APIView):
         try:
             from calculators.models import SavedCalculation
             calculation = SavedCalculation.objects.get(pk=pk)
+
+            if calculation.user_id and calculation.user_id != getattr(request.user, 'id', None):
+                return Response(
+                    {'success': False, 'error': 'Prístup zamietnutý'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
             calculation.delete()
             
             return Response({
@@ -1759,6 +1844,106 @@ class NotificationListView(APIView):
                 {'success': False, 'error': 'Výpočet nebol nájdený'},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+
+class MyDashboardView(APIView):
+    """
+    Aggregated dashboard payload for the logged-in user: their saved
+    calculations, upcoming (unsent) reminders and summary stats.
+
+    GET /api/calculators/my/dashboard/
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from datetime import date
+        from calculators.models import SavedCalculation, ScheduledNotification
+
+        calculations = SavedCalculation.objects.filter(user=request.user)
+        calc_data = SavedCalculationSerializer(calculations, many=True).data
+
+        upcoming = (
+            ScheduledNotification.objects
+            .filter(calculation__user=request.user, sent=False,
+                    scheduled_date__gte=date.today())
+            .order_by('scheduled_date', 'scheduled_time')[:10]
+        )
+        upcoming_data = ScheduledNotificationSerializer(upcoming, many=True).data
+
+        from calculators.models import UserReminder
+        from .serializers import UserReminderSerializer
+        reminders = (
+            UserReminder.objects
+            .filter(user=request.user, sent=False, remind_date__gte=date.today())
+            .order_by('remind_date', 'remind_time')
+        )
+        reminders_data = UserReminderSerializer(reminders, many=True).data
+
+        stats = {
+            'totalCalculations': calculations.count(),
+            'trackedCalculations': calculations.filter(is_tracking=True).count(),
+            'favoritesCount': calculations.filter(is_favorite=True).count(),
+            'upcomingNotifications': upcoming.count() + reminders.count(),
+        }
+
+        return Response({
+            'success': True,
+            'stats': stats,
+            'calculations': calc_data,
+            'upcomingNotifications': upcoming_data,
+            'reminders': reminders_data,
+        })
+
+
+class UserReminderListCreateView(APIView):
+    """
+    List / create the logged-in user's custom reminders.
+    GET  /api/calculators/my/reminders/
+    POST /api/calculators/my/reminders/  { title, remind_date, note?, category?, ... }
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from calculators.models import UserReminder
+        from .serializers import UserReminderSerializer
+        qs = UserReminder.objects.filter(user=request.user).order_by('remind_date', 'remind_time')
+        return Response({'success': True, 'data': UserReminderSerializer(qs, many=True).data})
+
+    def post(self, request):
+        from .serializers import UserReminderSerializer
+        serializer = UserReminderSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({'success': False, 'errors': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)
+        reminder = serializer.save(user=request.user)
+        return Response({'success': True, 'data': UserReminderSerializer(reminder).data},
+                        status=status.HTTP_201_CREATED)
+
+
+class UserReminderDetailView(APIView):
+    """
+    Update / delete a single reminder (owner only).
+    PATCH/DELETE /api/calculators/my/reminders/<pk>/
+    """
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        from calculators.models import UserReminder
+        from .serializers import UserReminderSerializer
+        reminder = UserReminder.objects.filter(pk=pk, user=request.user).first()
+        if not reminder:
+            return Response({'success': False}, status=status.HTTP_404_NOT_FOUND)
+        serializer = UserReminderSerializer(reminder, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'success': True, 'data': serializer.data})
+
+    def delete(self, request, pk):
+        from calculators.models import UserReminder
+        deleted, _ = UserReminder.objects.filter(pk=pk, user=request.user).delete()
+        if not deleted:
+            return Response({'success': False}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'success': True})
 
 
 
@@ -1846,6 +2031,78 @@ class AffiliateClickView(APIView):
         return Response({'success': True}, status=status.HTTP_201_CREATED)
 
 
+class DataReportCreateView(APIView):
+    """
+    Capture a "this calculator shows wrong data" report and email it to the
+    operator immediately so figures can be corrected as laws/prices change.
+
+    POST /api/calculators/data-report/
+    Body: { calculator_type, page_url, message, reporter_email?, locale? }
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []  # anonymous, public — avoid session/CSRF enforcement
+
+    def post(self, request):
+        from .serializers import DataReportSerializer
+
+        serializer = DataReportSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {'success': False, 'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not request.session.session_key:
+            request.session.save()
+
+        report = serializer.save(
+            session_key=request.session.session_key or '',
+            ip_address=_client_ip(request),
+            user_agent=request.META.get('HTTP_USER_AGENT', '')[:300],
+        )
+
+        # Email the operator right away (best-effort — never fail the request).
+        self._notify_operator(report)
+
+        return Response(
+            {'success': True,
+             'message': 'Ďakujeme! Nahlásenie sme prijali a pozrieme sa naň.'},
+            status=status.HTTP_201_CREATED,
+        )
+
+    def _notify_operator(self, report):
+        from django.conf import settings
+        from django.core.mail import send_mail
+
+        recipient = getattr(settings, 'DATA_REPORT_RECIPIENT', None)
+        if not recipient:
+            return
+        subject = f"Hlásenie nesprávnych údajov: {report.calculator_type or 'kalkulačka'}"
+        body = (
+            "Používateľ nahlásil nesprávne údaje v kalkulačke.\n\n"
+            f"Kalkulačka: {report.calculator_type or '—'}\n"
+            f"URL: {report.page_url or '—'}\n"
+            f"Jazyk: {report.locale or '—'}\n"
+            f"Kontakt (nepovinné): {report.reporter_email or '—'}\n"
+            f"Čas: {report.created_at:%Y-%m-%d %H:%M}\n\n"
+            f"Správa:\n{report.message}\n\n"
+            f"— Admin: /admin/calculators/datareport/{report.id}/change/"
+        )
+        try:
+            send_mail(
+                subject,
+                body,
+                getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+                [recipient],
+                fail_silently=False,
+            )
+            report.emailed = True
+            report.save(update_fields=['emailed'])
+        except Exception as e:
+            # Stored anyway; surface the failure in logs without breaking the POST.
+            print(f"DataReport email failed: {e}")
+
+
 class SolarSubsidyCalculatorView(APIView):
     """
     Solar / Photovoltaic Subsidy & Payback Calculator.
@@ -1867,11 +2124,18 @@ class SolarSubsidyCalculatorView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:
-            calculator = SolarSubsidyCalculator()
-            result = calculator.calculate(**serializer.validated_data)
+            data = dict(serializer.validated_data)
+            country = (data.pop('country', 'SK') or 'SK').upper()
+            if country == 'CZ':
+                from .services.solar_international import calculate_cz_solar
+                result = calculate_cz_solar(**data)
+            else:
+                result = SolarSubsidyCalculator().calculate(**data)
+                result.setdefault('country', 'SK')
+                result.setdefault('currency', 'EUR')
             return Response(
                 {'success': True, 'data': result, 'calculator': 'solar',
-                 'version': '2026'},
+                 'country': country, 'version': '2026'},
                 status=status.HTTP_200_OK,
             )
         except ValueError as e:

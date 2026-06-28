@@ -1,7 +1,10 @@
 <div class="profile-container" *ngIf="user">
   <div class="profile-header">
     <h2>Môj profil</h2>
-    <button class="btn btn-danger" (click)="logout()">Odhlásiť sa</button>
+    <div class="header-actions">
+      <a routerLink="/dashboard" class="btn btn-outline">📊 Môj prehľad</a>
+      <button class="btn btn-danger" (click)="logout()">Odhlásiť sa</button>
+    </div>
   </div>
 
   <!-- Profile Information -->
@@ -10,7 +13,7 @@
     
     <div class="info-group">
       <label>Email:</label>
-      <span>{{ user.email }}</span>
+      <span>{{ user.email }} <small class="locked-hint">🔒 e-mail sa nedá zmeniť</small></span>
     </div>
 
     <div class="info-group" *ngIf="user.oauth_provider">
@@ -46,6 +49,14 @@
         />
       </div>
 
+      <div class="form-group toggle-group">
+        <label class="toggle-label">
+          <input type="checkbox" formControlName="email_notifications" />
+          <span>📧 Dostávať pripomienky a upozornenia e-mailom</span>
+        </label>
+        <small class="toggle-hint">Týka sa pripomienok a sledovaných výpočtov. Môžete kedykoľvek vypnúť.</small>
+      </div>
+
       <div class="alert alert-success" *ngIf="profileMessage">
         {{ profileMessage }}
       </div>
@@ -63,6 +74,12 @@
         <span *ngIf="!loading">Aktualizovať profil</span>
       </button>
     </form>
+  </div>
+
+  <!-- OAuth users manage their password with the provider -->
+  <div class="profile-card" *ngIf="user.oauth_provider">
+    <h3>Heslo</h3>
+    <p class="oauth-note">Prihlasujete sa cez {{ user.oauth_provider }}, heslo spravujete u poskytovateľa.</p>
   </div>
 
   <!-- Change Password Section (only for non-OAuth users) -->

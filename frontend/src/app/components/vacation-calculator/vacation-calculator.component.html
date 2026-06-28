@@ -3,6 +3,7 @@
   <div class="calculator-header">
     <h1>{{ 'vacation.title' | t }}</h1>
     <p class="subtitle">{{ 'calc.vacation.desc' | t }}</p>
+    <p class="country-badge">🌍 {{ 'salary.rulesFor' | t }}: <strong>{{ countryName }}</strong></p>
     <div class="seo-keywords">
       <span class="keyword">Dovolenka</span>
       <span class="keyword">Nárok na dovolenku</span>
@@ -114,13 +115,22 @@
       </div>
 
       <!-- Info Box -->
-      <div class="info-box">
+      <div class="info-box" *ngIf="isSK">
         <h3>ℹ️ Slovenský zákonník práce</h3>
         <p>
           <strong>Základný nárok:</strong> 4 týždne (20 pracovných dní) ročne
         </p>
         <p>
           <strong>Od 33 rokov:</strong> +1 týždeň (5 dní) navyše
+        </p>
+      </div>
+      <div class="info-box" *ngIf="!isSK">
+        <h3>ℹ️ Český zákoník práce</h3>
+        <p>
+          <strong>Základní nárok:</strong> 4 týdny (20 dní) ročně
+        </p>
+        <p>
+          Bez věkového bonusu; veřejná sféra 5 týdnů, pedagogové 8 týdnů.
         </p>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -7,12 +7,15 @@ import { PensionCalculationRequest, PensionCalculationResponse } from '../../mod
 import { SeoService } from '../../services/seo.service';
 import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.component';
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
+import { SaveCalculationComponent } from '../shared/save-calculation/save-calculation.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
+import { getCountryParams } from '../../i18n/country-params';
 
 @Component({
   selector: 'app-pension-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, AffiliateCtaComponent, AdSlotComponent, TranslatePipe],
+  imports: [CommonModule, FormsModule, RouterLink, AffiliateCtaComponent, AdSlotComponent, SaveCalculationComponent, TranslatePipe],
   templateUrl: './pension-calculator.component.html',
   styleUrls: ['./pension-calculator.component.css']
 })
@@ -35,13 +38,47 @@ export class PensionCalculatorComponent implements OnInit {
   loading: boolean = false;
   error: string = '';
 
-  // Benchmarks for quick input
-  salaryBenchmarks = [
-    { label: 'Minimálna mzda', value: 750 },
-    { label: 'Priemerná mzda', value: 1400 },
-    { label: 'Nadpriemerná', value: 2000 },
-    { label: 'Vysoká mzda', value: 3000 }
-  ];
+  private locale = inject(LocaleService);
+
+  constructor() {
+    let firstRun = true;
+    effect(() => {
+      const c = this.country;
+      if (!firstRun) {
+        this.grossSalary = c === 'CZ' ? 45000 : 1500;
+      }
+      firstRun = false;
+      if (isPlatformBrowser(this.platformId)) {
+        this.calculate();
+      }
+    });
+  }
+
+  /** Engine country — SK + CZ implemented; other locales fall back to SK. */
+  get country(): string {
+    return getCountryParams(this.locale.locale()).countryCode === 'CZ' ? 'CZ' : 'SK';
+  }
+  get isSK(): boolean { return this.country === 'SK'; }
+  get currency(): string { return this.isSK ? 'EUR' : 'CZK'; }
+  get countryName(): string { return this.isSK ? 'Slovensko' : 'Česko'; }
+  private get numberLocale(): string { return this.isSK ? 'sk-SK' : 'cs-CZ'; }
+
+  // Country-appropriate quick salary presets.
+  get salaryBenchmarks() {
+    return this.isSK
+      ? [
+          { label: 'Minimálna mzda', value: 816 },
+          { label: 'Priemerná mzda', value: 1500 },
+          { label: 'Nadpriemerná', value: 2200 },
+          { label: 'Vysoká mzda', value: 3500 },
+        ]
+      : [
+          { label: 'Minimální mzda', value: 20800 },
+          { label: 'Průměrná mzda', value: 46000 },
+          { label: 'Nadprůměrná', value: 65000 },
+          { label: 'Vysoká mzda', value: 100000 },
+        ];
+  }
 
   ngOnInit() {
     this.seo.apply({
@@ -51,15 +88,24 @@ export class PensionCalculatorComponent implements OnInit {
       keywords: 'kalkulačka dôchodku, výpočet dôchodku, II. pilier, starobný dôchodok, náhradový pomer',
       isCalculator: true,
     });
-    if (isPlatformBrowser(this.platformId)) {
-      this.calculate();
-    }
+    // Initial calculation driven by the locale effect (constructor).
   }
 
   setBenchmark(value: number) {
     this.grossSalary = value;
     this.calculate();
   }
+
+  get saveParams(): Record<string, any> {
+    return {
+      current_age: this.currentAge,
+      gross_salary: this.grossSalary,
+      years_worked: this.yearsWorked,
+      gender: this.gender,
+      country: this.country,
+    };
+  }
+  get saveName(): string { return `${this.locale.t('pension.title')} · ${this.grossSalary} ${this.currency === 'CZK' ? 'Kč' : '€'}`; }
 
   calculate() {
     // Validate inputs
@@ -87,8 +133,9 @@ export class PensionCalculatorComponent implements OnInit {
       gross_salary: this.grossSalary,
       years_worked: this.yearsWorked,
       gender: this.gender,
-      include_second_pillar: this.includeSecondPillar,
-      second_pillar_rate: this.secondPillarRate
+      include_second_pillar: this.isSK && this.includeSecondPillar,
+      second_pillar_rate: this.secondPillarRate,
+      country: this.country
     };
 
     this.calculatorService.calculatePension(request).subscribe({
@@ -107,16 +154,17 @@ export class PensionCalculatorComponent implements OnInit {
 
   // Helper methods
   formatCurrency(value: number): string {
-    return new Intl.NumberFormat('sk-SK', { 
-      style: 'currency', 
-      currency: 'EUR',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+    const noDecimals = this.currency === 'CZK';
+    return new Intl.NumberFormat(this.numberLocale, {
+      style: 'currency',
+      currency: this.currency,
+      minimumFractionDigits: noDecimals ? 0 : 2,
+      maximumFractionDigits: noDecimals ? 0 : 2
     }).format(value);
   }
 
   formatNumber(value: number): string {
-    return new Intl.NumberFormat('sk-SK', {
+    return new Intl.NumberFormat(this.numberLocale, {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(value);

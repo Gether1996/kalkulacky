@@ -328,6 +328,14 @@
     </div>
   </div>
 
+  <app-save-calculation
+    *ngIf="result && !isLoading"
+    calculatorType="energy"
+    [params]="saveParams"
+    [result]="result"
+    [defaultName]="saveName">
+  </app-save-calculation>
+
   <!-- Monetization: solar/installer lead capture + partner offers -->
   <div class="monetization-zone" *ngIf="result && !isLoading">
     <app-lead-form calculatorType="energy" [context]="leadContext"></app-lead-form>

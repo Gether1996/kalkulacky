@@ -7,12 +7,13 @@ import { SeoService } from '../../services/seo.service';
 import { LeadFormComponent } from '../shared/lead-form/lead-form.component';
 import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.component';
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
+import { SaveCalculationComponent } from '../shared/save-calculation/save-calculation.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-energy-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule, LeadFormComponent, AffiliateCtaComponent, AdSlotComponent, TranslatePipe],
+  imports: [CommonModule, FormsModule, LeadFormComponent, AffiliateCtaComponent, AdSlotComponent, SaveCalculationComponent, TranslatePipe],
   templateUrl: './energy-calculator.component.html',
   styleUrl: './energy-calculator.component.css'
 })
@@ -35,6 +36,17 @@ export class EnergyCalculatorComponent implements OnInit {
   result: EnergyCalculationResponse | null = null;
   isLoading: boolean = false;
   error: string | null = null;
+
+  get saveParams(): Record<string, any> {
+    return {
+      electricity_consumption: this.electricityConsumption,
+      gas_consumption: this.gasConsumption,
+      electricity_rate: this.electricityRate,
+      gas_rate: this.gasRate,
+      household_size: this.householdSize,
+    };
+  }
+  get saveName(): string { return 'Náklady na energie'; }
 
   ngOnInit(): void {
     this.seo.apply({

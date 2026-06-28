@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -6,6 +6,8 @@ import { CalculatorService } from '../../services/calculator.service';
 import { VacationCalculationRequest, VacationCalculationResponse } from '../../models/calculator.models';
 import { DatePickerComponent } from '../date-picker/date-picker.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
+import { getCountryParams } from '../../i18n/country-params';
 
 @Component({
   selector: 'app-vacation-calculator',
@@ -37,11 +39,29 @@ export class VacationCalculatorComponent implements OnInit {
   // UI helpers
   today: Date = new Date();
 
+  private locale = inject(LocaleService);
+
+  /** Engine country — SK + CZ implemented; other locales fall back to SK. */
+  get country(): string {
+    return getCountryParams(this.locale.locale()).countryCode === 'CZ' ? 'CZ' : 'SK';
+  }
+  get isSK(): boolean { return this.country === 'SK'; }
+  get countryName(): string { return this.isSK ? 'Slovensko' : 'Česko'; }
+
+  constructor() {
+    effect(() => {
+      this.country; // re-run when language/country changes
+      if (this.employmentStartDate && isPlatformBrowser(this.platformId)) {
+        this.calculate();
+      }
+    });
+  }
+
   ngOnInit() {
     // Set today's date
     this.today = new Date();
     this.currentDate = new Date();
-    
+
     // Set default employment start date (3 years ago)
     this.employmentStartDate = new Date();
     this.employmentStartDate.setFullYear(this.employmentStartDate.getFullYear() - 3);
@@ -80,7 +100,8 @@ export class VacationCalculatorComponent implements OnInit {
       current_date: this.formatDateForInput(this.currentDate),
       vacation_days_used: this.vacationDaysUsed,
       days_carried_over: this.daysCarriedOver,
-      planned_vacation_days: this.plannedVacationDays
+      planned_vacation_days: this.plannedVacationDays,
+      country: this.country
     };
 
     this.calculatorService.calculateVacation(request).subscribe({

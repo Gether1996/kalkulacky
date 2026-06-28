@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
 
@@ -217,10 +218,20 @@ class SavedCalculation(models.Model):
         ('split_bill', 'Rozdelenie účtu'),
     ]
     
-    # Identification (support anonymous users via session_key)
+    # Identification — logged-in users (FK) and/or anonymous users (session_key).
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='saved_calculations',
+        help_text="Owner when saved by a logged-in user"
+    )
     session_key = models.CharField(
         max_length=100,
         db_index=True,
+        blank=True,
+        default='',
         help_text="Session key for anonymous users"
     )
     email = models.EmailField(
@@ -256,6 +267,11 @@ class SavedCalculation(models.Model):
         default=False,
         help_text="User-marked favorite for quick access"
     )
+    note = models.TextField(
+        blank=True,
+        default='',
+        help_text="User's personal note about this calculation"
+    )
     notification_enabled = models.BooleanField(
         default=True,
         help_text="Enable/disable notifications for this calculation"
@@ -273,6 +289,7 @@ class SavedCalculation(models.Model):
         indexes = [
             models.Index(fields=['session_key', 'calculator_type']),
             models.Index(fields=['session_key', 'is_tracking']),
+            models.Index(fields=['user', '-created_at']),
             models.Index(fields=['email']),
             models.Index(fields=['-created_at']),
         ]
@@ -533,4 +550,104 @@ class AffiliateClick(models.Model):
 
     def __str__(self):
         return f"{self.partner}/{self.offer_id} @ {self.calculator_type}"
+
+
+class DataReport(models.Model):
+    """
+    A user-submitted report that a calculator shows wrong / outdated real-world
+    data (a tax rate, subsidy amount, price, etc.). These power a feedback loop
+    so figures stay correct as laws change — each report is emailed to the
+    operator on submit and stored for follow-up.
+    """
+    STATUS_CHOICES = [
+        ('new', 'Nový'),
+        ('reviewing', 'Posudzuje sa'),
+        ('fixed', 'Opravené'),
+        ('rejected', 'Zamietnuté'),
+    ]
+
+    calculator_type = models.CharField(
+        max_length=60, blank=True, db_index=True,
+        help_text="Calculator the report is about (e.g. 'salary', 'solar')",
+    )
+    page_url = models.CharField(
+        max_length=600, blank=True,
+        help_text="URL the user was on when reporting",
+    )
+    message = models.TextField(help_text="What the user says is wrong")
+    reporter_email = models.EmailField(
+        null=True, blank=True,
+        help_text="Optional — so we can reply / ask for details",
+    )
+    locale = models.CharField(max_length=5, blank=True, help_text="UI language at report time")
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new', db_index=True)
+    emailed = models.BooleanField(default=False, help_text="Notification email sent to operator")
+    admin_notes = models.TextField(blank=True)
+
+    session_key = models.CharField(max_length=100, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=300, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Data Report'
+        verbose_name_plural = 'Data Reports'
+        indexes = [
+            models.Index(fields=['status', '-created_at']),
+            models.Index(fields=['calculator_type', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"[{self.calculator_type or '—'}] {self.message[:40]} ({self.status})"
+
+
+class UserReminder(models.Model):
+    """
+    A custom, user-created reminder (logged-in users). Unlike ScheduledNotification
+    (auto-generated from a tracked calculation), this is a free-form reminder the
+    user sets themselves — e.g. "refinance mortgage", "file tax return", "renew PZP".
+    Emailed on the due date by the send_notifications management command.
+    """
+    CATEGORY_CHOICES = [
+        ('custom', 'Vlastná'),
+        ('tax', 'Daňový termín'),
+        ('insurance', 'Poistenie'),
+        ('finance', 'Financie'),
+        ('home', 'Domácnosť / energie'),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='reminders',
+    )
+    title = models.CharField(max_length=200)
+    note = models.TextField(blank=True, default='')
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='custom')
+    remind_date = models.DateField(db_index=True)
+    remind_time = models.TimeField(default='09:00:00')
+    related_calculator = models.CharField(
+        max_length=50, blank=True, default='',
+        help_text="Optional calculator slug this reminder links to",
+    )
+    email_enabled = models.BooleanField(default=True)
+    sent = models.BooleanField(default=False)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['remind_date', 'remind_time']
+        verbose_name = 'User Reminder'
+        verbose_name_plural = 'User Reminders'
+        indexes = [
+            models.Index(fields=['user', 'remind_date']),
+            models.Index(fields=['sent', 'remind_date']),
+        ]
+
+    def __str__(self):
+        return f"{self.title} @ {self.remind_date}"
 
