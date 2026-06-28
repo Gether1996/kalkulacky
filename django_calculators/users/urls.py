@@ -5,6 +5,7 @@ from .views import (
     LoginView,
     LogoutView,
     UserProfileView,
+    DeleteAccountView,
     ChangePasswordView,
     ForgotPasswordView,
     ResetPasswordView,
@@ -25,6 +26,7 @@ urlpatterns = [
     
     # User profile endpoints
     path('profile/', UserProfileView.as_view(), name='profile'),
+    path('delete-account/', DeleteAccountView.as_view(), name='delete_account'),
     path('change-password/', ChangePasswordView.as_view(), name='change_password'),
     path('forgot-password/', ForgotPasswordView.as_view(), name='forgot_password'),
     path('reset-password/', ResetPasswordView.as_view(), name='reset_password'),

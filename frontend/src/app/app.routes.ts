@@ -132,6 +132,18 @@ export const routes: Routes = [
     loadComponent: () => import('./components/embed/embed.component').then(m => m.EmbedComponent)
   },
   {
+    path: 'privacy',
+    loadComponent: () => import('./components/legal/privacy-policy.component').then(m => m.PrivacyPolicyComponent)
+  },
+  {
+    path: 'terms',
+    loadComponent: () => import('./components/legal/terms.component').then(m => m.TermsComponent)
+  },
+  {
+    path: 'cookies',
+    loadComponent: () => import('./components/legal/cookies.component').then(m => m.CookiesComponent)
+  },
+  {
     path: 'blog',
     loadComponent: () => import('./components/blog-list/blog-list.component').then(m => m.BlogListComponent)
   },
@@ -170,6 +182,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: ''
+    loadComponent: () => import('./components/not-found/not-found.component').then(m => m.NotFoundComponent)
   }
 ];

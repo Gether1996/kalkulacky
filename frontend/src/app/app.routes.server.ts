@@ -26,6 +26,10 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'energia', renderMode: RenderMode.Server },
   // Programmatic gross→net long-tail pages — server-rendered for SEO.
   { path: 'cista-mzda/**', renderMode: RenderMode.Server },
+  // Legal pages — server-rendered for SEO + crawlability.
+  { path: 'privacy', renderMode: RenderMode.Server },
+  { path: 'terms', renderMode: RenderMode.Server },
+  { path: 'cookies', renderMode: RenderMode.Server },
   // Blog — server-rendered for SEO.
   { path: 'blog', renderMode: RenderMode.Server },
   { path: 'blog/**', renderMode: RenderMode.Server },

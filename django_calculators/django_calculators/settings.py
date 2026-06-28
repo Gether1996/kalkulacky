@@ -28,6 +28,9 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,backend', cast=Csv())
 
+# Referrer policy applies in all environments (set by SecurityMiddleware).
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
 # Production security — auto-activates when DEBUG=False (set via .env on deploy).
 if not DEBUG:
     # Respect the X-Forwarded-Proto header from a reverse proxy (nginx/traefik).
@@ -56,6 +59,7 @@ INSTALLED_APPS = [
     # Third party apps
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',  # enables logout + refresh-token rotation
     'corsheaders',
     
     # Allauth
@@ -76,6 +80,7 @@ AUTH_USER_MODEL = 'users.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # serve static files in production
     'corsheaders.middleware.CorsMiddleware',  # CORS - must be before CommonMiddleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -132,6 +137,27 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
+    # Throttling = a per-IP/per-user BACKSTOP against single-source abuse and
+    # accidental hammering. It is NOT DDoS protection — distributed/volumetric
+    # floods must be stopped at the edge (Cloudflare/CDN + nginx limit_req).
+    # 'anon'/'user' apply to every API endpoint; scoped rates add tighter caps
+    # to abuse-prone endpoints (leads, reports, login, password reset).
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.ScopedRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        # Generous global ceilings so real users (incl. slider/keystroke
+        # auto-calc) are unaffected, but a single flooding IP is capped.
+        'anon': config('THROTTLE_ANON', default='600/min'),
+        'user': config('THROTTLE_USER', default='1200/min'),
+        'leads': config('THROTTLE_LEADS', default='15/hour'),
+        'data_report': config('THROTTLE_DATA_REPORT', default='10/hour'),
+        'forgot_password': config('THROTTLE_FORGOT_PASSWORD', default='5/hour'),
+        'analytics': config('THROTTLE_ANALYTICS', default='600/hour'),
+        'login': config('THROTTLE_LOGIN', default='20/hour'),
+    },
 }
 
 ROOT_URLCONF = 'django_calculators.urls'
@@ -165,6 +191,36 @@ DATABASES = {
     }
 }
 
+# Production database — set DB_ENGINE=postgres + DB_* env vars to use PostgreSQL
+# (psycopg2-binary is already in requirements). Defaults to SQLite for dev.
+if config('DB_ENGINE', default='sqlite') == 'postgres':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DB_NAME'),
+            'USER': config('DB_USER'),
+            'PASSWORD': config('DB_PASSWORD'),
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default='5432'),
+            'CONN_MAX_AGE': config('DB_CONN_MAX_AGE', default=60, cast=int),
+        }
+    }
+
+# Cache — set REDIS_URL (e.g. redis://localhost:6379/1) in production so rate
+# limiting / throttling is shared across worker processes. Else in-memory.
+_REDIS_URL = config('REDIS_URL', default='')
+if _REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': _REDIS_URL,
+        }
+    }
+else:
+    CACHES = {
+        'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'},
+    }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -196,6 +252,13 @@ USE_I18N = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # `collectstatic` target for production
+
+# WhiteNoise serves compressed, hashed static files (Django admin / DRF) in prod.
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -253,6 +316,8 @@ EMAIL_SUBJECT_PREFIX = '[Kalkulačky.sk] '
 # LOGGING CONFIGURATION
 # ============================================================================
 
+(BASE_DIR / 'logs').mkdir(exist_ok=True)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -267,20 +332,44 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         },
+        # App log — rotates at 5 MB, keeps 5 backups.
         'file': {
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': BASE_DIR / 'logs' / 'django.log',
+            'maxBytes': 5 * 1024 * 1024,
+            'backupCount': 5,
             'formatter': 'verbose',
+            'encoding': 'utf-8',
+        },
+        # Dedicated audit trail (logins, account actions) — keep more history.
+        'audit_file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR / 'logs' / 'audit.log',
+            'maxBytes': 5 * 1024 * 1024,
+            'backupCount': 10,
+            'formatter': 'verbose',
+            'encoding': 'utf-8',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
+            'handlers': ['console', 'file'],
             'level': 'INFO',
         },
         'calculators': {
             'handlers': ['console', 'file'],
-            'level': 'DEBUG',
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'users': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        # Security/audit events (auth, account deletion) -> audit.log
+        'audit': {
+            'handlers': ['console', 'audit_file'],
+            'level': 'INFO',
             'propagate': False,
         },
     },

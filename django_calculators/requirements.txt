@@ -8,3 +8,6 @@ google-auth-oauthlib==1.2.0
 google-auth-httplib2==0.2.0
 psycopg2-binary==2.9.9
 python-decouple==3.8
+whitenoise==6.7.0
+# Optional (only if REDIS_URL is set for shared cache / throttling):
+# redis==5.0.8

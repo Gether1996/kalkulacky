@@ -8,6 +8,7 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { environment } from '../../../../environments/environment';
 import { TranslatePipe } from '../../../i18n/translate.pipe';
+import { ConsentService } from '../../../services/consent.service';
 
 /**
  * Display-ad slot (Google AdSense ready).
@@ -28,7 +29,7 @@ import { TranslatePipe } from '../../../i18n/translate.pipe';
   standalone: true,
   imports: [CommonModule, TranslatePipe],
   template: `
-    <ng-container *ngIf="publisherId; else placeholder">
+    <ng-container *ngIf="publisherId && consent.ads(); else placeholder">
       <ins
         class="adsbygoogle"
         style="display:block"
@@ -59,13 +60,15 @@ import { TranslatePipe } from '../../../i18n/translate.pipe';
 export class AdSlotComponent implements AfterViewInit {
   @Input() slot = '';
   private platformId = inject(PLATFORM_ID);
+  consent = inject(ConsentService);
 
   // AdSense publisher id (e.g. "ca-pub-XXXXXXXXXXXXXXXX"); empty = inactive.
   publisherId = (environment as any).adsensePublisherId || '';
   production = environment.production;
 
   ngAfterViewInit(): void {
-    if (!isPlatformBrowser(this.platformId) || !this.publisherId) return;
+    // Only load ads with the user's consent (GDPR/ePrivacy).
+    if (!isPlatformBrowser(this.platformId) || !this.publisherId || !this.consent.ads()) return;
     try {
       const w = window as any;
       (w.adsbygoogle = w.adsbygoogle || []).push({});

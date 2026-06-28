@@ -55,6 +55,8 @@ from .views import (
     LeadCreateView,
     AffiliateClickView,
     DataReportCreateView,
+    AnalyticsCollectView,
+    AnalyticsStatsView,
     HealthCheckView,
     BlogCategoryListView,
     BlogPostListView,
@@ -126,6 +128,10 @@ urlpatterns = [
 
     # Data-correction reports (user flags wrong/outdated figures → emails operator)
     path('data-report/', DataReportCreateView.as_view(), name='data-report'),
+
+    # First-party analytics (visitor page views + operator stats)
+    path('analytics/collect/', AnalyticsCollectView.as_view(), name='analytics-collect'),
+    path('analytics/stats/', AnalyticsStatsView.as_view(), name='analytics-stats'),
 
     # Health check
     path('health/', HealthCheckView.as_view(), name='health-check'),

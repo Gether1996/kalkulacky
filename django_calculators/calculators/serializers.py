@@ -1079,7 +1079,7 @@ class ScheduledNotificationSerializer(serializers.Serializer):
 # MONETIZATION SERIALIZERS
 # ============================================================================
 
-from .models import Lead, AffiliateClick, DataReport, UserReminder
+from .models import Lead, AffiliateClick, DataReport, UserReminder, PageView
 
 
 class LeadSerializer(serializers.ModelSerializer):
@@ -1133,6 +1133,18 @@ class DataReportSerializer(serializers.ModelSerializer):
         value = (value or '').strip()
         if len(value) < 5:
             raise serializers.ValidationError('Napíšte prosím, čo je nesprávne (aspoň pár slov).')
+        return value
+
+
+class PageViewSerializer(serializers.ModelSerializer):
+    """Validates an incoming first-party page-view beacon."""
+
+    class Meta:
+        model = PageView
+        fields = ['path', 'referrer_host', 'locale', 'device', 'visitor_hash']
+
+    def validate_path(self, value):
+        value = (value or '/')[:300]
         return value
 
 

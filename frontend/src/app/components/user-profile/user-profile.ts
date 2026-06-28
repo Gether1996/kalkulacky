@@ -116,4 +116,15 @@ export class UserProfile implements OnInit {
   logout(): void {
     this.authService.logout().subscribe();
   }
+
+  confirmingDelete = false;
+  deleting = false;
+
+  deleteAccount(): void {
+    this.deleting = true;
+    this.authService.deleteAccount().subscribe({
+      next: () => { this.deleting = false; },
+      error: () => { this.deleting = false; this.confirmingDelete = false; },
+    });
+  }
 }

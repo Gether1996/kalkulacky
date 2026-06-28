@@ -8,6 +8,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from django.conf import settings
 
+import logging
 from .models import User
 from .serializers import (
     UserSerializer,
@@ -18,6 +19,31 @@ from .serializers import (
     ForgotPasswordSerializer,
     ResetPasswordSerializer,
 )
+
+audit_logger = logging.getLogger('audit')
+
+
+def _auth_client_ip(request):
+    """Best-effort client IP (honours a single proxy hop)."""
+    xff = request.META.get('HTTP_X_FORWARDED_FOR')
+    if xff:
+        return xff.split(',')[0].strip()
+    return request.META.get('REMOTE_ADDR')
+
+
+def log_auth_event(request, event, email='', user=None):
+    """Record an auth/audit event to the DB (AuthEvent) and logs/audit.log."""
+    try:
+        from calculators.models import AuthEvent
+        ip = _auth_client_ip(request)
+        resolved_email = email or getattr(user, 'email', '') or ''
+        AuthEvent.objects.create(
+            event=event, email=resolved_email, user=user,
+            ip_address=ip, user_agent=request.META.get('HTTP_USER_AGENT', '')[:300],
+        )
+        audit_logger.info('auth.%s email=%s ip=%s', event, resolved_email or '-', ip or '-')
+    except Exception as e:  # never let logging break auth
+        audit_logger.error('auth-event log failed (%s): %s', event, e)
 
 
 class RegisterView(generics.CreateAPIView):
@@ -46,10 +72,11 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        
+        log_auth_event(request, 'register', user=user)
+
         # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
-        
+
         return Response({
             'user': UserSerializer(user).data,
             'access': str(refresh.access_token),
@@ -75,17 +102,21 @@ class LoginView(APIView):
     """
     permission_classes = [permissions.AllowAny]
     serializer_class = LoginSerializer
-    
+    throttle_scope = 'login'  # brute-force protection (per IP)
+
     def post(self, request):
         serializer = LoginSerializer(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        
+        if not serializer.is_valid():
+            log_auth_event(request, 'login_failed', email=request.data.get('email', ''))
+            return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
         user = serializer.validated_data['user']
         login(request, user)
-        
+        log_auth_event(request, 'login', user=user)
+
         # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
-        
+
         return Response({
             'user': UserSerializer(user).data,
             'access': str(refresh.access_token),
@@ -110,11 +141,13 @@ class LogoutView(APIView):
     
     def post(self, request):
         try:
+            user = request.user if getattr(request.user, 'is_authenticated', False) else None
             refresh_token = request.data.get('refresh')
             if refresh_token:
                 token = RefreshToken(refresh_token)
                 token.blacklist()
-            
+
+            log_auth_event(request, 'logout', user=user)
             logout(request)
             return Response({
                 'message': 'Logout successful'
@@ -145,9 +178,28 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     """
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def get_object(self):
         return self.request.user
+
+
+class DeleteAccountView(APIView):
+    """
+    GDPR right to erasure — permanently delete the logged-in user's account and
+    all related data (saved calculations, reminders cascade via FK).
+
+    DELETE /api/auth/delete-account/
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        log_auth_event(request, 'account_deleted', user=user)
+        user.delete()
+        return Response(
+            {'message': 'Váš účet a súvisiace údaje boli natrvalo odstránené.'},
+            status=status.HTTP_200_OK,
+        )
 
 
 class ChangePasswordView(APIView):
@@ -190,6 +242,7 @@ class ForgotPasswordView(APIView):
     actually deliver (console backend in dev).
     """
     permission_classes = [permissions.AllowAny]
+    throttle_scope = 'forgot_password'
 
     def post(self, request):
         serializer = ForgotPasswordSerializer(data=request.data)
@@ -257,6 +310,7 @@ class ResetPasswordView(APIView):
 
         user.set_password(serializer.validated_data['new_password'])
         user.save()
+        log_auth_event(request, 'password_reset', user=user)
         return Response({'message': 'Heslo bolo úspešne zmenené. Môžete sa prihlásiť.'},
                         status=status.HTTP_200_OK)
 
@@ -329,9 +383,11 @@ class GoogleAuthView(APIView):
                     user.oauth_id = google_id
                     user.save()
             
+            log_auth_event(request, 'register' if created else 'google_login', user=user)
+
             # Generate JWT tokens
             refresh = RefreshToken.for_user(user)
-            
+
             return Response({
                 'user': UserSerializer(user).data,
                 'access': str(refresh.access_token),

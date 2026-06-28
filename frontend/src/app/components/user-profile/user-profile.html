@@ -82,6 +82,22 @@
     <p class="oauth-note">Prihlasujete sa cez {{ user.oauth_provider }}, heslo spravujete u poskytovateľa.</p>
   </div>
 
+  <!-- Danger zone: delete account (GDPR erasure) -->
+  <div class="profile-card danger-zone">
+    <h3>Zrušenie účtu</h3>
+    <p>Zrušením účtu sa natrvalo odstránia vaše uložené výpočty, pripomienky a profil. Túto akciu nie je možné vrátiť späť.</p>
+    <button *ngIf="!confirmingDelete" class="btn btn-danger" (click)="confirmingDelete = true">
+      Zrušiť účet
+    </button>
+    <div *ngIf="confirmingDelete" class="confirm-row">
+      <span>Naozaj chcete natrvalo zrušiť účet?</span>
+      <button class="btn btn-danger" (click)="deleteAccount()" [disabled]="deleting">
+        {{ deleting ? 'Mažem…' : 'Áno, zrušiť účet' }}
+      </button>
+      <button class="btn btn-outline" (click)="confirmingDelete = false">Späť</button>
+    </div>
+  </div>
+
   <!-- Change Password Section (only for non-OAuth users) -->
   <div class="profile-card" *ngIf="!user.oauth_provider">
     <h3>Zmeniť heslo</h3>

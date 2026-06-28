@@ -153,6 +153,19 @@ export class AuthService {
   }
 
   /**
+   * Permanently delete the account (GDPR erasure) and sign out.
+   */
+  deleteAccount(): Observable<any> {
+    return this.http.delete(`${this.API_URL}/delete-account/`).pipe(
+      tap(() => {
+        this.clearAuthData();
+        this.router.navigate(['/']);
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  /**
    * Refresh access token
    */
   refreshToken(): Observable<any> {

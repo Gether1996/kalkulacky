@@ -8,7 +8,7 @@ with calculation parameters and returns results.
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 
 from .serializers import (
     SalaryCalculatorSerializer,
@@ -1089,10 +1089,11 @@ class HoursWorkedCalculatorView(APIView):
 class HealthCheckView(APIView):
     """
     Health check endpoint to verify API is running.
-    
+
     GET /api/health/
     """
-    
+    throttle_classes = []  # never throttle load-balancer / uptime probes
+
     def get(self, request):
         """Return API health status"""
         return Response({
@@ -1975,6 +1976,7 @@ class LeadCreateView(APIView):
     """
     permission_classes = [AllowAny]
     authentication_classes = []  # anonymous, public — avoid session/CSRF enforcement
+    throttle_scope = 'leads'
 
     def post(self, request):
         serializer = LeadSerializer(data=request.data)
@@ -2041,6 +2043,7 @@ class DataReportCreateView(APIView):
     """
     permission_classes = [AllowAny]
     authentication_classes = []  # anonymous, public — avoid session/CSRF enforcement
+    throttle_scope = 'data_report'
 
     def post(self, request):
         from .serializers import DataReportSerializer
@@ -2144,3 +2147,115 @@ class SolarSubsidyCalculatorView(APIView):
         except Exception as e:
             return Response({'success': False, 'error': str(e)},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ============================================================================
+# ANALYTICS (first-party, privacy-respecting visitor tracking)
+# ============================================================================
+
+_BOT_UA = ('bot', 'crawler', 'spider', 'crawl', 'slurp', 'bingpreview',
+           'facebookexternalhit', 'headless', 'python-requests', 'curl', 'wget')
+
+
+class AnalyticsCollectView(APIView):
+    """
+    Collect a first-party page view. Called by the frontend ONLY when the user
+    has granted analytics consent. No raw IP stored; `visitor_hash` is an
+    anonymous rotating id for unique-visitor estimation.
+
+    POST /api/calculators/analytics/collect/
+    Body: { path, referrer_host?, locale?, device?, visitor_hash? }
+    """
+    permission_classes = [AllowAny]
+    from rest_framework_simplejwt.authentication import JWTAuthentication
+    authentication_classes = [JWTAuthentication]  # attribute logged-in users; no CSRF
+    throttle_scope = 'analytics'
+
+    def post(self, request):
+        from .serializers import PageViewSerializer
+        from .models import PageView
+
+        ua = request.META.get('HTTP_USER_AGENT', '').lower()
+        if any(b in ua for b in _BOT_UA):
+            return Response(status=status.HTTP_204_NO_CONTENT)  # ignore bots
+
+        serializer = PageViewSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_204_NO_CONTENT)  # never block the client
+
+        if not request.session.session_key:
+            try:
+                request.session.save()
+            except Exception:
+                pass
+
+        user = request.user if getattr(request.user, 'is_authenticated', False) else None
+        PageView.objects.create(
+            **serializer.validated_data,
+            session_key=request.session.session_key or '',
+            user=user,
+        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AnalyticsStatsView(APIView):
+    """
+    Aggregated visitor stats for the operator (staff only).
+
+    GET /api/calculators/analytics/stats/?period=week   (day|week|month|year)
+    or  ?days=30
+    """
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        from datetime import timedelta
+        from django.utils import timezone
+        from django.db.models import Count
+        from django.db.models.functions import TruncDate
+        from .models import PageView, AuthEvent
+
+        period = request.query_params.get('period', 'week')
+        days_map = {'day': 1, 'week': 7, 'month': 30, 'year': 365}
+        try:
+            days = int(request.query_params.get('days', days_map.get(period, 7)))
+        except (TypeError, ValueError):
+            days = 7
+        days = max(1, min(days, 730))
+        since = timezone.now() - timedelta(days=days)
+
+        views = PageView.objects.filter(created_at__gte=since)
+        auth = AuthEvent.objects.filter(created_at__gte=since)
+
+        by_day = list(
+            views.annotate(d=TruncDate('created_at')).values('d')
+                 .annotate(views=Count('id'), visitors=Count('visitor_hash', distinct=True))
+                 .order_by('d')
+        )
+        top_paths = list(
+            views.values('path').annotate(views=Count('id'))
+                 .order_by('-views')[:15]
+        )
+        logins_by_event = {
+            row['event']: row['n']
+            for row in auth.values('event').annotate(n=Count('id'))
+        }
+
+        return Response({
+            'success': True,
+            'period_days': days,
+            'since': since.strftime('%Y-%m-%d'),
+            'totals': {
+                'page_views': views.count(),
+                'unique_visitors': views.values('visitor_hash').distinct().count(),
+                'logins': logins_by_event.get('login', 0) + logins_by_event.get('google_login', 0),
+                'failed_logins': logins_by_event.get('login_failed', 0),
+                'registrations': logins_by_event.get('register', 0),
+            },
+            'by_day': [
+                {'date': r['d'].strftime('%Y-%m-%d') if r['d'] else None,
+                 'views': r['views'], 'visitors': r['visitors']}
+                for r in by_day
+            ],
+            'top_paths': top_paths,
+            'auth_events': logins_by_event,
+        })

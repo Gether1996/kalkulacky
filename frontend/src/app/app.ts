@@ -2,13 +2,16 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { NavbarComponent } from './components/navbar/navbar.component';
+import { FooterComponent } from './components/footer/footer.component';
 import { DataReportComponent } from './components/shared/data-report/data-report.component';
+import { CookieConsentComponent } from './components/shared/cookie-consent/cookie-consent.component';
 import { TranslatePipe } from './i18n/translate.pipe';
 import { LocaleService } from './i18n/locale.service';
+import { AnalyticsService } from './services/analytics.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NavbarComponent, DataReportComponent, TranslatePipe],
+  imports: [RouterOutlet, NavbarComponent, FooterComponent, DataReportComponent, CookieConsentComponent, TranslatePipe],
   template: `
     @if (showChrome()) {
       <app-navbar />
@@ -20,12 +23,17 @@ import { LocaleService } from './i18n/locale.service';
     @if (showDataReport()) {
       <app-data-report />
     }
+    @if (showChrome()) {
+      <app-footer />
+      <app-cookie-consent />
+    }
   `,
   styles: [],
 })
 export class App {
   private router = inject(Router);
   private locale = inject(LocaleService);
+  private analytics = inject(AnalyticsService);
 
   // Hide site chrome on embeddable widget routes.
   showChrome = signal(true);
@@ -48,6 +56,9 @@ export class App {
   });
 
   constructor() {
+    // Start consent-gated, first-party page-view tracking.
+    this.analytics.init();
+
     // Routes whose calculations are already localized per country.
     const perCountry = ['/calculator/salary', '/calculator/vat'];
     const update = (url: string) => {

@@ -1,5 +1,32 @@
 from django.contrib import admin
-from .models import BlogCategory, BlogPost, Lead, AffiliateClick, DataReport, UserReminder
+from .models import (
+    BlogCategory, BlogPost, Lead, AffiliateClick, DataReport, UserReminder,
+    PageView, AuthEvent,
+)
+
+
+@admin.register(PageView)
+class PageViewAdmin(admin.ModelAdmin):
+    list_display = ['path', 'device', 'locale', 'user', 'created_at']
+    list_filter = ['device', 'locale', 'created_at']
+    search_fields = ['path', 'referrer_host']
+    date_hierarchy = 'created_at'
+    readonly_fields = [f.name for f in PageView._meta.fields]
+
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(AuthEvent)
+class AuthEventAdmin(admin.ModelAdmin):
+    list_display = ['event', 'email', 'user', 'ip_address', 'created_at']
+    list_filter = ['event', 'created_at']
+    search_fields = ['email', 'ip_address']
+    date_hierarchy = 'created_at'
+    readonly_fields = [f.name for f in AuthEvent._meta.fields]
+
+    def has_add_permission(self, request):
+        return False
 
 
 @admin.register(UserReminder)

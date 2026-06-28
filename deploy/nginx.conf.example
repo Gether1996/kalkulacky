@@ -1,0 +1,77 @@
+# =============================================================================
+# Kalkulačky.sk — example production nginx config (reverse proxy + rate limiting)
+#
+# This is the FIRST real line of defence against floods/abuse — it caps requests
+# per IP and connections before they reach the Angular SSR server or Django.
+# For true (distributed) DDoS protection, also put Cloudflare / a CDN-WAF in
+# front of this server (see deploy/PRODUCTION.md).
+#
+# Layout assumed:
+#   - Angular SSR (Node)      -> 127.0.0.1:4000   (serves pages: / /calculator/* ...)
+#   - Django (gunicorn/uvicorn) -> 127.0.0.1:8000 (serves /api/ and /admin/)
+# =============================================================================
+
+# --- Rate-limit zones (shared memory, keyed by client IP) --------------------
+# ~16k IPs per 1m of memory. Tune rates to your traffic.
+limit_req_zone  $binary_remote_addr  zone=general:10m  rate=30r/s;   # pages/static
+limit_req_zone  $binary_remote_addr  zone=api:10m      rate=10r/s;   # API
+limit_req_zone  $binary_remote_addr  zone=auth:10m     rate=1r/s;    # login/register/reset
+limit_conn_zone $binary_remote_addr  zone=conns:10m;                 # concurrent conns/IP
+
+# Return 429 (not the default 503) when the limit is hit.
+limit_req_status 429;
+limit_conn_status 429;
+
+server {
+    listen 443 ssl http2;
+    server_name kalkulacky.sk www.kalkulacky.sk;
+
+    # ssl_certificate / ssl_certificate_key ...  (e.g. from certbot)
+
+    # Drop absurdly large bodies early (calc payloads are tiny).
+    client_max_body_size 256k;
+    client_body_timeout 10s;
+    client_header_timeout 10s;
+    send_timeout 15s;
+
+    # Global per-IP connection cap.
+    limit_conn conns 20;
+
+    gzip on;
+    gzip_types text/css application/javascript application/json image/svg+xml;
+
+    # --- Auth endpoints: strictest (brute-force / credential stuffing) --------
+    location ~ ^/api/(auth/login|auth/register|auth/forgot-password|auth/reset-password)/ {
+        limit_req zone=auth burst=5 nodelay;
+        proxy_pass http://127.0.0.1:8000;
+        include /etc/nginx/proxy_params;  # X-Forwarded-For / -Proto / Host
+    }
+
+    # --- API ------------------------------------------------------------------
+    location /api/ {
+        limit_req zone=api burst=40 nodelay;     # burst absorbs slider/keystroke auto-calc
+        proxy_pass http://127.0.0.1:8000;
+        include /etc/nginx/proxy_params;
+    }
+
+    location /admin/ {
+        limit_req zone=auth burst=10 nodelay;
+        # Optional: allow only office IPs:  allow 1.2.3.4;  deny all;
+        proxy_pass http://127.0.0.1:8000;
+        include /etc/nginx/proxy_params;
+    }
+
+    # --- Everything else -> Angular SSR (Node) --------------------------------
+    location / {
+        limit_req zone=general burst=60 nodelay;
+        proxy_pass http://127.0.0.1:4000;
+        include /etc/nginx/proxy_params;
+    }
+}
+
+# /etc/nginx/proxy_params should contain:
+#   proxy_set_header Host $host;
+#   proxy_set_header X-Real-IP $remote_addr;
+#   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#   proxy_set_header X-Forwarded-Proto $scheme;
+# (Django already trusts X-Forwarded-Proto via SECURE_PROXY_SSL_HEADER.)

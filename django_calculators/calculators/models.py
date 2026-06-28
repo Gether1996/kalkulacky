@@ -651,3 +651,75 @@ class UserReminder(models.Model):
     def __str__(self):
         return f"{self.title} @ {self.remind_date}"
 
+
+class PageView(models.Model):
+    """
+    First-party, privacy-respecting page-view analytics. One row per page view,
+    collected from the frontend ONLY with the visitor's analytics consent.
+    No raw IP is stored; `visitor_hash` is a rotating anonymous id used only to
+    estimate unique visitors. Browse by week/month in admin (date_hierarchy).
+    """
+    DEVICE_CHOICES = [('mobile', 'Mobil'), ('tablet', 'Tablet'), ('desktop', 'Desktop')]
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    path = models.CharField(max_length=300, db_index=True)
+    referrer_host = models.CharField(max_length=200, blank=True, default='')
+    locale = models.CharField(max_length=5, blank=True, default='')
+    device = models.CharField(max_length=10, choices=DEVICE_CHOICES, blank=True, default='')
+    visitor_hash = models.CharField(max_length=64, blank=True, default='', db_index=True)
+    session_key = models.CharField(max_length=100, blank=True, default='')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='page_views',
+    )
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Page View'
+        verbose_name_plural = 'Page Views'
+        indexes = [
+            models.Index(fields=['-created_at']),
+            models.Index(fields=['path', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.path} @ {self.created_at:%Y-%m-%d %H:%M}"
+
+
+class AuthEvent(models.Model):
+    """
+    Security/audit trail of authentication-related actions (who logs in, when,
+    from where) — for the operator to review. Also written to logs/audit.log.
+    """
+    EVENT_CHOICES = [
+        ('login', 'Prihlásenie'),
+        ('login_failed', 'Neúspešné prihlásenie'),
+        ('register', 'Registrácia'),
+        ('logout', 'Odhlásenie'),
+        ('google_login', 'Prihlásenie cez Google'),
+        ('password_reset', 'Obnovenie hesla'),
+        ('account_deleted', 'Zrušenie účtu'),
+    ]
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    event = models.CharField(max_length=30, choices=EVENT_CHOICES, db_index=True)
+    email = models.EmailField(blank=True, default='')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='auth_events',
+    )
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=300, blank=True, default='')
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Auth Event'
+        verbose_name_plural = 'Auth Events'
+        indexes = [
+            models.Index(fields=['event', '-created_at']),
+            models.Index(fields=['-created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.event}: {self.email or '—'} @ {self.created_at:%Y-%m-%d %H:%M}"
+

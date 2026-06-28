@@ -18,6 +18,21 @@ const ENTRIES: Record<string, LangMap> = {
   'common.detailedCalc': { sk: '📋 Detailný výpočet', cs: '📋 Detailní výpočet', en: '📋 Detailed calculation', pl: '📋 Szczegółowe obliczenie', hu: '📋 Részletes számítás' },
   'common.indicative': { sk: 'orientačne', cs: 'orientačně', en: 'indicative', pl: 'orientacyjnie', hu: 'tájékoztató jelleggel' },
   'nav.theme': { sk: 'Svetlý / tmavý režim', cs: 'Světlý / tmavý režim', en: 'Light / dark mode', pl: 'Tryb jasny / ciemny', hu: 'Világos / sötét mód' },
+  'notfound.title': { sk: 'Stránka sa nenašla', cs: 'Stránka nenalezena', en: 'Page not found', pl: 'Nie znaleziono strony', hu: 'Az oldal nem található' },
+  'notfound.text': { sk: 'Ľutujeme, požadovaná stránka neexistuje alebo bola presunutá.', cs: 'Omlouváme se, požadovaná stránka neexistuje nebo byla přesunuta.', en: 'Sorry, the page you requested does not exist or was moved.', pl: 'Przepraszamy, żądana strona nie istnieje lub została przeniesiona.', hu: 'Sajnáljuk, a kért oldal nem létezik vagy áthelyezték.' },
+  'notfound.home': { sk: 'Späť na hlavnú stránku', cs: 'Zpět na hlavní stránku', en: 'Back to home', pl: 'Powrót do strony głównej', hu: 'Vissza a főoldalra' },
+
+  // ============ cookie consent + footer ============
+  'consent.title': { sk: 'Používame cookies', cs: 'Používáme cookies', en: 'We use cookies', pl: 'Używamy plików cookie', hu: 'Sütiket használunk' },
+  'consent.text': { sk: 'Nevyhnutné cookies potrebujeme na fungovanie webu. Analytické a reklamné použijeme len s vaším súhlasom.', cs: 'Nezbytné cookies potřebujeme k fungování webu. Analytické a reklamní použijeme jen s vaším souhlasem.', en: 'Necessary cookies keep the site working. Analytics and ad cookies are used only with your consent.', pl: 'Niezbędne pliki cookie są potrzebne do działania strony. Analityczne i reklamowe użyjemy tylko za Twoją zgodą.', hu: 'A szükséges sütik a működéshez kellenek. Analitikai és hirdetési sütiket csak hozzájárulásával használunk.' },
+  'consent.more': { sk: 'Viac informácií', cs: 'Více informací', en: 'Learn more', pl: 'Więcej informacji', hu: 'További információ' },
+  'consent.necessary': { sk: 'Len nevyhnutné', cs: 'Jen nezbytné', en: 'Necessary only', pl: 'Tylko niezbędne', hu: 'Csak a szükséges' },
+  'consent.acceptAll': { sk: 'Prijať všetko', cs: 'Přijmout vše', en: 'Accept all', pl: 'Akceptuj wszystko', hu: 'Összes elfogadása' },
+  'footer.disclaimer': { sk: 'Výsledky kalkulačiek sú orientačné a nie sú daňovým, právnym ani finančným poradenstvom. Overte si aktuálne podmienky u príslušného úradu.', cs: 'Výsledky kalkulaček jsou orientační a nejsou daňovým, právním ani finančním poradenstvím. Ověřte si aktuální podmínky u příslušného úřadu.', en: 'Calculator results are indicative and are not tax, legal or financial advice. Verify current conditions with the relevant authority.', pl: 'Wyniki kalkulatorów są orientacyjne i nie stanowią porady podatkowej, prawnej ani finansowej. Sprawdź aktualne warunki w odpowiednim urzędzie.', hu: 'A kalkulátorok eredményei tájékoztató jellegűek, nem minősülnek adó-, jogi vagy pénzügyi tanácsadásnak. Ellenőrizze az aktuális feltételeket az illetékes hatóságnál.' },
+  'footer.privacy': { sk: 'Ochrana údajov', cs: 'Ochrana údajů', en: 'Privacy', pl: 'Prywatność', hu: 'Adatvédelem' },
+  'footer.terms': { sk: 'Podmienky', cs: 'Podmínky', en: 'Terms', pl: 'Regulamin', hu: 'Feltételek' },
+  'footer.cookies': { sk: 'Cookies', cs: 'Cookies', en: 'Cookies', pl: 'Pliki cookie', hu: 'Sütik' },
+  'footer.rights': { sk: 'Všetky práva vyhradené.', cs: 'Všechna práva vyhrazena.', en: 'All rights reserved.', pl: 'Wszelkie prawa zastrzeżone.', hu: 'Minden jog fenntartva.' },
   'home.search.placeholder': { sk: 'Hľadať kalkulačku…', cs: 'Hledat kalkulačku…', en: 'Search calculators…', pl: 'Szukaj kalkulatora…', hu: 'Kalkulátor keresése…' },
   'home.search.empty': { sk: 'Nenašli sa žiadne kalkulačky pre', cs: 'Nenašly se žádné kalkulačky pro', en: 'No calculators found for', pl: 'Nie znaleziono kalkulatorów dla', hu: 'Nincs találat erre:' },
 
