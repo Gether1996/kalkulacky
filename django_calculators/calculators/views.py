@@ -2115,6 +2115,164 @@ class SavingsContributionDeleteView(APIView):
 
 
 # ============================================================================
+# FAVORITE CALCULATORS — per-user pinned tools with custom order
+# ============================================================================
+
+class FavoriteListCreateView(APIView):
+    """
+    GET  /api/calculators/my/favorites/            -> the user's pinned tools (ordered)
+    POST /api/calculators/my/favorites/  { calculator_id }  -> pin a tool (appended)
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from calculators.models import FavoriteCalculator
+        from .serializers import FavoriteCalculatorSerializer
+        qs = FavoriteCalculator.objects.filter(user=request.user)
+        return Response({'success': True, 'data': FavoriteCalculatorSerializer(qs, many=True).data})
+
+    def post(self, request):
+        from django.db.models import Max
+        from calculators.models import FavoriteCalculator
+        from .serializers import FavoriteCalculatorSerializer
+        serializer = FavoriteCalculatorSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({'success': False, 'errors': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)
+        calc_id = serializer.validated_data['calculator_id']
+        # Idempotent: pinning an already-pinned tool just returns it.
+        existing = FavoriteCalculator.objects.filter(user=request.user, calculator_id=calc_id).first()
+        if existing:
+            return Response({'success': True, 'data': FavoriteCalculatorSerializer(existing).data},
+                            status=status.HTTP_200_OK)
+        next_order = (FavoriteCalculator.objects.filter(user=request.user)
+                      .aggregate(m=Max('order'))['m'] or 0) + 1
+        fav = FavoriteCalculator.objects.create(
+            user=request.user, calculator_id=calc_id, order=next_order)
+        return Response({'success': True, 'data': FavoriteCalculatorSerializer(fav).data},
+                        status=status.HTTP_201_CREATED)
+
+
+class FavoriteReorderView(APIView):
+    """
+    POST /api/calculators/my/favorites/reorder/  { order: ["salary","bmi", ...] }
+    Persists the user's preferred ordering of their pinned tools.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        from calculators.models import FavoriteCalculator
+        from .serializers import FavoriteCalculatorSerializer
+        order = request.data.get('order')
+        if not isinstance(order, list):
+            return Response({'success': False, 'error': 'order musí byť zoznam.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        favs = {f.calculator_id: f for f in FavoriteCalculator.objects.filter(user=request.user)}
+        to_update = []
+        for idx, calc_id in enumerate(order):
+            f = favs.get(calc_id)
+            if f and f.order != idx:
+                f.order = idx
+                to_update.append(f)
+        if to_update:
+            FavoriteCalculator.objects.bulk_update(to_update, ['order'])
+        qs = FavoriteCalculator.objects.filter(user=request.user)
+        return Response({'success': True, 'data': FavoriteCalculatorSerializer(qs, many=True).data})
+
+
+class FavoriteDeleteView(APIView):
+    """DELETE /api/calculators/my/favorites/<calculator_id>/  -> unpin a tool."""
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, calculator_id):
+        from calculators.models import FavoriteCalculator
+        deleted, _ = FavoriteCalculator.objects.filter(
+            user=request.user, calculator_id=calculator_id).delete()
+        if not deleted:
+            return Response({'success': False}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'success': True})
+
+
+# ============================================================================
+# CALCULATOR RATINGS — public 1–5 stars + comment (one per user per calculator)
+# ============================================================================
+
+class RatingView(APIView):
+    """
+    GET  /api/calculators/ratings/?calculator_id=salary
+         -> public aggregate (average, count, distribution) + recent comments
+            + the caller's own rating if logged in.
+    POST /api/calculators/ratings/  { calculator_id, rating(1-5), comment? }
+         -> create/update the logged-in user's rating (upsert).
+    """
+    def get_permissions(self):
+        from rest_framework.permissions import AllowAny as _Any
+        return [_Any()] if self.request.method == 'GET' else [IsAuthenticated()]
+
+    def get_throttles(self):
+        # Throttle only writes (spam control); reads use the global anon/user caps.
+        if self.request.method == 'POST':
+            from rest_framework.throttling import ScopedRateThrottle
+            self.throttle_scope = 'rating'
+            return [ScopedRateThrottle()]
+        return super().get_throttles()
+
+    def get(self, request):
+        from django.db.models import Avg, Count
+        from calculators.models import CalculatorRating
+        from .serializers import CalculatorRatingSerializer
+
+        calc_id = request.query_params.get('calculator_id')
+        if not calc_id:
+            return Response({'success': False, 'error': 'calculator_id je povinný.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        qs = CalculatorRating.objects.filter(calculator_id=calc_id)
+        agg = qs.aggregate(avg=Avg('rating'), count=Count('id'))
+        distribution = {str(i): qs.filter(rating=i).count() for i in range(1, 6)}
+        recent = qs.exclude(comment='').select_related('user').order_by('-updated_at')[:10]
+
+        my = None
+        if getattr(request.user, 'is_authenticated', False):
+            mine = qs.filter(user=request.user).first()
+            if mine:
+                my = CalculatorRatingSerializer(mine).data
+
+        return Response({
+            'success': True,
+            'calculator_id': calc_id,
+            'average': round(agg['avg'], 2) if agg['avg'] else 0,
+            'count': agg['count'],
+            'distribution': distribution,
+            'recent': CalculatorRatingSerializer(recent, many=True).data,
+            'my_rating': my,
+        })
+
+    def post(self, request):
+        from django.db.models import Avg, Count
+        from calculators.models import CalculatorRating
+        from .serializers import CalculatorRatingSerializer
+
+        serializer = CalculatorRatingSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({'success': False, 'errors': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)
+        data = serializer.validated_data
+        rating, _created = CalculatorRating.objects.update_or_create(
+            user=request.user, calculator_id=data['calculator_id'],
+            defaults={'rating': data['rating'], 'comment': data.get('comment', '')},
+        )
+        qs = CalculatorRating.objects.filter(calculator_id=data['calculator_id'])
+        agg = qs.aggregate(avg=Avg('rating'), count=Count('id'))
+        return Response({
+            'success': True,
+            'data': CalculatorRatingSerializer(rating).data,
+            'average': round(agg['avg'], 2) if agg['avg'] else 0,
+            'count': agg['count'],
+        }, status=status.HTTP_201_CREATED if _created else status.HTTP_200_OK)
+
+
+# ============================================================================
 # MONETIZATION VIEWS (lead-gen capture + affiliate click tracking)
 # ============================================================================
 

@@ -4,14 +4,17 @@ import { filter } from 'rxjs/operators';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { DataReportComponent } from './components/shared/data-report/data-report.component';
+import { CalculatorRatingComponent } from './components/shared/calculator-rating/calculator-rating.component';
 import { CookieConsentComponent } from './components/shared/cookie-consent/cookie-consent.component';
 import { TranslatePipe } from './i18n/translate.pipe';
 import { LocaleService } from './i18n/locale.service';
 import { AnalyticsService } from './services/analytics.service';
+import { RecentCalculatorsService } from './services/recent-calculators.service';
+import { calcIdFromPath } from './config/calculator-registry';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NavbarComponent, FooterComponent, DataReportComponent, CookieConsentComponent, TranslatePipe],
+  imports: [RouterOutlet, NavbarComponent, FooterComponent, DataReportComponent, CalculatorRatingComponent, CookieConsentComponent, TranslatePipe],
   template: `
     @if (showChrome()) {
       <app-navbar />
@@ -20,6 +23,9 @@ import { AnalyticsService } from './services/analytics.service';
       <div class="i18n-note">{{ 'i18n.skRulesNote' | t }}</div>
     }
     <router-outlet />
+    @if (isCalcRoute()) {
+      <app-calculator-rating />
+    }
     @if (showDataReport()) {
       <app-data-report />
     }
@@ -34,10 +40,11 @@ export class App {
   private router = inject(Router);
   private locale = inject(LocaleService);
   private analytics = inject(AnalyticsService);
+  private recent = inject(RecentCalculatorsService);
 
   // Hide site chrome on embeddable widget routes.
   showChrome = signal(true);
-  private isCalcRoute = signal(false);
+  isCalcRoute = signal(false);
 
   // "Report wrong data" — on calculators and tool/landing pages that show
   // real-world figures (not on the home page, auth, blog or embeds).
@@ -71,6 +78,9 @@ export class App {
         path.startsWith('/energia') ||
         path.startsWith('/cista-mzda')
       );
+      // Track recently-used calculators (client-side only).
+      const calcId = calcIdFromPath(path);
+      if (calcId) this.recent.record(calcId);
     };
     update(this.router.url);
     this.router.events

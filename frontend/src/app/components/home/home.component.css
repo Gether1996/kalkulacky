@@ -419,3 +419,38 @@
     font-size: 0.8rem;
   }
 }
+
+/* Favorite star on calculator cards */
+.fav-star {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.18);
+  border: none;
+  color: #fff;
+  font-size: 1.15rem;
+  line-height: 1;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s, transform 0.15s;
+  z-index: 2;
+}
+.fav-star:hover { background: rgba(0, 0, 0, 0.32); transform: scale(1.1); }
+.fav-star.active { color: #ffd700; }
+
+/* Recently used chips */
+.recent-section { margin: 0 0 1.5rem; }
+.recent-chips { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.75rem; }
+.recent-chip {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 999px;
+  padding: 0.5rem 0.95rem; text-decoration: none; color: #334155;
+  font-weight: 600; font-size: 0.9rem; transition: border-color .15s, transform .15s;
+}
+.recent-chip:hover { border-color: #6366f1; transform: translateY(-1px); }
+.recent-chip-icon { font-size: 1.05rem; }

@@ -1218,6 +1218,54 @@ class SavingsGoalCalculatorSerializer(serializers.Serializer):
         return data
 
 
+class FavoriteCalculatorSerializer(serializers.ModelSerializer):
+    """A user's pinned calculator with custom order."""
+
+    class Meta:
+        from .models import FavoriteCalculator
+        model = FavoriteCalculator
+        fields = ['id', 'calculator_id', 'order', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+    def validate_calculator_id(self, value):
+        value = (value or '').strip()
+        if not value:
+            raise serializers.ValidationError('calculator_id je povinný.')
+        return value
+
+
+class CalculatorRatingSerializer(serializers.ModelSerializer):
+    """A 1–5 rating + comment. `author` is a privacy-light display name."""
+    author = serializers.SerializerMethodField()
+
+    class Meta:
+        from .models import CalculatorRating
+        model = CalculatorRating
+        fields = ['id', 'calculator_id', 'rating', 'comment', 'author',
+                  'created_at', 'updated_at']
+        read_only_fields = ['id', 'author', 'created_at', 'updated_at']
+
+    def validate_rating(self, value):
+        if value < 1 or value > 5:
+            raise serializers.ValidationError('Hodnotenie musí byť od 1 do 5.')
+        return value
+
+    def validate_comment(self, value):
+        return (value or '').strip()[:2000]
+
+    def get_author(self, obj):
+        u = obj.user
+        if not u:
+            return 'Používateľ'
+        name = (getattr(u, 'first_name', '') or '').strip()
+        if name:
+            return name
+        # Fall back to a masked email local-part (never expose the full address).
+        email = getattr(u, 'email', '') or ''
+        local = email.split('@')[0]
+        return (local[:2] + '***') if local else 'Používateľ'
+
+
 class SavingsContributionSerializer(serializers.ModelSerializer):
     """A single logged deposit against a savings goal."""
 

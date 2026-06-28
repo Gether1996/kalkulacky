@@ -5,6 +5,7 @@ import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
+import { PasswordInputComponent } from '../shared/password-input/password-input.component';
 
 /**
  * "Reset password" page — reached from the emailed link with ?uid=&token=.
@@ -13,7 +14,7 @@ import { LocaleService } from '../../i18n/locale.service';
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe],
+  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe, PasswordInputComponent],
   template: `
     <div class="auth-card">
       <h1>{{ 'auth.reset.title' | t }}</h1>
@@ -22,11 +23,11 @@ import { LocaleService } from '../../i18n/locale.service';
 
       <form *ngIf="validLink && !done" (ngSubmit)="submit()">
         <label class="auth-label" for="rp-pw">{{ 'auth.reset.new' | t }}</label>
-        <input id="rp-pw" class="auth-input" type="password" name="pw"
-               [(ngModel)]="newPassword" autocomplete="new-password" minlength="8" required />
+        <app-password-input inputId="rp-pw" name="pw" [(ngModel)]="newPassword"
+               autocomplete="new-password" [showStrength]="true"></app-password-input>
         <label class="auth-label" for="rp-pw2">{{ 'auth.reset.confirm' | t }}</label>
-        <input id="rp-pw2" class="auth-input" type="password" name="pw2"
-               [(ngModel)]="confirm" autocomplete="new-password" required />
+        <app-password-input inputId="rp-pw2" name="pw2" [(ngModel)]="confirm"
+               autocomplete="new-password"></app-password-input>
         <button class="auth-btn" type="submit" [disabled]="loading">
           {{ loading ? ('common.loading' | t) : ('auth.reset.cta' | t) }}
         </button>

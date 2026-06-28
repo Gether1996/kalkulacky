@@ -313,3 +313,145 @@ WARNING 2026-06-28 20:21:28,111 log Bad Request: /api/auth/register/
 WARNING 2026-06-28 20:21:28,117 log Bad Request: /api/auth/register/
 WARNING 2026-06-28 20:21:28,117 log Bad Request: /api/auth/register/
 WARNING 2026-06-28 20:21:28,387 log Bad Request: /api/auth/register/
+WARNING 2026-06-28 20:54:56,568 log Unauthorized: /api/calculators/my/favorites/
+WARNING 2026-06-28 20:54:56,597 log Bad Request: /api/calculators/ratings/
+WARNING 2026-06-28 20:54:56,597 log Unauthorized: /api/calculators/ratings/
+WARNING 2026-06-28 20:54:56,597 log Bad Request: /api/calculators/ratings/
+WARNING 2026-06-28 21:00:35,265 log Method Not Allowed: /api/calculators/salary/
+WARNING 2026-06-28 21:00:35,265 log Bad Request: /api/calculators/salary/
+WARNING 2026-06-28 21:00:35,265 log Bad Request: /api/calculators/salary/
+WARNING 2026-06-28 21:00:35,265 log Bad Request: /api/calculators/salary/
+WARNING 2026-06-28 21:00:35,265 log Bad Request: /api/calculators/mortgage/
+WARNING 2026-06-28 21:00:35,265 log Bad Request: /api/calculators/mortgage/
+WARNING 2026-06-28 21:00:35,265 log Bad Request: /api/calculators/vat/
+WARNING 2026-06-28 21:00:35,265 log Bad Request: /api/calculators/bmi/
+WARNING 2026-06-28 21:00:35,265 log Bad Request: /api/calculators/bmi/
+WARNING 2026-06-28 21:00:35,265 log Bad Request: /api/calculators/loan/
+WARNING 2026-06-28 21:00:35,265 log Bad Request: /api/calculators/sick-leave/
+WARNING 2026-06-28 21:00:35,265 log Bad Request: /api/calculators/pension/
+WARNING 2026-06-28 21:00:35,281 log Bad Request: /api/calculators/salary/
+WARNING 2026-06-28 21:00:36,042 log Unauthorized: /api/calculators/my/favorites/
+WARNING 2026-06-28 21:00:36,042 log Unauthorized: /api/calculators/my/favorites/
+WARNING 2026-06-28 21:00:36,992 log Not Found: /api/calculators/my/favorites/nope/
+WARNING 2026-06-28 21:00:37,481 log Unauthorized: /api/calculators/ratings/
+WARNING 2026-06-28 21:00:38,209 log Bad Request: /api/calculators/ratings/
+WARNING 2026-06-28 21:00:38,938 log Bad Request: /api/calculators/ratings/
+WARNING 2026-06-28 21:00:38,951 log Bad Request: /api/calculators/ratings/
+WARNING 2026-06-28 21:00:42,129 log Bad Request: /api/calculators/savings-goal/
+WARNING 2026-06-28 21:00:42,129 log Bad Request: /api/calculators/savings-goal/
+WARNING 2026-06-28 21:00:42,129 log Bad Request: /api/calculators/savings-goal/
+WARNING 2026-06-28 21:00:42,129 log Bad Request: /api/calculators/savings-goal/
+WARNING 2026-06-28 21:00:42,622 log Unauthorized: /api/calculators/my/savings-goals/
+WARNING 2026-06-28 21:00:43,092 log Not Found: /api/calculators/my/savings-goals/1/contributions/
+WARNING 2026-06-28 21:00:43,586 log Not Found: /api/calculators/my/savings-goals/1/
+WARNING 2026-06-28 21:00:44,546 log Not Found: /api/calculators/my/savings-goals/1/
+WARNING 2026-06-28 21:00:45,275 log Bad Request: /api/calculators/my/savings-goals/
+WARNING 2026-06-28 21:00:46,003 log Bad Request: /api/calculators/my/savings-goals/1/contributions/
+WARNING 2026-06-28 21:00:46,019 log Unauthorized: /api/calculators/analytics/stats/
+WARNING 2026-06-28 21:00:46,255 log Forbidden: /api/calculators/analytics/stats/
+WARNING 2026-06-28 21:00:46,492 log Unauthorized: /api/calculators/my/dashboard/
+WARNING 2026-06-28 21:00:46,492 log Unauthorized: /api/calculators/my/reminders/
+WARNING 2026-06-28 21:00:46,492 log Unauthorized: /api/calculators/my/savings-goals/
+WARNING 2026-06-28 21:00:46,492 log Unauthorized: /api/auth/profile/
+WARNING 2026-06-28 21:00:46,492 log Unauthorized: /api/auth/logout/
+WARNING 2026-06-28 21:00:46,492 log Unauthorized: /api/auth/change-password/
+WARNING 2026-06-28 21:00:46,492 log Unauthorized: /api/auth/delete-account/
+WARNING 2026-06-28 21:00:46,508 log Unauthorized: /api/calculators/my/dashboard/
+WARNING 2026-06-28 21:00:46,748 log Bad Request: /api/calculators/leads/
+WARNING 2026-06-28 21:00:46,748 log Bad Request: /api/calculators/leads/
+WARNING 2026-06-28 21:00:46,748 log Bad Request: /api/calculators/salary/
+WARNING 2026-06-28 21:00:46,748 log Bad Request: /api/calculators/salary/
+WARNING 2026-06-28 21:00:47,245 log Forbidden: /api/calculators/saved-calculations/1/
+WARNING 2026-06-28 21:00:47,725 log Forbidden: /api/calculators/saved-calculations/1/
+WARNING 2026-06-28 21:00:48,210 log Forbidden: /api/calculators/saved-calculations/1/
+WARNING 2026-06-28 21:00:48,688 log Not Found: /api/calculators/my/reminders/1/
+WARNING 2026-06-28 21:00:48,688 log Not Found: /api/calculators/my/reminders/1/
+WARNING 2026-06-28 21:00:49,179 log Too Many Requests: /api/calculators/data-report/
+WARNING 2026-06-28 21:00:49,179 log Too Many Requests: /api/calculators/data-report/
+WARNING 2026-06-28 21:00:49,179 log Too Many Requests: /api/calculators/leads/
+WARNING 2026-06-28 21:00:49,179 log Too Many Requests: /api/calculators/leads/
+WARNING 2026-06-28 21:00:49,428 log Bad Request: /api/auth/login/
+WARNING 2026-06-28 21:00:49,669 log Bad Request: /api/auth/login/
+WARNING 2026-06-28 21:00:49,669 log Too Many Requests: /api/auth/login/
+WARNING 2026-06-28 21:00:49,669 log Too Many Requests: /api/auth/login/
+WARNING 2026-06-28 21:00:50,617 log Bad Request: /api/auth/login/
+WARNING 2026-06-28 21:00:51,349 log Bad Request: /api/auth/login/
+WARNING 2026-06-28 21:00:52,310 log Bad Request: /api/auth/login/
+WARNING 2026-06-28 21:00:53,034 log Bad Request: /api/auth/login/
+WARNING 2026-06-28 21:00:53,511 log Unauthorized: /api/auth/token/refresh/
+WARNING 2026-06-28 21:00:54,248 log Bad Request: /api/auth/reset-password/
+WARNING 2026-06-28 21:00:55,442 log Bad Request: /api/auth/change-password/
+WARNING 2026-06-28 21:00:56,880 log Bad Request: /api/auth/change-password/
+WARNING 2026-06-28 21:00:57,368 log Bad Request: /api/auth/register/
+WARNING 2026-06-28 21:00:57,368 log Bad Request: /api/auth/register/
+WARNING 2026-06-28 21:00:57,368 log Bad Request: /api/auth/register/
+WARNING 2026-06-28 21:00:57,605 log Bad Request: /api/auth/register/
+WARNING 2026-06-28 21:16:41,155 log Method Not Allowed: /api/calculators/salary/
+WARNING 2026-06-28 21:16:41,155 log Bad Request: /api/calculators/salary/
+WARNING 2026-06-28 21:16:41,155 log Bad Request: /api/calculators/salary/
+WARNING 2026-06-28 21:16:41,155 log Bad Request: /api/calculators/salary/
+WARNING 2026-06-28 21:16:41,155 log Bad Request: /api/calculators/mortgage/
+WARNING 2026-06-28 21:16:41,155 log Bad Request: /api/calculators/mortgage/
+WARNING 2026-06-28 21:16:41,155 log Bad Request: /api/calculators/vat/
+WARNING 2026-06-28 21:16:41,155 log Bad Request: /api/calculators/bmi/
+WARNING 2026-06-28 21:16:41,155 log Bad Request: /api/calculators/bmi/
+WARNING 2026-06-28 21:16:41,155 log Bad Request: /api/calculators/loan/
+WARNING 2026-06-28 21:16:41,155 log Bad Request: /api/calculators/sick-leave/
+WARNING 2026-06-28 21:16:41,155 log Bad Request: /api/calculators/pension/
+WARNING 2026-06-28 21:16:41,155 log Bad Request: /api/calculators/salary/
+WARNING 2026-06-28 21:16:41,916 log Unauthorized: /api/calculators/my/favorites/
+WARNING 2026-06-28 21:16:41,916 log Unauthorized: /api/calculators/my/favorites/
+WARNING 2026-06-28 21:16:42,902 log Not Found: /api/calculators/my/favorites/nope/
+WARNING 2026-06-28 21:16:43,392 log Unauthorized: /api/calculators/ratings/
+WARNING 2026-06-28 21:16:44,109 log Bad Request: /api/calculators/ratings/
+WARNING 2026-06-28 21:16:44,849 log Bad Request: /api/calculators/ratings/
+WARNING 2026-06-28 21:16:44,849 log Bad Request: /api/calculators/ratings/
+WARNING 2026-06-28 21:16:48,012 log Bad Request: /api/calculators/savings-goal/
+WARNING 2026-06-28 21:16:48,028 log Bad Request: /api/calculators/savings-goal/
+WARNING 2026-06-28 21:16:48,028 log Bad Request: /api/calculators/savings-goal/
+WARNING 2026-06-28 21:16:48,028 log Bad Request: /api/calculators/savings-goal/
+WARNING 2026-06-28 21:16:48,528 log Unauthorized: /api/calculators/my/savings-goals/
+WARNING 2026-06-28 21:16:49,022 log Not Found: /api/calculators/my/savings-goals/1/contributions/
+WARNING 2026-06-28 21:16:49,511 log Not Found: /api/calculators/my/savings-goals/1/
+WARNING 2026-06-28 21:16:50,476 log Not Found: /api/calculators/my/savings-goals/1/
+WARNING 2026-06-28 21:16:51,222 log Bad Request: /api/calculators/my/savings-goals/
+WARNING 2026-06-28 21:16:51,957 log Bad Request: /api/calculators/my/savings-goals/1/contributions/
+WARNING 2026-06-28 21:16:51,965 log Unauthorized: /api/calculators/analytics/stats/
+WARNING 2026-06-28 21:16:52,207 log Forbidden: /api/calculators/analytics/stats/
+WARNING 2026-06-28 21:16:52,453 log Unauthorized: /api/calculators/my/dashboard/
+WARNING 2026-06-28 21:16:52,453 log Unauthorized: /api/calculators/my/reminders/
+WARNING 2026-06-28 21:16:52,453 log Unauthorized: /api/calculators/my/savings-goals/
+WARNING 2026-06-28 21:16:52,453 log Unauthorized: /api/auth/profile/
+WARNING 2026-06-28 21:16:52,453 log Unauthorized: /api/auth/logout/
+WARNING 2026-06-28 21:16:52,453 log Unauthorized: /api/auth/change-password/
+WARNING 2026-06-28 21:16:52,453 log Unauthorized: /api/auth/delete-account/
+WARNING 2026-06-28 21:16:52,453 log Unauthorized: /api/calculators/my/dashboard/
+WARNING 2026-06-28 21:16:52,700 log Bad Request: /api/calculators/leads/
+WARNING 2026-06-28 21:16:52,700 log Bad Request: /api/calculators/leads/
+WARNING 2026-06-28 21:16:52,700 log Bad Request: /api/calculators/salary/
+WARNING 2026-06-28 21:16:52,700 log Bad Request: /api/calculators/salary/
+WARNING 2026-06-28 21:16:53,200 log Forbidden: /api/calculators/saved-calculations/1/
+WARNING 2026-06-28 21:16:53,684 log Forbidden: /api/calculators/saved-calculations/1/
+WARNING 2026-06-28 21:16:54,159 log Forbidden: /api/calculators/saved-calculations/1/
+WARNING 2026-06-28 21:16:54,650 log Not Found: /api/calculators/my/reminders/1/
+WARNING 2026-06-28 21:16:54,650 log Not Found: /api/calculators/my/reminders/1/
+WARNING 2026-06-28 21:16:55,141 log Too Many Requests: /api/calculators/data-report/
+WARNING 2026-06-28 21:16:55,141 log Too Many Requests: /api/calculators/data-report/
+WARNING 2026-06-28 21:16:55,157 log Too Many Requests: /api/calculators/leads/
+WARNING 2026-06-28 21:16:55,157 log Too Many Requests: /api/calculators/leads/
+WARNING 2026-06-28 21:16:55,395 log Bad Request: /api/auth/login/
+WARNING 2026-06-28 21:16:55,653 log Bad Request: /api/auth/login/
+WARNING 2026-06-28 21:16:55,653 log Too Many Requests: /api/auth/login/
+WARNING 2026-06-28 21:16:55,653 log Too Many Requests: /api/auth/login/
+WARNING 2026-06-28 21:16:56,619 log Bad Request: /api/auth/login/
+WARNING 2026-06-28 21:16:57,353 log Bad Request: /api/auth/login/
+WARNING 2026-06-28 21:16:58,317 log Bad Request: /api/auth/login/
+WARNING 2026-06-28 21:16:59,044 log Bad Request: /api/auth/login/
+WARNING 2026-06-28 21:16:59,535 log Unauthorized: /api/auth/token/refresh/
+WARNING 2026-06-28 21:17:00,259 log Bad Request: /api/auth/reset-password/
+WARNING 2026-06-28 21:17:01,467 log Bad Request: /api/auth/change-password/
+WARNING 2026-06-28 21:17:02,927 log Bad Request: /api/auth/change-password/
+WARNING 2026-06-28 21:17:03,400 log Bad Request: /api/auth/register/
+WARNING 2026-06-28 21:17:03,400 log Bad Request: /api/auth/register/
+WARNING 2026-06-28 21:17:03,416 log Bad Request: /api/auth/register/
+WARNING 2026-06-28 21:17:03,654 log Bad Request: /api/auth/register/

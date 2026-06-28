@@ -51,6 +51,10 @@ from .views import (
     SavingsGoalDetailView,
     SavingsContributionCreateView,
     SavingsContributionDeleteView,
+    FavoriteListCreateView,
+    FavoriteReorderView,
+    FavoriteDeleteView,
+    RatingView,
     SavedCalculationViewSet,
     SavedCalculationDetailView,
     NotificationListView,
@@ -125,6 +129,14 @@ urlpatterns = [
     path('my/savings-goals/<int:pk>/', SavingsGoalDetailView.as_view(), name='my-savings-goal-detail'),
     path('my/savings-goals/<int:goal_id>/contributions/', SavingsContributionCreateView.as_view(), name='my-savings-goal-contributions'),
     path('my/savings-goals/<int:goal_id>/contributions/<int:pk>/', SavingsContributionDeleteView.as_view(), name='my-savings-goal-contribution-detail'),
+
+    # Favorite calculators (per-user pinned tools + custom order)
+    path('my/favorites/', FavoriteListCreateView.as_view(), name='my-favorites'),
+    path('my/favorites/reorder/', FavoriteReorderView.as_view(), name='my-favorites-reorder'),
+    path('my/favorites/<str:calculator_id>/', FavoriteDeleteView.as_view(), name='my-favorite-detail'),
+
+    # Calculator ratings (public aggregate + logged-in submit)
+    path('ratings/', RatingView.as_view(), name='ratings'),
 
     # Saved calculations + tracking/notifications (logged-in dashboard + anon)
     path('saved-calculations/', SavedCalculationViewSet.as_view(), name='saved-calculations'),

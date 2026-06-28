@@ -17,6 +17,17 @@
     </div>
   </section>
 
+  <!-- Recently used -->
+  <section class="recent-section" *ngIf="recentCalcs.length">
+    <h2 class="section-title">{{ 'home.recent.title' | t }}</h2>
+    <div class="recent-chips">
+      <a *ngFor="let c of recentCalcs" [routerLink]="c.route" class="recent-chip">
+        <span class="recent-chip-icon">{{ c.icon }}</span>
+        <span>{{ calcName(c.id) }}</span>
+      </a>
+    </div>
+  </section>
+
   <!-- Calculators Grid -->
   <section class="calculators-section">
     <h2 class="section-title">{{ 'home.section.calculators' | t }}</h2>
@@ -42,6 +53,13 @@
       >
         <div class="card-header" [ngClass]="'bg-gradient-to-br ' + calc.color">
           <span class="card-icon">{{ calc.icon }}</span>
+          <button type="button" class="fav-star"
+                  [class.active]="favorites.isFavorite(calc.id)"
+                  (click)="toggleFavorite($event, calc.id)"
+                  [attr.aria-label]="(favorites.isFavorite(calc.id) ? 'fav.remove' : 'fav.add') | t"
+                  [title]="(favorites.isFavorite(calc.id) ? 'fav.remove' : 'fav.add') | t">
+            {{ favorites.isFavorite(calc.id) ? '★' : '☆' }}
+          </button>
         </div>
         <div class="card-body">
           <h3 class="card-title">{{ ('calc.' + calc.id + '.name') | t }}</h3>

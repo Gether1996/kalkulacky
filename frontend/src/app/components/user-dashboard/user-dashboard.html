@@ -88,6 +88,28 @@
     </div>
   </div>
 
+  <!-- My tools (favorites) -->
+  <div class="dashboard-section" *ngIf="myTools.length">
+    <h2 class="section-title">⭐ {{ 'dash.tools.title' | t }}</h2>
+    <p class="section-hint">{{ 'dash.tools.hint' | t }}</p>
+    <div class="tools-list">
+      <div class="tool-row" *ngFor="let t of myTools; let i = index">
+        <a [routerLink]="t.route" class="tool-link">
+          <span class="tool-icon">{{ t.icon }}</span>
+          <span class="tool-name">{{ toolName(t.id) }}</span>
+        </a>
+        <div class="tool-actions">
+          <button type="button" class="icon-btn" (click)="moveTool(i, -1)" [disabled]="i === 0"
+                  [title]="'dash.tools.up' | t">↑</button>
+          <button type="button" class="icon-btn" (click)="moveTool(i, 1)" [disabled]="i === myTools.length - 1"
+                  [title]="'dash.tools.down' | t">↓</button>
+          <button type="button" class="icon-btn danger" (click)="removeTool(t.id)"
+                  [title]="'dash.tools.remove' | t">★</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Savings goals -->
   <div class="dashboard-section">
     <div class="sg-head">

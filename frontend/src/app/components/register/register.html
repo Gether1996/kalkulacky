@@ -47,14 +47,14 @@
       <!-- Password Field -->
       <div class="form-group">
         <label for="password">Heslo *</label>
-        <input
-          type="password"
-          id="password"
+        <app-password-input
+          inputId="password"
           formControlName="password"
-          class="form-control"
-          [class.is-invalid]="password?.invalid && password?.touched"
+          autocomplete="new-password"
           placeholder="Minimálne 8 znakov"
-        />
+          [showStrength]="true"
+          [invalid]="!!(password?.invalid && password?.touched)">
+        </app-password-input>
         <div class="invalid-feedback" *ngIf="password?.invalid && password?.touched">
           <span *ngIf="password?.errors?.['required']">Heslo je povinné</span>
           <span *ngIf="password?.errors?.['minlength']">Heslo musí mať aspoň 8 znakov</span>
@@ -64,14 +64,13 @@
       <!-- Confirm Password Field -->
       <div class="form-group">
         <label for="password_confirm">Potvrdenie hesla *</label>
-        <input
-          type="password"
-          id="password_confirm"
+        <app-password-input
+          inputId="password_confirm"
           formControlName="password_confirm"
-          class="form-control"
-          [class.is-invalid]="(password_confirm?.invalid && password_confirm?.touched) || (registerForm.errors?.['passwordMismatch'] && password_confirm?.touched)"
+          autocomplete="new-password"
           placeholder="Zopakujte heslo"
-        />
+          [invalid]="!!((password_confirm?.invalid && password_confirm?.touched) || (registerForm.errors?.['passwordMismatch'] && password_confirm?.touched))">
+        </app-password-input>
         <div class="invalid-feedback" *ngIf="password_confirm?.invalid && password_confirm?.touched">
           <span *ngIf="password_confirm?.errors?.['required']">Potvrdenie hesla je povinné</span>
         </div>

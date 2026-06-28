@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils.text import slugify
 
@@ -760,6 +761,58 @@ class SavingsContribution(models.Model):
 
     def __str__(self):
         return f"{self.amount} -> {self.goal_id} ({self.date})"
+
+
+class FavoriteCalculator(models.Model):
+    """
+    A calculator a logged-in user has pinned. `order` lets them arrange their
+    own shortcut list ("My tools") in the navbar / dashboard as they like.
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='favorite_calculators',
+    )
+    calculator_id = models.CharField(max_length=50)  # slug, e.g. 'salary'
+    order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'id']
+        unique_together = ('user', 'calculator_id')
+        verbose_name = 'Favorite Calculator'
+        verbose_name_plural = 'Favorite Calculators'
+        indexes = [models.Index(fields=['user', 'order'])]
+
+    def __str__(self):
+        return f"{self.user_id} ★ {self.calculator_id}"
+
+
+class CalculatorRating(models.Model):
+    """
+    A 1–5 star rating + optional comment for a calculator. One rating per user
+    per calculator (re-submitting updates the existing one).
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='calculator_ratings',
+    )
+    calculator_id = models.CharField(max_length=50, db_index=True)
+    rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+    )
+    comment = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+        unique_together = ('user', 'calculator_id')
+        verbose_name = 'Calculator Rating'
+        verbose_name_plural = 'Calculator Ratings'
+        indexes = [models.Index(fields=['calculator_id', '-updated_at'])]
+
+    def __str__(self):
+        return f"{self.calculator_id}: {self.rating}★ by {self.user_id}"
 
 
 class PageView(models.Model):

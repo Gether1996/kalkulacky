@@ -1,11 +1,16 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, ElementRef, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models/auth.models';
 import { LanguageSwitcherComponent } from '../shared/language-switcher/language-switcher.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
 import { ThemeService } from '../../services/theme.service';
+import { FavoritesService } from '../../services/favorites.service';
+import { RecentCalculatorsService } from '../../services/recent-calculators.service';
+import { CALC_BY_ID, CALCULATOR_REGISTRY, CalcMeta } from '../../config/calculator-registry';
 
 interface Category {
   id: string;
@@ -24,7 +29,7 @@ interface Calculator {
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, LanguageSwitcherComponent, TranslatePipe],
+  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive, LanguageSwitcherComponent, TranslatePipe],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css']
 })
@@ -35,6 +40,68 @@ export class NavbarComponent implements OnInit {
   currentUser: User | null = null;
 
   public theme = inject(ThemeService);
+  public favorites = inject(FavoritesService);
+  private recent = inject(RecentCalculatorsService);
+  private locale = inject(LocaleService);
+  private el = inject(ElementRef);
+
+  // Quick search
+  searchTerm = '';
+  searchOpen = false;
+
+  /** The user's pinned tools, in their chosen order, resolved to route + icon. */
+  get favoriteCalcs(): CalcMeta[] {
+    return this.favorites.favorites()
+      .map(f => CALC_BY_ID[f.calculator_id])
+      .filter((c): c is CalcMeta => !!c);
+  }
+
+  calcName(id: string): string {
+    return this.locale.t('calc.' + id + '.name');
+  }
+
+  /** Search matches by localized name; when empty, suggest recent + favourites. */
+  get searchResults(): CalcMeta[] {
+    const q = this.searchTerm.trim().toLowerCase();
+    if (!q) {
+      const ids = [...this.recent.recent(), ...this.favorites.favorites().map(f => f.calculator_id)];
+      return [...new Set(ids)].slice(0, 6).map(id => CALC_BY_ID[id]).filter((c): c is CalcMeta => !!c);
+    }
+    return CALCULATOR_REGISTRY
+      .filter(c => this.calcName(c.id).toLowerCase().includes(q) || c.id.includes(q))
+      .slice(0, 8);
+  }
+
+  submitSearch(): void {
+    const first = this.searchResults[0];
+    if (first) {
+      this.router.navigate([first.route]);
+      this.closeSearch();
+    }
+  }
+
+  closeSearch(): void {
+    this.searchOpen = false;
+    this.searchTerm = '';
+  }
+
+  /** Close any open menus when clicking outside the navbar or pressing Escape. */
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.el.nativeElement.contains(event.target)) {
+      this.openCategory = null;
+      this.isUserMenuOpen = false;
+      this.searchOpen = false;
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.openCategory = null;
+    this.isUserMenuOpen = false;
+    this.searchOpen = false;
+    this.isMenuOpen = false;
+  }
 
   categories: Category[] = [
     {

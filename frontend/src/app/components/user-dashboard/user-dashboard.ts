@@ -10,6 +10,8 @@ import {
   DashboardService, DashboardData, SavedCalculation, UpcomingNotification, DashboardStats, UserReminder,
   SavingsGoal,
 } from '../../services/dashboard.service';
+import { FavoritesService } from '../../services/favorites.service';
+import { CALC_BY_ID, CalcMeta } from '../../config/calculator-registry';
 
 @Component({
   selector: 'app-user-dashboard',
@@ -21,6 +23,7 @@ export class UserDashboard implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private locale = inject(LocaleService);
   private dashboard = inject(DashboardService);
+  favorites = inject(FavoritesService);
 
   currentUser: User | null = null;
   accountCreatedDate: Date | null = null;
@@ -301,6 +304,29 @@ export class UserDashboard implements OnInit {
       trackedCalculations: this.calculations.filter(c => c.is_tracking).length,
       favoritesCount: this.calculations.filter(c => c.is_favorite).length,
     };
+  }
+
+  // ---- Favorite tools ("My tools") ----
+  get myTools(): CalcMeta[] {
+    return this.favorites.favorites()
+      .map(f => CALC_BY_ID[f.calculator_id])
+      .filter((c): c is CalcMeta => !!c);
+  }
+
+  toolName(id: string): string {
+    return this.locale.t('calc.' + id + '.name');
+  }
+
+  moveTool(index: number, dir: -1 | 1) {
+    const ids = this.myTools.map(t => t.id);
+    const target = index + dir;
+    if (target < 0 || target >= ids.length) return;
+    [ids[index], ids[target]] = [ids[target], ids[index]];
+    this.favorites.reorder(ids);
+  }
+
+  removeTool(id: string) {
+    this.favorites.remove(id);
   }
 
   // ---- Savings goals ----

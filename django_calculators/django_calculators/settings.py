@@ -157,6 +157,7 @@ REST_FRAMEWORK = {
         'forgot_password': config('THROTTLE_FORGOT_PASSWORD', default='5/hour'),
         'analytics': config('THROTTLE_ANALYTICS', default='600/hour'),
         'login': config('THROTTLE_LOGIN', default='20/hour'),
+        'rating': config('THROTTLE_RATING', default='30/hour'),
     },
 }
 

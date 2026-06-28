@@ -492,3 +492,14 @@
   color: #4338ca; background: #e0e7ff; border-radius: 999px; padding: 0.1rem 0.55rem;
   vertical-align: middle;
 }
+
+/* ---- My tools (favorites) ---- */
+.tools-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.tool-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.6rem 0.9rem;
+}
+.tool-link { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: #1e293b; font-weight: 600; flex: 1; }
+.tool-icon { font-size: 1.2rem; }
+.tool-actions { display: flex; gap: 0.3rem; }
+.tool-actions .icon-btn.danger { color: #f59e0b; }

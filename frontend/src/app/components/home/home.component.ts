@@ -2,9 +2,14 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { CalculatorCard } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
+import { FavoritesService } from '../../services/favorites.service';
+import { AuthService } from '../../services/auth.service';
+import { RecentCalculatorsService } from '../../services/recent-calculators.service';
+import { CALC_BY_ID, CalcMeta } from '../../config/calculator-registry';
 
 @Component({
   selector: 'app-home',
@@ -15,9 +20,35 @@ import { LocaleService } from '../../i18n/locale.service';
 })
 export class HomeComponent {
   private locale = inject(LocaleService);
+  private router = inject(Router);
+  favorites = inject(FavoritesService);
+  auth = inject(AuthService);
+  recent = inject(RecentCalculatorsService);
 
   /** Live search term to filter the calculator grid. */
   searchTerm = '';
+
+  /** Recently-visited calculators resolved to route + icon (most recent first). */
+  get recentCalcs(): CalcMeta[] {
+    return this.recent.recent()
+      .map(id => CALC_BY_ID[id])
+      .filter((c): c is CalcMeta => !!c);
+  }
+
+  calcName(id: string): string {
+    return this.locale.t('calc.' + id + '.name');
+  }
+
+  /** Star toggle on a card. Stops navigation; sends anon users to login. */
+  toggleFavorite(event: Event, calcId: string): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!this.auth.isAuthenticated()) {
+      this.router.navigate(['/login'], { queryParams: { redirect: '/' } });
+      return;
+    }
+    this.favorites.toggle(calcId);
+  }
 
   /** Calculators matching the search (by localized name + description). */
   get filteredCalculators(): CalculatorCard[] {

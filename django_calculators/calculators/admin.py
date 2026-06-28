@@ -2,7 +2,23 @@ from django.contrib import admin
 from .models import (
     BlogCategory, BlogPost, Lead, AffiliateClick, DataReport, UserReminder,
     PageView, AuthEvent, SavingsGoal, SavingsContribution,
+    FavoriteCalculator, CalculatorRating,
 )
+
+
+@admin.register(FavoriteCalculator)
+class FavoriteCalculatorAdmin(admin.ModelAdmin):
+    list_display = ['user', 'calculator_id', 'order', 'created_at']
+    list_filter = ['calculator_id']
+    search_fields = ['user__email', 'calculator_id']
+
+
+@admin.register(CalculatorRating)
+class CalculatorRatingAdmin(admin.ModelAdmin):
+    list_display = ['calculator_id', 'rating', 'user', 'updated_at']
+    list_filter = ['calculator_id', 'rating']
+    search_fields = ['user__email', 'comment']
+    date_hierarchy = 'updated_at'
 
 
 class SavingsContributionInline(admin.TabularInline):

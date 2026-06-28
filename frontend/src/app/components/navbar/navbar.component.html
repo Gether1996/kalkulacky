@@ -79,6 +79,25 @@
   <div class="category-bar">
     <div class="category-bar-container">
 
+      <!-- Quick search (jump to any calculator) -->
+      <div class="nav-search">
+        <span class="nav-search-icon">🔍</span>
+        <input class="nav-search-input" type="search"
+               [(ngModel)]="searchTerm"
+               (focus)="searchOpen = true"
+               (keydown.enter)="submitSearch()"
+               (keydown.escape)="closeSearch()"
+               [placeholder]="'nav.search' | t"
+               [attr.aria-label]="'nav.search' | t" />
+        <div class="nav-search-results" *ngIf="searchOpen && searchResults.length">
+          <a *ngFor="let r of searchResults" [routerLink]="r.route"
+             class="nav-search-item" (click)="closeSearch()">
+            <span class="nav-search-item-icon">{{ r.icon }}</span>
+            <span>{{ calcName(r.id) }}</span>
+          </a>
+        </div>
+      </div>
+
       <!-- Home -->
       <a routerLink="/"
          routerLinkActive="active"
@@ -97,12 +116,38 @@
         <span>{{ 'calc.basic.name' | t }}</span>
       </a>
 
+      <!-- My tools (favorites) — logged-in users with pinned tools -->
+      <div class="category-dropdown"
+           *ngIf="authService.isAuthenticated() && favoriteCalcs.length"
+           [class.open]="openCategory === 'favorites'"
+           (mouseenter)="openCategory = 'favorites'"
+           (mouseleave)="openCategory = null">
+        <button class="category-link" (click)="toggleCategory('favorites')"
+                [attr.aria-expanded]="openCategory === 'favorites'">
+          <span class="cat-icon">⭐</span>
+          <span>{{ 'nav.cat.favorites' | t }}</span>
+          <span class="arrow">▼</span>
+        </button>
+        <div class="mega-menu">
+          <div class="mega-menu-content">
+            <a *ngFor="let calc of favoriteCalcs"
+               [routerLink]="calc.route"
+               routerLinkActive="active"
+               class="mega-item">
+              <span class="mega-icon">{{ calc.icon }}</span>
+              <span>{{ ('calc.' + calc.id + '.name') | t }}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
       <!-- Financial Dropdown -->
       <div class="category-dropdown"
            [class.open]="openCategory === 'financial'"
            (mouseenter)="openCategory = 'financial'"
            (mouseleave)="openCategory = null">
-        <button class="category-link">
+        <button class="category-link" (click)="toggleCategory('financial')"
+                [attr.aria-expanded]="openCategory === 'financial'">
           <span class="cat-icon">💰</span>
           <span>{{ 'nav.cat.financial' | t }}</span>
           <span class="arrow">▼</span>
@@ -125,7 +170,8 @@
            [class.open]="openCategory === 'health'"
            (mouseenter)="openCategory = 'health'"
            (mouseleave)="openCategory = null">
-        <button class="category-link">
+        <button class="category-link" (click)="toggleCategory('health')"
+                [attr.aria-expanded]="openCategory === 'health'">
           <span class="cat-icon">⚕️</span>
           <span>{{ 'nav.cat.health' | t }}</span>
           <span class="arrow">▼</span>
@@ -148,7 +194,8 @@
            [class.open]="openCategory === 'lifestyle'"
            (mouseenter)="openCategory = 'lifestyle'"
            (mouseleave)="openCategory = null">
-        <button class="category-link">
+        <button class="category-link" (click)="toggleCategory('lifestyle')"
+                [attr.aria-expanded]="openCategory === 'lifestyle'">
           <span class="cat-icon">🌟</span>
           <span>{{ 'nav.cat.lifestyle' | t }}</span>
           <span class="arrow">▼</span>
@@ -181,6 +228,22 @@
   <div class="mobile-menu" [class.open]="isMenuOpen">
     <div class="mobile-menu-content">
 
+      <!-- Mobile quick search -->
+      <div class="mobile-search">
+        <span class="nav-search-icon">🔍</span>
+        <input class="nav-search-input" type="search"
+               [(ngModel)]="searchTerm"
+               [placeholder]="'nav.search' | t"
+               [attr.aria-label]="'nav.search' | t" />
+      </div>
+      <div class="mobile-search-results" *ngIf="searchTerm && searchResults.length">
+        <a *ngFor="let r of searchResults" [routerLink]="r.route"
+           class="mobile-calc-link" (click)="isMenuOpen = false; closeSearch()">
+          <span class="calc-icon">{{ r.icon }}</span>
+          <span>{{ calcName(r.id) }}</span>
+        </a>
+      </div>
+
       <!-- Mobile Auth/User Section -->
       <div class="mobile-auth-section" *ngIf="!authService.isAuthenticated()">
         <a routerLink="/login" class="mobile-auth-btn" (click)="isMenuOpen = false">
@@ -212,6 +275,24 @@
       </div>
 
       <div class="mobile-divider"></div>
+
+      <!-- Mobile favorites -->
+      <div class="mobile-category" *ngIf="authService.isAuthenticated() && favoriteCalcs.length">
+        <div class="mobile-category-header" style="cursor:default">
+          <span class="cat-icon">⭐</span>
+          <span>{{ 'nav.cat.favorites' | t }}</span>
+        </div>
+        <div class="mobile-category-items">
+          <a *ngFor="let calc of favoriteCalcs"
+             [routerLink]="calc.route"
+             routerLinkActive="active"
+             class="mobile-calc-link"
+             (click)="isMenuOpen = false">
+            <span class="calc-icon">{{ calc.icon }}</span>
+            <span>{{ ('calc.' + calc.id + '.name') | t }}</span>
+          </a>
+        </div>
+      </div>
 
       <!-- Mobile Navigation Links -->
       <a routerLink="/"

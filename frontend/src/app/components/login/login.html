@@ -23,14 +23,13 @@
       <!-- Password Field -->
       <div class="form-group">
         <label for="password">Heslo</label>
-        <input
-          type="password"
-          id="password"
+        <app-password-input
+          inputId="password"
           formControlName="password"
-          class="form-control"
-          [class.is-invalid]="password?.invalid && password?.touched"
+          autocomplete="current-password"
           placeholder="Vaše heslo"
-        />
+          [invalid]="!!(password?.invalid && password?.touched)">
+        </app-password-input>
         <div class="invalid-feedback" *ngIf="password?.invalid && password?.touched">
           <span *ngIf="password?.errors?.['required']">Heslo je povinné</span>
           <span *ngIf="password?.errors?.['minlength']">Heslo musí mať aspoň 8 znakov</span>
