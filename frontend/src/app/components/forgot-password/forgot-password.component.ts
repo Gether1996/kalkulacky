@@ -24,7 +24,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
         <input id="fp-email" class="auth-input" type="email" name="email"
                [(ngModel)]="email" autocomplete="email" required />
         <button class="auth-btn" type="submit" [disabled]="loading || !email">
-          {{ loading ? ('common.loading' | t) : ('auth.forgot.cta' | t) }}
+          {{ loading ? ('common.loadingData' | t) : ('auth.forgot.cta' | t) }}
         </button>
       </form>
 

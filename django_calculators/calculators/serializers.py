@@ -66,19 +66,25 @@ class SalaryCalculatorSerializer(serializers.Serializer):
 
 
 class MortgageCalculatorSerializer(serializers.Serializer):
-    """Serializer for Mortgage Calculator API"""
+    """Serializer for Mortgage Calculator API.
+
+    The amortization math is currency-agnostic, so the amount ceiling is set high
+    enough to accept non-EUR markets (CZK/PLN/HUF presets go well above €1M).
+    `country` is accepted for forward compatibility / currency labelling; the
+    payment schedule itself does not depend on it today.
+    """
     loan_amount = serializers.DecimalField(
         max_digits=12,
         decimal_places=2,
         min_value=1,
-        max_value=1000000,
-        help_text="Total loan amount in EUR"
+        max_value=1000000000,
+        help_text="Total loan amount (in the market's currency)"
     )
     annual_interest_rate = serializers.DecimalField(
         max_digits=5,
         decimal_places=2,
         min_value=0,
-        max_value=20,
+        max_value=30,
         help_text="Annual interest rate (e.g., 3.5 for 3.5%)"
     )
     loan_term_years = serializers.IntegerField(
@@ -86,12 +92,16 @@ class MortgageCalculatorSerializer(serializers.Serializer):
         max_value=40,
         help_text="Loan term in years"
     )
-    
+    country = serializers.ChoiceField(
+        choices=['SK', 'CZ', 'PL', 'HU'], required=False, default='SK',
+        help_text="Market the amount is denominated in (default SK)",
+    )
+
     def validate(self, data):
         """Cross-field validation"""
         if data['loan_amount'] < 1000:
             raise serializers.ValidationError(
-                {"loan_amount": "Loan amount should be at least €1,000"}
+                {"loan_amount": "Loan amount should be at least 1,000"}
             )
         return data
 
@@ -321,6 +331,7 @@ class VacationCalculatorSerializer(serializers.Serializer):
         decimal_places=1,
         default=0,
         required=False,
+        min_value=0,
         help_text="Number of vacation days already used this year"
     )
     days_carried_over = serializers.DecimalField(
@@ -328,6 +339,7 @@ class VacationCalculatorSerializer(serializers.Serializer):
         decimal_places=1,
         default=0,
         required=False,
+        min_value=0,
         help_text="Vacation days carried over from previous year"
     )
     planned_vacation_days = serializers.DecimalField(
@@ -335,6 +347,7 @@ class VacationCalculatorSerializer(serializers.Serializer):
         decimal_places=1,
         default=0,
         required=False,
+        min_value=0,
         help_text="Number of days planning to take"
     )
 
@@ -450,12 +463,14 @@ class PaymentCalculatorSerializer(serializers.Serializer):
         max_digits=6,
         decimal_places=2,
         min_value=0,
+        max_value=1000,
         help_text="Annual interest rate in percentage"
     )
     loan_term_years = serializers.DecimalField(
         max_digits=5,
         decimal_places=1,
         min_value=0.1,
+        max_value=100,
         help_text="Loan term in years"
     )
     payment_frequency = serializers.ChoiceField(
@@ -799,7 +814,7 @@ class CarLeasingCalculatorSerializer(serializers.Serializer):
     )
     term_months = serializers.IntegerField(
         min_value=12,
-        max_value=96,
+        max_value=120,
         help_text="Doba financovania v mesiacoch"
     )
     leasing_rate = serializers.DecimalField(
@@ -1133,6 +1148,9 @@ class DataReportSerializer(serializers.ModelSerializer):
         value = (value or '').strip()
         if len(value) < 5:
             raise serializers.ValidationError('Napíšte prosím, čo je nesprávne (aspoň pár slov).')
+        # Cap length — this is a public, unauthenticated endpoint (storage abuse).
+        if len(value) > 5000:
+            raise serializers.ValidationError('Správa je príliš dlhá (max. 5000 znakov).')
         return value
 
 

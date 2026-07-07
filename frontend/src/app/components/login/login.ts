@@ -29,8 +29,11 @@ export class Login implements OnInit {
       password: ['', [Validators.required, Validators.minLength(8)]]
     });
 
-    // Get return url from route parameters or default to '/'
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+    // Accept both param names: the auth guard uses `returnUrl`, while the
+    // login-gated widgets (save-calculation, rating, savings-goal, home) use
+    // `redirect`. Honour whichever is present so users always land back.
+    const q = this.route.snapshot.queryParams;
+    this.returnUrl = q['returnUrl'] || q['redirect'] || '/';
   }
 
   ngOnInit() {

@@ -567,3 +567,19 @@
   color: white;
   transform: translateY(-2px);
 }
+
+/* Phones: the trimester timeline (3×80px + gaps) and the week display
+   overflowed at ≤400px. Shrink the segments, tighten gaps, allow wrapping. */
+@media (max-width: 640px) {
+  .segment {
+    width: 56px;
+    height: 56px;
+    border-width: 2px;
+  }
+  .trimester-segments {
+    gap: 0.5rem;
+  }
+  .week-display {
+    flex-wrap: wrap;
+  }
+}

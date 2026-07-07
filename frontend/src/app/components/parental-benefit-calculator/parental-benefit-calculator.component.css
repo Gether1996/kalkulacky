@@ -752,3 +752,13 @@ details p {
   color: #2b6cb0;
   text-decoration: underline;
 }
+
+/* Small screens: collapse the two-column grids that clipped currency values
+   (e.g. "19 440 €") into ~60px columns on phones. */
+@media (max-width: 640px) {
+  .comparison-grid,
+  .benefit-type-selector,
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -77,7 +77,8 @@ html:not([lang="sk"]):not([lang="cs"]) .info-section {
   .calculator-content table,
   .calculator-body table,
   .details-table table,
-  .info-section table {
+  .info-section table,
+  .blog-html-content table {
     display: block;
     width: 100%;
     max-width: 100%;
@@ -86,6 +87,10 @@ html:not([lang="sk"]):not([lang="cs"]) .info-section {
   }
   /* Media never forces the page wider than the screen. */
   img, svg, iframe, video, canvas { max-width: 100%; height: auto; }
+
+  /* Prevent iOS from zooming the page when a sub-16px input is focused.
+     Applies only on small screens so desktop density is unchanged. */
+  input, select, textarea { font-size: 16px; }
 }
 
 /* ============================================================
@@ -135,9 +140,78 @@ html[data-theme="dark"] .saved-row,
 html[data-theme="dark"] .reminder-row,
 html[data-theme="dark"] .reminder-editor,
 html[data-theme="dark"] .profile-card,
-html[data-theme="dark"] .auth-card {
+html[data-theme="dark"] .auth-card,
+/* Extended surface list — every white card/section a component defines that the
+   original list didn't know about. Without these the global heading/value flip
+   below paints light text onto a card that stayed white → invisible. */
+html[data-theme="dark"] .section,
+html[data-theme="dark"] .result-section,
+html[data-theme="dark"] .result-card,
+html[data-theme="dark"] .seo-content,
+html[data-theme="dark"] .detail-header,
+html[data-theme="dark"] .breakdown,
+html[data-theme="dark"] .details-table,
+html[data-theme="dark"] .amortization-table,
+html[data-theme="dark"] .calculator-form,
+html[data-theme="dark"] .blog-card,
+html[data-theme="dark"] .related-post-card,
+html[data-theme="dark"] .login-card,
+html[data-theme="dark"] .register-card,
+html[data-theme="dark"] .rating-box,
+html[data-theme="dark"] .lead-box,
+html[data-theme="dark"] .save-form,
+html[data-theme="dark"] .sg-card,
+html[data-theme="dark"] .sg-form,
+html[data-theme="dark"] .tool-row,
+html[data-theme="dark"] .date-picker-dropdown,
+html[data-theme="dark"] .progress-card,
+html[data-theme="dark"] .dates-card,
+html[data-theme="dark"] .info-card,
+html[data-theme="dark"] .contributions-card,
+html[data-theme="dark"] .lifetime-card,
+html[data-theme="dark"] .projections-card,
+html[data-theme="dark"] .work-compatibility-card,
+html[data-theme="dark"] .comparison-card,
+html[data-theme="dark"] .notifications-card,
+html[data-theme="dark"] .entitlement-card,
+html[data-theme="dark"] .current-year-card,
+html[data-theme="dark"] .accrual-card,
+html[data-theme="dark"] .planning-card,
+html[data-theme="dark"] .weeks-card,
+html[data-theme="dark"] .explanation-box,
+html[data-theme="dark"] .examples-section,
+html[data-theme="dark"] .example-card,
+html[data-theme="dark"] .history-panel,
+html[data-theme="dark"] .calculator-instructions,
+html[data-theme="dark"] .instruction-card,
+html[data-theme="dark"] .option-card,
+html[data-theme="dark"] .conversions-box,
+html[data-theme="dark"] .dimensions-summary,
+html[data-theme="dark"] .formula-section,
+html[data-theme="dark"] .percentage-display,
+html[data-theme="dark"] .category-info {
   background: #1e293b !important;
   border-color: #334155 !important;
+  color: #e2e8f0;
+}
+
+/* Inner light strips/rows (usually #f8f9fa in light mode) that sit inside a card
+   and carry globally-flipped value text — give them a darker inset so the light
+   values stay readable. */
+html[data-theme="dark"] .detail-item,
+html[data-theme="dark"] .detail-row,
+html[data-theme="dark"] .detail-box,
+html[data-theme="dark"] .detail-row.highlight,
+html[data-theme="dark"] .trimester-detail,
+html[data-theme="dark"] .total-preview,
+html[data-theme="dark"] .subtotal,
+html[data-theme="dark"] .tdee-details,
+html[data-theme="dark"] .target-calories,
+html[data-theme="dark"] .return-trip,
+html[data-theme="dark"] .first-year-summary,
+html[data-theme="dark"] .schedule-table tbody tr:nth-child(even),
+html[data-theme="dark"] .yearly-table tbody tr:nth-child(even) {
+  background: #0f172a !important;
   color: #e2e8f0;
 }
 
@@ -197,6 +271,67 @@ html[data-theme="dark"] textarea {
 }
 html[data-theme="dark"] input::placeholder,
 html[data-theme="dark"] textarea::placeholder { color: #64748b; }
+
+/* Form/field labels and table cells: components hardcode dark ink (#2c3e50 /
+   #334155 / #555) that becomes unreadable on the now-dark cards. These were the
+   single biggest gap — no global dark rule existed for label/td. !important is
+   needed to beat the hardcoded component colours. */
+html[data-theme="dark"] label,
+html[data-theme="dark"] .input-label,
+html[data-theme="dark"] .input-label-compact,
+html[data-theme="dark"] .option-label,
+html[data-theme="dark"] .field label,
+html[data-theme="dark"] .form-group label,
+html[data-theme="dark"] .input-group label,
+html[data-theme="dark"] .switch-field label,
+html[data-theme="dark"] .info-group label { color: #cbd5e1 !important; }
+html[data-theme="dark"] td,
+html[data-theme="dark"] .detail-row span,
+html[data-theme="dark"] .detail-row strong,
+html[data-theme="dark"] .header-row,
+html[data-theme="dark"] .total-row { color: #e2e8f0 !important; }
+
+/* Headings on intentionally light-tinted callout cards (pastel green/yellow/blue)
+   must stay dark — the global h1–h5 flip would otherwise make them invisible. */
+html[data-theme="dark"] .second-child-card h3,
+html[data-theme="dark"] .second-child-card h4,
+html[data-theme="dark"] .trimester-card h3,
+html[data-theme="dark"] .replacement-card h3,
+html[data-theme="dark"] .dr-title { color: #1e293b !important; }
+
+/* G2 — "white" buttons (presets/toggles/methods) have an explicit white
+   background but no explicit text colour, so `color-scheme: dark` flips their
+   default text to light → light-on-white. Pin a readable surface + text; the
+   accent active state below is re-asserted so selection still shows. */
+html[data-theme="dark"] .benchmark-button,
+html[data-theme="dark"] .benchmark-btn,
+html[data-theme="dark"] .calc-type-btn,
+html[data-theme="dark"] .method-btn,
+html[data-theme="dark"] .type-button,
+html[data-theme="dark"] .tip-button,
+html[data-theme="dark"] .preset-btn,
+html[data-theme="dark"] .operation-btn,
+html[data-theme="dark"] .category-btn {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-color: #334155;
+}
+html[data-theme="dark"] .benchmark-button.active,
+html[data-theme="dark"] .benchmark-btn.active,
+html[data-theme="dark"] .calc-type-btn.active,
+html[data-theme="dark"] .method-btn.active,
+html[data-theme="dark"] .type-button.active,
+html[data-theme="dark"] .tip-button.active,
+html[data-theme="dark"] .preset-btn.active,
+html[data-theme="dark"] .operation-btn.active,
+html[data-theme="dark"] .category-btn.active,
+html[data-theme="dark"] .calc-type-btn.selected,
+html[data-theme="dark"] .type-button.selected,
+html[data-theme="dark"] .method-btn.selected {
+  background: var(--calc-accent);
+  color: #ffffff;
+  border-color: var(--calc-accent-strong);
+}
 
 /* Tables */
 html[data-theme="dark"] table { background: #1e293b; color: #e2e8f0; }
@@ -263,4 +398,36 @@ html[data-theme="dark"] .legal-page .legal-note { background: #422006; border-co
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ============================================================
+ * Blog article body (rendered via [innerHTML]). Global (unscoped)
+ * so it reaches the injected HTML that component-scoped CSS can't.
+ * ============================================================ */
+.blog-html-content { overflow-wrap: anywhere; }
+html[data-theme="dark"] .blog-detail-content,
+html[data-theme="dark"] .blog-html-content,
+html[data-theme="dark"] .blog-html-content p,
+html[data-theme="dark"] .blog-html-content li,
+html[data-theme="dark"] .blog-html-content td { color: #e2e8f0 !important; }
+html[data-theme="dark"] .blog-html-content a { color: #93c5fd; }
+
+/* ============================================================
+ * Navbar mobile menu — dark-mode link colours + the tap-outside
+ * overlay backdrop, which had no CSS anywhere (so closing the menu
+ * by tapping outside did nothing and there was no dimming).
+ * ============================================================ */
+html[data-theme="dark"] .mobile-calc-link,
+html[data-theme="dark"] .mobile-category-header,
+html[data-theme="dark"] .user-display-name { color: #e2e8f0 !important; }
+
+.mobile-overlay { display: none; }
+.mobile-overlay.visible,
+.mobile-overlay.active,
+.mobile-overlay.show {
+  display: block;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 998;
 }

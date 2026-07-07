@@ -1,6 +1,21 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from .models import User
+
+
+def _run_password_validators(password, user=None):
+    """Run the project's AUTH_PASSWORD_VALIDATORS and re-raise as a DRF error.
+
+    These validators (common-password, numeric-only, min-length, user-similarity)
+    are configured in settings but were never invoked by the API — this wires
+    them into every password entry point.
+    """
+    try:
+        validate_password(password, user=user)
+    except DjangoValidationError as exc:
+        raise serializers.ValidationError(list(exc.messages))
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -33,13 +48,20 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['email', 'password', 'password_confirm', 'first_name', 'last_name']
     
     def validate(self, attrs):
-        """Validate that passwords match."""
+        """Validate that passwords match and meet strength requirements."""
         if attrs['password'] != attrs['password_confirm']:
             raise serializers.ValidationError({
                 'password_confirm': 'Passwords do not match.'
             })
+        # Build a throwaway user for the similarity validator (email/name context).
+        probe = User(
+            email=attrs.get('email', ''),
+            first_name=attrs.get('first_name', ''),
+            last_name=attrs.get('last_name', ''),
+        )
+        _run_password_validators(attrs['password'], user=probe)
         return attrs
-    
+
     def create(self, validated_data):
         """Create a new user with encrypted password."""
         validated_data.pop('password_confirm')
@@ -116,11 +138,13 @@ class ChangePasswordSerializer(serializers.Serializer):
     )
     
     def validate(self, attrs):
-        """Validate that new passwords match."""
+        """Validate that new passwords match and meet strength requirements."""
         if attrs['new_password'] != attrs['new_password_confirm']:
             raise serializers.ValidationError({
                 'new_password_confirm': 'New passwords do not match.'
             })
+        user = self.context['request'].user if self.context.get('request') else None
+        _run_password_validators(attrs['new_password'], user=user)
         return attrs
     
     def validate_old_password(self, value):
@@ -160,4 +184,5 @@ class ResetPasswordSerializer(serializers.Serializer):
     def validate(self, attrs):
         if attrs['new_password'] != attrs['new_password_confirm']:
             raise serializers.ValidationError({'new_password_confirm': 'Passwords do not match.'})
+        _run_password_validators(attrs['new_password'])
         return attrs

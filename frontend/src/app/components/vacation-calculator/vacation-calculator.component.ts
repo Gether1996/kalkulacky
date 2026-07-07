@@ -81,12 +81,12 @@ export class VacationCalculatorComponent implements OnInit {
   calculate() {
     // Validate inputs
     if (this.age < 15 || this.age > 100) {
-      this.error = 'Vek musí byť medzi 15 a 100 rokmi';
+      this.error = this.locale.t('vacation.errAge');
       return;
     }
-    
+
     if (!this.employmentStartDate) {
-      this.error = 'Prosím zadajte dátum nástupu do zamestnania';
+      this.error = this.locale.t('vacation.errStartDate');
       return;
     }
 
@@ -111,7 +111,7 @@ export class VacationCalculatorComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        this.error = err.error?.error || 'Chyba pri výpočte';
+        this.error = err.error?.error || this.locale.t('common.error');
         this.loading = false;
         this.cdr.detectChanges();
       }
@@ -143,9 +143,9 @@ export class VacationCalculatorComponent implements OnInit {
   }
 
   getUsageStatusLabel(percentage: number): string {
-    if (percentage > 100) return 'Prekročený limit';
-    if (percentage > 75) return 'Vysoké využitie';
-    if (percentage > 50) return 'Stredné využitie';
-    return 'Nízke využitie';
+    if (percentage > 100) return this.locale.t('vacation.statusOver');
+    if (percentage > 75) return this.locale.t('vacation.statusHigh');
+    if (percentage > 50) return this.locale.t('vacation.statusMedium');
+    return this.locale.t('vacation.statusLow');
   }
 }

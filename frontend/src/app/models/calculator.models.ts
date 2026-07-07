@@ -1049,20 +1049,25 @@ export interface CustomAmount {
 
 export interface PersonBreakdown {
   person: string;
-  subtotal: number;
+  amount_before_tip: number;
   tip: number;
   total: number;
+  percentage_of_bill?: number;
 }
 
 export interface SplitBillCalculationResponse {
   split_type: string;
-  original_amount: number;
+  split_type_label?: string;
+  total_amount: number;
   tip_percent: number;
   tip_amount: number;
   total_with_tip: number;
   num_people: number;
+  // Present on equal-split responses.
+  per_person_before_tip?: number;
+  per_person_tip?: number;
+  per_person_total?: number;
   breakdown: PersonBreakdown[];
-  per_person_average?: number;
 }
 
 export interface TipSuggestion {

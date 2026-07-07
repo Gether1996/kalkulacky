@@ -1,19 +1,16 @@
 <div class="calculator-container">
   <div class="calculator-header">
     <h1>{{ 'freelancer.title' | t }}</h1>
-    <p class="calculator-description">
-      Vypočítajte dane a odvody pre samostatne zárobkovo činné osoby (SZČO) na Slovensku.
-      Zahŕňa daň z príjmu, zdravotné poistenie a sociálne odvody.
-    </p>
+    <p class="calculator-description">{{ 'freelancer.desc' | t }}</p>
     <p class="country-badge">🌍 {{ 'salary.rulesFor' | t }}: <strong>{{ countryName }}</strong> · {{ currency }}</p>
   </div>
 
   <div class="calculator-content">
     <div class="input-section">
-      <h2>📊 Vstupné údaje</h2>
+      <h2>{{ 'freelancer.inputData' | t }}</h2>
 
       <div class="input-group">
-        <label for="annualRevenue">Ročný príjem (obrat)</label>
+        <label for="annualRevenue">{{ 'freelancer.annualRevenue' | t }}</label>
         <div class="input-with-unit">
           <input
             type="number"
@@ -25,11 +22,11 @@
           />
           <span class="unit">{{ currencySymbol }}</span>
         </div>
-        <small>Celkové príjmy za rok pred odpočítaním výdavkov</small>
+        <small>{{ 'freelancer.annualRevenueHint' | t }}</small>
       </div>
 
       <div class="input-group">
-        <label>Typ výdavkov</label>
+        <label>{{ 'freelancer.expensesType' | t }}</label>
         <div class="expenses-type-options">
           <div 
             class="option-card" 
@@ -37,8 +34,8 @@
             (click)="useFlatExpenses = true; onExpensesMethodChange(); calculate()"
           >
             <div class="option-icon">📋</div>
-            <div class="option-label">Paušálne výdavky</div>
-            <div class="option-description">60% z príjmu</div>
+            <div class="option-label">{{ 'freelancer.flatExpenses' | t }}</div>
+            <div class="option-description">{{ 'freelancer.flatExpensesDesc' | t }}</div>
           </div>
           <div 
             class="option-card" 
@@ -46,14 +43,14 @@
             (click)="useFlatExpenses = false; onExpensesMethodChange(); calculate()"
           >
             <div class="option-icon">🧾</div>
-            <div class="option-label">Skutočné výdavky</div>
-            <div class="option-description">Vaše náklady</div>
+            <div class="option-label">{{ 'freelancer.realExpenses' | t }}</div>
+            <div class="option-description">{{ 'freelancer.realExpensesDesc' | t }}</div>
           </div>
         </div>
       </div>
 
       <div class="input-group" *ngIf="!useFlatExpenses">
-        <label for="annualExpenses">Ročné výdavky (náklady)</label>
+        <label for="annualExpenses">{{ 'freelancer.annualExpenses' | t }}</label>
         <div class="input-with-unit">
           <input
             type="number"
@@ -65,11 +62,11 @@
           />
           <span class="unit">{{ currencySymbol }}</span>
         </div>
-        <small>Oprávnené výdavky na podnikanie</small>
+        <small>{{ 'freelancer.annualExpensesHint' | t }}</small>
       </div>
 
       <div class="input-group">
-        <label>Nemocenské poistenie</label>
+        <label>{{ 'freelancer.sickness' | t }}</label>
         <div class="sickness-options">
           <div 
             class="option-card" 
@@ -77,8 +74,8 @@
             (click)="includeSickness = true; calculate()"
           >
             <div class="option-icon">✅</div>
-            <div class="option-label">Áno</div>
-            <div class="option-description">Dobrovoné</div>
+            <div class="option-label">{{ 'freelancer.sicknessYes' | t }}</div>
+            <div class="option-description">{{ 'freelancer.sicknessYesDesc' | t }}</div>
           </div>
           <div 
             class="option-card" 
@@ -86,15 +83,15 @@
             (click)="includeSickness = false; calculate()"
           >
             <div class="option-icon">❌</div>
-            <div class="option-label">Nie</div>
-            <div class="option-description">Bez nemocenského</div>
+            <div class="option-label">{{ 'freelancer.sicknessNo' | t }}</div>
+            <div class="option-description">{{ 'freelancer.sicknessNoDesc' | t }}</div>
           </div>
         </div>
-        <small>Nemocenské poistenie je pre SZČO dobrovoľné</small>
+        <small>{{ 'freelancer.sicknessHint' | t }}</small>
       </div>
 
       <div class="input-group">
-        <label for="monthsActive">Počet aktívnych mesiacov</label>
+        <label for="monthsActive">{{ 'freelancer.monthsActive' | t }}</label>
         <div class="input-with-unit">
           <input
             type="number"
@@ -105,9 +102,9 @@
             max="12"
             step="1"
           />
-          <span class="unit">mesiacov</span>
+          <span class="unit">{{ 'common.months' | t }}</span>
         </div>
-        <small>Počet mesiacov aktívneho podnikania v roku</small>
+        <small>{{ 'freelancer.monthsActiveHint' | t }}</small>
       </div>
 
       <div class="error-message" *ngIf="error">
@@ -116,19 +113,19 @@
     </div>
 
     <div class="results-section" *ngIf="result">
-      <h2>💰 Výsledky</h2>
+      <h2>{{ 'freelancer.results' | t }}</h2>
 
       <!-- Net Income Highlight -->
       <div class="result-card highlight-card">
         <div class="card-icon">💵</div>
         <div class="card-content">
-          <div class="card-label">Čistý zisk</div>
+          <div class="card-label">{{ 'freelancer.netProfit' | t }}</div>
           <div class="card-value">{{ formatCurrency(result.summary.net_income) }}</div>
           <div class="card-details">
-            <span>{{ formatCurrency(result.summary.monthly_net) }} / mesiac</span>
+            <span>{{ formatCurrency(result.summary.monthly_net) }} {{ 'freelancer.perMonth' | t }}</span>
             <span class="separator">•</span>
             <span [style.color]="getEffectiveRateColor(result.summary.effective_rate)">
-              Efektívna sadzba: {{ formatPercent(result.summary.effective_rate) }}
+              {{ 'freelancer.effectiveRate' | t }} {{ formatPercent(result.summary.effective_rate) }}
             </span>
           </div>
         </div>
@@ -138,48 +135,48 @@
       <div class="summary-grid">
         <div class="summary-card">
           <div class="summary-icon">💰</div>
-          <div class="summary-label">Ročný príjem</div>
+          <div class="summary-label">{{ 'freelancer.summaryRevenue' | t }}</div>
           <div class="summary-value">{{ formatCurrency(result.income.annual_revenue) }}</div>
         </div>
         <div class="summary-card">
           <div class="summary-icon">📉</div>
-          <div class="summary-label">Výdavky</div>
+          <div class="summary-label">{{ 'freelancer.expenses' | t }}</div>
           <div class="summary-value">{{ formatCurrency(result.income.annual_expenses) }}</div>
           <div class="summary-note">{{ result.income.expenses_note }}</div>
         </div>
         <div class="summary-card">
           <div class="summary-icon">🧾</div>
-          <div class="summary-label">Daňový základ</div>
+          <div class="summary-label">{{ 'freelancer.taxBase' | t }}</div>
           <div class="summary-value">{{ formatCurrency(result.income.tax_base) }}</div>
         </div>
         <div class="summary-card important">
           <div class="summary-icon">⚠️</div>
-          <div class="summary-label">Celkové odvody</div>
+          <div class="summary-label">{{ 'freelancer.totalContributions' | t }}</div>
           <div class="summary-value">{{ formatCurrency(result.summary.total_tax_and_contributions) }}</div>
-          <div class="summary-note">{{ formatCurrency(result.summary.monthly_deductions) }} / mesiac</div>
+          <div class="summary-note">{{ formatCurrency(result.summary.monthly_deductions) }} {{ 'freelancer.perMonth' | t }}</div>
         </div>
       </div>
 
       <!-- Income Tax Details -->
       <div class="detail-card">
         <div class="detail-header">
-          <h3>🏛️ Daň z príjmu</h3>
+          <h3>{{ 'freelancer.incomeTax' | t }}</h3>
         </div>
         <div class="detail-body">
           <div class="detail-row">
-            <span class="detail-label">Základ dane po odpočítaniach:</span>
+            <span class="detail-label">{{ 'freelancer.taxBaseAfterDeductions' | t }}</span>
             <span class="detail-value">{{ formatCurrency(result.income.taxable_income) }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Nezdaniteľná časť:</span>
+            <span class="detail-label">{{ 'freelancer.nonTaxable' | t }}</span>
             <span class="detail-value">{{ formatCurrency(result.income.non_taxable_amount) }}</span>
           </div>
           <div class="detail-row highlight">
-            <span class="detail-label">Daň ({{ formatPercent(result.tax.tax_rate_applied) }}):</span>
+            <span class="detail-label">{{ 'freelancer.tax' | t }} ({{ formatPercent(result.tax.tax_rate_applied) }}):</span>
             <span class="detail-value strong">{{ formatCurrency(result.tax.income_tax) }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Priemerná mesačná daň:</span>
+            <span class="detail-label">{{ 'freelancer.avgMonthlyTax' | t }}</span>
             <span class="detail-value">{{ formatCurrency(result.tax.monthly_average) }}</span>
           </div>
         </div>
@@ -188,24 +185,24 @@
       <!-- Health Insurance Details -->
       <div class="detail-card">
         <div class="detail-header">
-          <h3>🏥 Zdravotné poistenie</h3>
+          <h3>{{ 'freelancer.healthInsurance' | t }}</h3>
           <span class="detail-rate">{{ formatPercent(result.health_insurance.rate) }}</span>
         </div>
         <div class="detail-body">
           <div class="detail-row">
-            <span class="detail-label">Vymeriavací základ (mesačne):</span>
+            <span class="detail-label">{{ 'freelancer.assessmentBaseMonthly' | t }}</span>
             <span class="detail-value">{{ formatCurrency(result.health_insurance.monthly_base) }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Minimálny základ:</span>
+            <span class="detail-label">{{ 'freelancer.minBase' | t }}</span>
             <span class="detail-value">{{ formatCurrency(result.health_insurance.min_base) }}</span>
           </div>
           <div class="detail-row highlight">
-            <span class="detail-label">Mesačná platba:</span>
+            <span class="detail-label">{{ 'freelancer.monthlyPayment' | t }}</span>
             <span class="detail-value strong">{{ formatCurrency(result.health_insurance.monthly_payment) }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Ročná platba ({{ result.summary.months_active }} mesiacov):</span>
+            <span class="detail-label">{{ 'freelancer.annualPayment' | t }} ({{ result.summary.months_active }} {{ 'common.months' | t }}):</span>
             <span class="detail-value">{{ formatCurrency(result.health_insurance.annual_payment) }}</span>
           </div>
         </div>
@@ -214,24 +211,24 @@
       <!-- Social Insurance Details -->
       <div class="detail-card">
         <div class="detail-header">
-          <h3>🛡️ Sociálne poistenie</h3>
+          <h3>{{ 'freelancer.socialInsurance' | t }}</h3>
         </div>
         <div class="detail-body">
           <div class="detail-row">
-            <span class="detail-label">Vymeriavací základ (mesačne):</span>
+            <span class="detail-label">{{ 'freelancer.assessmentBaseMonthly' | t }}</span>
             <span class="detail-value">{{ formatCurrency(result.social_insurance.monthly_base) }}</span>
           </div>
           <div class="detail-row highlight">
-            <span class="detail-label">Mesačná platba celkom:</span>
+            <span class="detail-label">{{ 'freelancer.monthlyPaymentTotal' | t }}</span>
             <span class="detail-value strong">{{ formatCurrency(result.social_insurance.monthly_payment) }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Ročná platba celkom ({{ result.summary.months_active }} mesiacov):</span>
+            <span class="detail-label">{{ 'freelancer.annualPaymentTotal' | t }} ({{ result.summary.months_active }} {{ 'common.months' | t }}):</span>
             <span class="detail-value">{{ formatCurrency(result.social_insurance.annual_payment) }}</span>
           </div>
 
           <div class="social-breakdown">
-            <h4>Rozdelenie sociálnych odvodov:</h4>
+            <h4>{{ 'freelancer.socialBreakdown' | t }}</h4>
             
             <div class="breakdown-item" *ngIf="result.social_insurance.breakdown.sickness.included">
               <div class="breakdown-header">

@@ -1,0 +1,68 @@
+import { Locale } from '../locales';
+
+// Vacation calculator UI strings (interactive UI only; SEO article stays SK).
+export const ENTRIES: Record<string, Record<Locale, string>> = {
+  'vacation.kw1': { sk: 'Dovolenka', cs: 'Dovolená', en: 'Vacation', pl: 'Urlop', hu: 'Szabadság' },
+  'vacation.kw2': { sk: 'Nárok na dovolenku', cs: 'Nárok na dovolenou', en: 'Vacation entitlement', pl: 'Wymiar urlopu', hu: 'Szabadságjogosultság' },
+  'vacation.kw3': { sk: 'Pracovné voľno', cs: 'Pracovní volno', en: 'Time off', pl: 'Czas wolny', hu: 'Munkaszünet' },
+
+  'vacation.yourDetails': { sk: 'Vaše údaje', cs: 'Vaše údaje', en: 'Your details', pl: 'Twoje dane', hu: 'Az Ön adatai' },
+  'vacation.age': { sk: 'Váš vek', cs: 'Váš věk', en: 'Your age', pl: 'Twój wiek', hu: 'Az Ön életkora' },
+  'vacation.ageTip': { sk: 'Vek ovplyvňuje nárok na dovolenku', cs: 'Věk ovlivňuje nárok na dovolenou', en: 'Age affects vacation entitlement', pl: 'Wiek wpływa na wymiar urlopu', hu: 'Az életkor befolyásolja a szabadságjogosultságot' },
+  'vacation.startDate': { sk: 'Dátum nástupu do zamestnania', cs: 'Datum nástupu do zaměstnání', en: 'Employment start date', pl: 'Data rozpoczęcia zatrudnienia', hu: 'Munkaviszony kezdete' },
+  'vacation.startDateTip': { sk: 'Kedy ste nastúpili do súčasného zamestnania', cs: 'Kdy jste nastoupili do současného zaměstnání', en: 'When you started your current job', pl: 'Kiedy rozpocząłeś obecną pracę', hu: 'Mikor kezdte a jelenlegi munkáját' },
+  'vacation.currentDate': { sk: 'Aktuálny dátum', cs: 'Aktuální datum', en: 'Current date', pl: 'Aktualna data', hu: 'Aktuális dátum' },
+  'vacation.currentDateTip': { sk: 'Dátum výpočtu (predvolene dnes)', cs: 'Datum výpočtu (výchozí dnes)', en: 'Calculation date (defaults to today)', pl: 'Data obliczenia (domyślnie dzisiaj)', hu: 'Számítás dátuma (alapértelmezés szerint ma)' },
+  'vacation.daysUsed': { sk: 'Čerpané dni dovolenky (tento rok)', cs: 'Čerpané dny dovolené (tento rok)', en: 'Vacation days taken (this year)', pl: 'Wykorzystane dni urlopu (w tym roku)', hu: 'Kivett szabadságnapok (idén)' },
+  'vacation.daysUsedTip': { sk: 'Koľko dní dovolenky ste už čerpali tento rok', cs: 'Kolik dní dovolené jste již vyčerpali tento rok', en: 'How many vacation days you have already taken this year', pl: 'Ile dni urlopu już wykorzystałeś w tym roku', hu: 'Hány szabadságnapot vett már ki idén' },
+  'vacation.carriedOver': { sk: 'Prenesené dni z minulého roka', cs: 'Převedené dny z minulého roku', en: 'Days carried over from last year', pl: 'Dni przeniesione z zeszłego roku', hu: 'Tavalyról áthozott napok' },
+  'vacation.carriedOverTip': { sk: 'Nevyčerpaná dovolenka z predchádzajúceho roka', cs: 'Nevyčerpaná dovolená z předchozího roku', en: 'Unused vacation from the previous year', pl: 'Niewykorzystany urlop z poprzedniego roku', hu: 'Fel nem használt szabadság az előző évből' },
+  'vacation.plannedDays': { sk: 'Plánované dni dovolenky', cs: 'Plánované dny dovolené', en: 'Planned vacation days', pl: 'Planowane dni urlopu', hu: 'Tervezett szabadságnapok' },
+  'vacation.plannedDaysTip': { sk: 'Koľko dní plánujete čerpať', cs: 'Kolik dní plánujete čerpat', en: 'How many days you plan to take', pl: 'Ile dni planujesz wykorzystać', hu: 'Hány napot tervez kivenni' },
+
+  'vacation.infoSKTitle': { sk: 'ℹ️ Slovenský zákonník práce', cs: 'ℹ️ Slovenský zákoník práce', en: 'ℹ️ Slovak Labour Code', pl: 'ℹ️ Słowacki kodeks pracy', hu: 'ℹ️ Szlovák munka törvénykönyve' },
+  'vacation.infoSKBaseVal': { sk: '4 týždne (20 pracovných dní) ročne', cs: '4 týdny (20 pracovních dní) ročně', en: '4 weeks (20 working days) per year', pl: '4 tygodnie (20 dni roboczych) rocznie', hu: '4 hét (20 munkanap) évente' },
+  'vacation.from33': { sk: 'Od 33 rokov:', cs: 'Od 33 let:', en: 'From age 33:', pl: 'Od 33 lat:', hu: '33 éves kortól:' },
+  'vacation.infoSKBonusVal': { sk: '+1 týždeň (5 dní) navyše', cs: '+1 týden (5 dní) navíc', en: '+1 week (5 days) extra', pl: '+1 tydzień (5 dni) dodatkowo', hu: '+1 hét (5 nap) extra' },
+  'vacation.infoCZTitle': { sk: 'ℹ️ Český zákonník práce', cs: 'ℹ️ Český zákoník práce', en: 'ℹ️ Czech Labour Code', pl: 'ℹ️ Czeski kodeks pracy', hu: 'ℹ️ Cseh munka törvénykönyve' },
+  'vacation.infoCZBaseLabel': { sk: 'Základný nárok:', cs: 'Základní nárok:', en: 'Basic entitlement:', pl: 'Podstawowy wymiar:', hu: 'Alap jogosultság:' },
+  'vacation.infoCZBaseVal': { sk: '4 týždne (20 dní) ročne', cs: '4 týdny (20 dní) ročně', en: '4 weeks (20 days) per year', pl: '4 tygodnie (20 dni) rocznie', hu: '4 hét (20 nap) évente' },
+  'vacation.infoCZNote': { sk: 'Bez vekového bonusu; verejný sektor 5 týždňov, pedagógovia 8 týždňov.', cs: 'Bez věkového bonusu; veřejná sféra 5 týdnů, pedagogové 8 týdnů.', en: 'No age bonus; public sector 5 weeks, teachers 8 weeks.', pl: 'Bez bonusu wiekowego; sektor publiczny 5 tygodni, nauczyciele 8 tygodni.', hu: 'Nincs életkori bónusz; közszféra 5 hét, pedagógusok 8 hét.' },
+
+  'vacation.entitlementTitle': { sk: 'Nárok na dovolenku', cs: 'Nárok na dovolenou', en: 'Vacation entitlement', pl: 'Wymiar urlopu', hu: 'Szabadságjogosultság' },
+  'vacation.remaining': { sk: 'Zostávajúca dovolenka', cs: 'Zbývající dovolená', en: 'Remaining vacation', pl: 'Pozostały urlop', hu: 'Fennmaradó szabadság' },
+  'vacation.daysUnit': { sk: 'dní', cs: 'dní', en: 'days', pl: 'dni', hu: 'nap' },
+  'vacation.weeksUnit': { sk: 'týždňov', cs: 'týdnů', en: 'weeks', pl: 'tygodni', hu: 'hét' },
+  'vacation.annualEntitlement': { sk: 'Ročný nárok', cs: 'Roční nárok', en: 'Annual entitlement', pl: 'Wymiar roczny', hu: 'Éves jogosultság' },
+  'vacation.ageLabel': { sk: 'vek', cs: 'věk', en: 'age', pl: 'wiek', hu: 'kor' },
+  'vacation.baseEntitlement': { sk: 'Základný nárok:', cs: 'Základní nárok:', en: 'Basic entitlement:', pl: 'Podstawowy wymiar:', hu: 'Alap jogosultság:' },
+  'vacation.ageBonus': { sk: 'Bonus za vek:', cs: 'Bonus za věk:', en: 'Age bonus:', pl: 'Bonus za wiek:', hu: 'Életkori bónusz:' },
+  'vacation.firstYearNote': { sk: '⚠️ Prvý rok zamestnania - nárok sa počíta pomerne', cs: '⚠️ První rok zaměstnání – nárok se počítá poměrně', en: '⚠️ First year of employment – entitlement is prorated', pl: '⚠️ Pierwszy rok zatrudnienia – wymiar liczony proporcjonalnie', hu: '⚠️ A munkaviszony első éve – a jogosultság arányosan számít' },
+  'vacation.statusTitle': { sk: 'Stav dovolenky', cs: 'Stav dovolené', en: 'Vacation status', pl: 'Stan urlopu', hu: 'Szabadság állapota' },
+  'vacation.accrued': { sk: 'Nazbierané', cs: 'Nasbírané', en: 'Accrued', pl: 'Naliczone', hu: 'Felhalmozott' },
+  'vacation.carried': { sk: 'Prenesené', cs: 'Převedené', en: 'Carried over', pl: 'Przeniesione', hu: 'Áthozott' },
+  'vacation.totalAvailable': { sk: 'Celkom dostupné', cs: 'Celkem dostupné', en: 'Total available', pl: 'Łącznie dostępne', hu: 'Összesen elérhető' },
+  'vacation.used': { sk: 'Čerpané', cs: 'Čerpané', en: 'Taken', pl: 'Wykorzystane', hu: 'Kivett' },
+  'vacation.utilized': { sk: 'využité', cs: 'využito', en: 'used', pl: 'wykorzystane', hu: 'felhasználva' },
+  'vacation.statusOver': { sk: 'Prekročený limit', cs: 'Překročen limit', en: 'Limit exceeded', pl: 'Przekroczony limit', hu: 'Túllépett keret' },
+  'vacation.statusHigh': { sk: 'Vysoké využitie', cs: 'Vysoké využití', en: 'High usage', pl: 'Wysokie wykorzystanie', hu: 'Magas felhasználás' },
+  'vacation.statusMedium': { sk: 'Stredné využitie', cs: 'Střední využití', en: 'Medium usage', pl: 'Średnie wykorzystanie', hu: 'Közepes felhasználás' },
+  'vacation.statusLow': { sk: 'Nízke využitie', cs: 'Nízké využití', en: 'Low usage', pl: 'Niskie wykorzystanie', hu: 'Alacsony felhasználás' },
+
+  'vacation.planningTitle': { sk: 'Plánovanie dovolenky', cs: 'Plánování dovolené', en: 'Vacation planning', pl: 'Planowanie urlopu', hu: 'Szabadságtervezés' },
+  'vacation.plannedDaysLabel': { sk: 'Plánované dni:', cs: 'Plánované dny:', en: 'Planned days:', pl: 'Planowane dni:', hu: 'Tervezett napok:' },
+  'vacation.remainingAfterPlanned': { sk: 'Zostane po plánovanej dovolenke:', cs: 'Zbude po plánované dovolené:', en: 'Remaining after planned vacation:', pl: 'Pozostanie po planowanym urlopie:', hu: 'A tervezett szabadság után marad:' },
+  'vacation.canTake': { sk: '✅ Môžete si vziať plánovanú dovolenku', cs: '✅ Můžete si vzít plánovanou dovolenou', en: '✅ You can take the planned vacation', pl: '✅ Możesz wziąć planowany urlop', hu: '✅ Kiveheti a tervezett szabadságot' },
+  'vacation.cannotTake': { sk: '⚠️ Nedostatok dní na plánovanú dovolenku', cs: '⚠️ Nedostatek dní na plánovanou dovolenou', en: '⚠️ Not enough days for the planned vacation', pl: '⚠️ Za mało dni na planowany urlop', hu: '⚠️ Nincs elég nap a tervezett szabadsághoz' },
+
+  'vacation.accrualTitle': { sk: 'Nazbieranie dovolenky', cs: 'Nabíhání dovolené', en: 'Vacation accrual', pl: 'Naliczanie urlopu', hu: 'Szabadság felhalmozása' },
+  'vacation.accrualPerMonth': { sk: 'Nazbieraté za mesiac:', cs: 'Nasbíráno za měsíc:', en: 'Accrued per month:', pl: 'Naliczane miesięcznie:', hu: 'Havi felhalmozás:' },
+  'vacation.monthsUntilYearEnd': { sk: 'Mesiacov do konca roka:', cs: 'Měsíců do konce roku:', en: 'Months until year end:', pl: 'Miesięcy do końca roku:', hu: 'Hónapok az év végéig:' },
+  'vacation.projectedYearEnd': { sk: 'Projekcia do konca roka:', cs: 'Projekce do konce roku:', en: 'Projection by year end:', pl: 'Prognoza na koniec roku:', hu: 'Előrejelzés az év végére:' },
+
+  'vacation.weeksOverview': { sk: 'Prehľad v týždňoch', cs: 'Přehled v týdnech', en: 'Overview in weeks', pl: 'Przegląd w tygodniach', hu: 'Áttekintés hetekben' },
+  'vacation.remainingShort': { sk: 'Zostáva', cs: 'Zbývá', en: 'Remaining', pl: 'Pozostaje', hu: 'Marad' },
+
+  'vacation.errAge': { sk: 'Vek musí byť medzi 15 a 100 rokmi', cs: 'Věk musí být mezi 15 a 100 lety', en: 'Age must be between 15 and 100 years', pl: 'Wiek musi wynosić od 15 do 100 lat', hu: 'A kornak 15 és 100 év között kell lennie' },
+  'vacation.errStartDate': { sk: 'Prosím zadajte dátum nástupu do zamestnania', cs: 'Zadejte prosím datum nástupu do zaměstnání', en: 'Please enter the employment start date', pl: 'Podaj datę rozpoczęcia zatrudnienia', hu: 'Kérjük, adja meg a munkaviszony kezdetét' },
+};

@@ -183,6 +183,13 @@ class BlogPost(models.Model):
             return [tag.strip() for tag in self.tags.split(',')]
         return []
 
+    def increment_views(self):
+        """Atomically bump the view counter (avoids read-modify-write races)."""
+        from django.db.models import F
+        BlogPost.objects.filter(pk=self.pk).update(view_count=F('view_count') + 1)
+        # Keep the in-memory instance roughly in sync for the serialized response.
+        self.view_count = (self.view_count or 0) + 1
+
 
 # ============================================================================
 # SAVED CALCULATIONS & NOTIFICATIONS MODELS

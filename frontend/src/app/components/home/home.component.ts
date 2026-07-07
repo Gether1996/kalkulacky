@@ -108,6 +108,15 @@ export class HomeComponent {
       color: 'from-indigo-500 to-purple-600'
     },
     {
+      id: 'car-insurance',
+      title: 'PZP a havarijné poistenie',
+      description: 'Odhad ceny povinného zmluvného poistenia (PZP) a havarijného poistenia auta podľa parametrov vozidla.',
+      icon: '🚙',
+      route: '/calculator/car-insurance',
+      searchVolume: 7000,
+      color: 'from-cyan-500 to-blue-600'
+    },
+    {
       id: 'sick-leave',
       title: 'Pracovná neschopnosť (PN)',
       description: 'Vypočítajte výšku nemocenských dávok pri pracovnej neschopnosti alebo ošetrovaní člena rodiny podľa SK legislatívy.',

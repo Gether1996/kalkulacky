@@ -29,7 +29,7 @@ import { PasswordInputComponent } from '../shared/password-input/password-input.
         <app-password-input inputId="rp-pw2" name="pw2" [(ngModel)]="confirm"
                autocomplete="new-password"></app-password-input>
         <button class="auth-btn" type="submit" [disabled]="loading">
-          {{ loading ? ('common.loading' | t) : ('auth.reset.cta' | t) }}
+          {{ loading ? ('common.loadingData' | t) : ('auth.reset.cta' | t) }}
         </button>
         <p class="auth-error" *ngIf="error">{{ error }}</p>
       </form>

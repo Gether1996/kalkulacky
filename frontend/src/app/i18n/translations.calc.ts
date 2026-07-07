@@ -150,7 +150,11 @@ const ENTRIES: Record<string, LangMap> = {
   'energyhub.backlink': { sk: 'Späť na prehľad úspor energie', cs: 'Zpět na přehled úspor energie', en: 'Back to the energy-savings hub', pl: 'Wróć do centrum oszczędności energii', hu: 'Vissza az energiamegtakarítási központhoz' },
 
   // ============ user dashboard ============
-  'common.loading': { sk: 'Načítavam', cs: 'Načítám', en: 'Loading', pl: 'Ładowanie', hu: 'Betöltés' },
+  // NOTE: distinct from base `common.loading` ("Počítam…/Calculating…"), which is
+  // the calculator spinner. This one is for fetching/loading data. Keep separate —
+  // the calc dictionary wins the merge and would otherwise clobber the spinner text.
+  'common.loadingData': { sk: 'Načítavam', cs: 'Načítám', en: 'Loading', pl: 'Ładowanie', hu: 'Betöltés' },
+  'common.actionError': { sk: 'Akciu sa nepodarilo dokončiť. Skúste to znova.', cs: 'Akci se nepodařilo dokončit. Zkuste to znovu.', en: 'The action could not be completed. Please try again.', pl: 'Nie udało się wykonać akcji. Spróbuj ponownie.', hu: 'A műveletet nem sikerült befejezni. Próbálja újra.' },
   'dash.title': { sk: 'Môj účet', cs: 'Můj účet', en: 'My account', pl: 'Moje konto', hu: 'Fiókom' },
   'dash.subtitle': { sk: 'Prehľad vašich uložených výpočtov a pripomienok', cs: 'Přehled vašich uložených výpočtů a připomínek', en: 'An overview of your saved calculations and reminders', pl: 'Przegląd zapisanych obliczeń i przypomnień', hu: 'Mentett számításai és emlékeztetői áttekintése' },
   'dash.memberSince': { sk: 'Účet vytvorený', cs: 'Účet vytvořen', en: 'Member since', pl: 'Konto utworzono', hu: 'Tagság kezdete' },

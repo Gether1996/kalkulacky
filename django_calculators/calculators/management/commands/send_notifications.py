@@ -7,6 +7,7 @@ Run this command via cron job:
 """
 
 from django.core.management.base import BaseCommand
+from django.db.models import Q
 from datetime import datetime, time
 from calculators.models import ScheduledNotification, UserReminder
 from calculators.services.notification_service import NotificationService
@@ -41,10 +42,13 @@ class Command(BaseCommand):
         
         self.stdout.write(f"Running send_notifications at {now}")
         
-        # Get notifications scheduled for today that haven't been sent yet
+        # Get notifications that are due: anything from a previous day (overdue,
+        # regardless of its time-of-day), plus today's whose time has passed.
+        # The old `scheduled_time__lte=current_time` compared only the clock time,
+        # so a notification dated yesterday at 18:00 was skipped until today 18:00.
         query = ScheduledNotification.objects.filter(
-            scheduled_date__lte=today,
-            scheduled_time__lte=current_time,
+            Q(scheduled_date__lt=today)
+            | Q(scheduled_date=today, scheduled_time__lte=current_time),
         ).select_related('calculation')
         
         if not force:

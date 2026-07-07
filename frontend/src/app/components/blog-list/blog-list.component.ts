@@ -1,8 +1,9 @@
-import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { BlogService } from '../../services/blog.service';
 import { BlogCategory, BlogPostSummary } from '../../models/blog.models';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-blog-list',
@@ -12,8 +13,6 @@ import { BlogCategory, BlogPostSummary } from '../../models/blog.models';
   styleUrls: ['./blog-list.component.css']
 })
 export class BlogListComponent implements OnInit {
-  private platformId = inject(PLATFORM_ID);
-  
   categories: BlogCategory[] = [];
   posts: BlogPostSummary[] = [];
   filteredPosts: BlogPostSummary[] = [];
@@ -21,13 +20,18 @@ export class BlogListComponent implements OnInit {
   loading: boolean = true;
   error: string | null = null;
 
-  constructor(private blogService: BlogService) {}
+  constructor(private blogService: BlogService, private seo: SeoService) {}
 
   ngOnInit() {
-    if (isPlatformBrowser(this.platformId)) {
-      this.loadCategories();
-      this.loadPosts();
-    }
+    // Render on the server so the blog index is crawlable.
+    this.seo.apply({
+      title: 'Blog — dane, financie a návody',
+      description:
+        'Články a návody o daniach, mzdách, hypotékach a osobných financiách na Slovensku. Praktické tipy a vysvetlenia ku kalkulačkám.',
+      path: '/blog',
+    });
+    this.loadCategories();
+    this.loadPosts();
   }
 
   loadCategories() {

@@ -503,3 +503,18 @@
 .tool-icon { font-size: 1.2rem; }
 .tool-actions { display: flex; gap: 0.3rem; }
 .tool-actions .icon-btn.danger { color: #f59e0b; }
+
+.action-error {
+  margin: 12px 0;
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  color: #b91c1c;
+  font-size: 14px;
+}
+html[data-theme="dark"] .action-error {
+  background: #450a0a;
+  border-color: #7f1d1d;
+  color: #fecaca;
+}

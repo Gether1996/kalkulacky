@@ -64,6 +64,43 @@ from .services import (
     ParentalBenefitCalculator,
 )
 
+import logging
+
+logger = logging.getLogger('calculators')
+
+
+def check_calculation_access(request, calculation):
+    """
+    Authorize access to a SavedCalculation. Returns a 403 ``Response`` when the
+    caller is not allowed, else ``None``.
+
+    - Owned records (``user_id`` set): only that authenticated user.
+    - Anonymous records (``user_id`` is null): the caller must supply the
+      matching ``session_key`` (query param on reads, request body on writes).
+      This closes the IDOR where any anonymous saved calculation could be read,
+      modified or deleted by enumerating integer primary keys.
+    """
+    user_id = getattr(request.user, 'id', None) if getattr(request, 'user', None) and request.user.is_authenticated else None
+
+    if calculation.user_id:
+        if calculation.user_id != user_id:
+            return Response(
+                {'success': False, 'error': 'Prístup zamietnutý'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return None
+
+    # Anonymous record — require a matching, non-empty session_key.
+    supplied = request.query_params.get('session_key')
+    if supplied is None:
+        supplied = request.data.get('session_key') if hasattr(request, 'data') else None
+    if not calculation.session_key or supplied != calculation.session_key:
+        return Response(
+            {'success': False, 'error': 'Prístup zamietnutý'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+    return None
+
 
 class CalculatorListView(APIView):
     """
@@ -395,8 +432,10 @@ class MortgageCalculatorView(APIView):
         
         try:
             calculator = MortgageCalculator()
-            result = calculator.calculate(**serializer.validated_data)
-            
+            # `country` is metadata for currency labelling, not a calc input.
+            calc_kwargs = {k: v for k, v in serializer.validated_data.items() if k != 'country'}
+            result = calculator.calculate(**calc_kwargs)
+
             return Response({
                 'success': True,
                 'data': result,
@@ -1715,7 +1754,7 @@ class SavedCalculationViewSet(APIView):
         try:
             NotificationGenerator.generate_for_calculation(calculation)
         except Exception as e:
-            print(f"Error generating notifications: {e}")
+            logger.error("Error generating notifications: %s", e)
 
 
 class SavedCalculationDetailView(APIView):
@@ -1733,13 +1772,9 @@ class SavedCalculationDetailView(APIView):
             from calculators.models import SavedCalculation
             calculation = SavedCalculation.objects.get(pk=pk)
 
-            # Owner-scoped read: a calc owned by a user is only readable by that
-            # user (prevents IDOR — reading someone else's saved data by id).
-            if calculation.user_id and calculation.user_id != getattr(request.user, 'id', None):
-                return Response(
-                    {'success': False, 'error': 'Prístup zamietnutý'},
-                    status=status.HTTP_403_FORBIDDEN
-                )
+            denied = check_calculation_access(request, calculation)
+            if denied:
+                return denied
 
             # Increment access counter
             calculation.increment_access()
@@ -1760,12 +1795,9 @@ class SavedCalculationDetailView(APIView):
             from calculators.models import SavedCalculation
             calculation = SavedCalculation.objects.get(pk=pk)
 
-            # Owner-scoped: a calc owned by a user can only be changed by that user.
-            if calculation.user_id and calculation.user_id != getattr(request.user, 'id', None):
-                return Response(
-                    {'success': False, 'error': 'Prístup zamietnutý'},
-                    status=status.HTTP_403_FORBIDDEN
-                )
+            denied = check_calculation_access(request, calculation)
+            if denied:
+                return denied
 
             serializer = SavedCalculationSerializer(calculation, data=request.data, partial=True)
             if not serializer.is_valid():
@@ -1808,11 +1840,9 @@ class SavedCalculationDetailView(APIView):
             from calculators.models import SavedCalculation
             calculation = SavedCalculation.objects.get(pk=pk)
 
-            if calculation.user_id and calculation.user_id != getattr(request.user, 'id', None):
-                return Response(
-                    {'success': False, 'error': 'Prístup zamietnutý'},
-                    status=status.HTTP_403_FORBIDDEN
-                )
+            denied = check_calculation_access(request, calculation)
+            if denied:
+                return denied
 
             calculation.delete()
             
@@ -1840,12 +1870,9 @@ class NotificationListView(APIView):
             from calculators.models import SavedCalculation, ScheduledNotification
             calculation = SavedCalculation.objects.get(pk=calculation_id)
 
-            # Owner-scoped: don't expose another user's notifications by id.
-            if calculation.user_id and calculation.user_id != getattr(request.user, 'id', None):
-                return Response(
-                    {'success': False, 'error': 'Prístup zamietnutý'},
-                    status=status.HTTP_403_FORBIDDEN
-                )
+            denied = check_calculation_access(request, calculation)
+            if denied:
+                return denied
 
             notifications = ScheduledNotification.objects.filter(calculation=calculation)
             

@@ -59,6 +59,20 @@
   }
 }
 
+/* Phones: reduce the 2rem container padding and oversized heading that
+   crowded the layout at 320px. */
+@media (max-width: 640px) {
+  .calculator-container {
+    padding: 1rem;
+  }
+  .calculator-header {
+    margin-bottom: 1.5rem;
+  }
+  .calculator-header h1 {
+    font-size: 1.7rem;
+  }
+}
+
 .card {
   background: white;
   border-radius: 12px;
@@ -582,6 +596,7 @@
   justify-content: space-between;
   gap: 1rem;
   margin-top: 2rem;
+  flex-wrap: wrap;
 }
 
 .nav-link {

@@ -31,6 +31,14 @@ export class UserDashboard implements OnInit {
   loading = true;
   loadError = false;
 
+  /** Transient error shown when a dashboard action (delete/save) fails. */
+  actionError: string | null = null;
+
+  private showActionError(): void {
+    this.actionError = this.locale.t('common.actionError');
+    setTimeout(() => (this.actionError = null), 5000);
+  }
+
   stats: DashboardStats = {
     totalCalculations: 0,
     trackedCalculations: 0,
@@ -141,6 +149,7 @@ export class UserDashboard implements OnInit {
         this.calculations = this.calculations.filter(c => c.id !== calc.id);
         this.recomputeStats();
       },
+      error: () => this.showActionError(),
     });
   }
 
@@ -194,6 +203,7 @@ export class UserDashboard implements OnInit {
         this.reminders = this.reminders.filter(x => x.id !== r.id);
         this.stats = { ...this.stats, upcomingNotifications: Math.max(0, this.stats.upcomingNotifications - 1) };
       },
+      error: () => this.showActionError(),
     });
   }
 
@@ -366,6 +376,7 @@ export class UserDashboard implements OnInit {
     if (isPlatformBrowser(this.platformId) && !confirm(this.locale.t('dash.sg.deleteConfirm'))) return;
     this.dashboard.deleteSavingsGoal(goal.id).subscribe({
       next: () => { this.savingsGoals = this.savingsGoals.filter(g => g.id !== goal.id); },
+      error: () => this.showActionError(),
     });
   }
 

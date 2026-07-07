@@ -2,16 +2,16 @@
   <div class="calculator-header">
     <h1>{{ 'hoursworked.title' | t }}</h1>
     <p class="calculator-description">
-      Vypočítajte odpracované hodiny, nadčasy a výnosy. Sledujte work-life balance.
+      {{ 'hoursworked.desc' | t }}
     </p>
   </div>
 
   <div class="calculator-content">
     <div class="input-section">
-      <h2>📝 Vstupné údaje</h2>
+      <h2>{{ 'hoursworked.inputData' | t }}</h2>
 
       <div class="input-group">
-        <label for="hoursWorked">Odpracované hodiny</label>
+        <label for="hoursWorked">{{ 'hoursworked.hoursWorked' | t }}</label>
         <div class="input-with-unit">
           <input
             type="number"
@@ -22,28 +22,28 @@
             step="0.5"
             (ngModelChange)="calculate()"
           />
-          <span class="unit">hodín</span>
+          <span class="unit">{{ 'hoursworked.hoursUnit' | t }}</span>
         </div>
-        <small>Celkový počet odpracovaných hodín</small>
+        <small>{{ 'hoursworked.hoursWorkedHint' | t }}</small>
       </div>
 
       <div class="input-group">
-        <label>Obdobie</label>
+        <label>{{ 'hoursworked.period' | t }}</label>
         <div class="period-options">
-          <div 
-            class="option-card" 
+          <div
+            class="option-card"
             *ngFor="let period of periodTypes"
             [class.selected]="periodType === period.value"
             (click)="periodType = period.value; calculate()"
           >
             <div class="option-icon">{{ period.icon }}</div>
-            <div class="option-label">{{ period.label }}</div>
+            <div class="option-label">{{ period.label | t }}</div>
           </div>
         </div>
       </div>
 
       <div class="input-group">
-        <label for="hourlyRate">Hodinová sadzba (voliteľné)</label>
+        <label for="hourlyRate">{{ 'hoursworked.hourlyRate' | t }}</label>
         <div class="input-with-unit">
           <input
             type="number"
@@ -53,13 +53,13 @@
             step="0.1"
             (ngModelChange)="calculate()"
           />
-          <span class="unit">€/hod</span>
+          <span class="unit">{{ 'hoursworked.perHour' | t }}</span>
         </div>
-        <small>Sadzba pre výpočet výnosov</small>
+        <small>{{ 'hoursworked.hourlyRateHint' | t }}</small>
       </div>
 
       <div class="input-group">
-        <label for="weekendHours">Víkendové hodiny</label>
+        <label for="weekendHours">{{ 'hoursworked.weekendHours' | t }}</label>
         <div class="input-with-unit">
           <input
             type="number"
@@ -69,13 +69,13 @@
             step="0.5"
             (ngModelChange)="calculate()"
           />
-          <span class="unit">hodín</span>
+          <span class="unit">{{ 'hoursworked.hoursUnit' | t }}</span>
         </div>
-        <small>Práca cez víkend (1.5× sadzba)</small>
+        <small>{{ 'hoursworked.weekendHint' | t }}</small>
       </div>
 
       <div class="input-group">
-        <label for="holidayHours">Sviatkové hodiny</label>
+        <label for="holidayHours">{{ 'hoursworked.holidayHours' | t }}</label>
         <div class="input-with-unit">
           <input
             type="number"
@@ -85,9 +85,9 @@
             step="0.5"
             (ngModelChange)="calculate()"
           />
-          <span class="unit">hodín</span>
+          <span class="unit">{{ 'hoursworked.hoursUnit' | t }}</span>
         </div>
-        <small>Práca vo sviatok (2× sadzba)</small>
+        <small>{{ 'hoursworked.holidayHint' | t }}</small>
       </div>
 
       <div class="error-message" *ngIf="error">
@@ -96,13 +96,13 @@
     </div>
 
     <div class="results-section" *ngIf="result">
-      <h2>📊 Výsledky</h2>
+      <h2>{{ 'hoursworked.resultsTitle' | t }}</h2>
 
       <!-- Total Hours Highlight -->
       <div class="result-card highlight-card" [style.background]="'linear-gradient(135deg, ' + getBalanceColor(result.analysis.balance_category) + ', ' + getBalanceColor(result.analysis.balance_category) + 'dd)'">
         <div class="card-icon">⏰</div>
         <div class="card-content">
-          <div class="card-label">Celkom odpracované hodiny</div>
+          <div class="card-label">{{ 'hoursworked.totalHours' | t }}</div>
           <div class="card-value">{{ formatNumber(result.hours.total_hours, 1) }} h</div>
           <div class="card-details">
             <span>{{ result.analysis.balance_category }}: {{ result.analysis.balance_description }}</span>
@@ -114,24 +114,24 @@
       <div class="summary-grid">
         <div class="summary-card regular">
           <div class="summary-icon">✅</div>
-          <div class="summary-label">Štandardné hodiny</div>
+          <div class="summary-label">{{ 'hoursworked.standardHours' | t }}</div>
           <div class="summary-value">{{ formatNumber(result.hours.regular_hours, 1) }} h</div>
           <div class="summary-note">{{ formatNumber(result.percentages.regular_percentage, 1) }}%</div>
         </div>
         <div class="summary-card overtime">
           <div class="summary-icon">⏳</div>
-          <div class="summary-label">Nadčasy</div>
+          <div class="summary-label">{{ 'hoursworked.overtime' | t }}</div>
           <div class="summary-value">{{ formatNumber(result.hours.overtime_hours, 1) }} h</div>
           <div class="summary-note">{{ formatNumber(result.percentages.overtime_percentage, 1) }}%</div>
         </div>
         <div class="summary-card" *ngIf="result.analysis.daily_average">
           <div class="summary-icon">📅</div>
-          <div class="summary-label">Denný priemer</div>
+          <div class="summary-label">{{ 'hoursworked.dailyAverage' | t }}</div>
           <div class="summary-value">{{ formatNumber(result.analysis.daily_average, 1) }} h</div>
         </div>
         <div class="summary-card" *ngIf="result.analysis.exceeds_standard">
           <div class="summary-icon">⚠️</div>
-          <div class="summary-label">Nad normu</div>
+          <div class="summary-label">{{ 'hoursworked.overStandard' | t }}</div>
           <div class="summary-value">+{{ formatNumber(result.analysis.excess_hours, 1) }} h</div>
         </div>
       </div>
@@ -139,23 +139,23 @@
       <!-- Hours Breakdown -->
       <div class="detail-card">
         <div class="detail-header">
-          <h3>📊 Rozdelenie hodín</h3>
+          <h3>{{ 'hoursworked.breakdown' | t }}</h3>
         </div>
         <div class="detail-body">
           <div class="detail-row">
-            <span class="detail-label">Štandardné hodiny ({{ result.analysis.period_type }}):</span>
+            <span class="detail-label">{{ 'hoursworked.standardHoursLabel' | t }} ({{ result.analysis.period_type }}):</span>
             <span class="detail-value">{{ formatNumber(result.hours.standard_hours, 1) }} h</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Pravidelné nadčasy (1.25×):</span>
+            <span class="detail-label">{{ 'hoursworked.regularOvertime125' | t }}</span>
             <span class="detail-value">{{ formatNumber(result.hours.overtime_breakdown.regular_overtime, 1) }} h</span>
           </div>
           <div class="detail-row" *ngIf="result.hours.overtime_breakdown.weekend_overtime > 0">
-            <span class="detail-label">Víkendové nadčasy (1.5×):</span>
+            <span class="detail-label">{{ 'hoursworked.weekendOvertime15' | t }}</span>
             <span class="detail-value strong">{{ formatNumber(result.hours.overtime_breakdown.weekend_overtime, 1) }} h</span>
           </div>
           <div class="detail-row" *ngIf="result.hours.overtime_breakdown.holiday_overtime > 0">
-            <span class="detail-label">Sviatkové nadčasy (2×):</span>
+            <span class="detail-label">{{ 'hoursworked.holidayOvertime2' | t }}</span>
             <span class="detail-value strong">{{ formatNumber(result.hours.overtime_breakdown.holiday_overtime, 1) }} h</span>
           </div>
         </div>

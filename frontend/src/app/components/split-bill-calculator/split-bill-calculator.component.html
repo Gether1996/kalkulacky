@@ -244,7 +244,7 @@
       <div class="summary-card" *ngIf="!loading && !error">
         <div class="summary-row">
           <span class="summary-label">Celkom bez prepitného:</span>
-          <span class="summary-value">{{ formatCurrency(result.original_amount) }}</span>
+          <span class="summary-value">{{ formatCurrency(result.total_amount) }}</span>
         </div>
         <div class="summary-row">
           <span class="summary-label">Prepitné ({{ formatPercentage(result.tip_percent) }}):</span>
@@ -269,7 +269,7 @@
             <div class="person-amounts">
               <div class="amount-row">
                 <span class="amount-label">Účet:</span>
-                <span class="amount-value">{{ formatCurrency(person.subtotal) }}</span>
+                <span class="amount-value">{{ formatCurrency(person.amount_before_tip) }}</span>
               </div>
               <div class="amount-row">
                 <span class="amount-label">Prepitné:</span>

@@ -1,7 +1,7 @@
 import { Injectable, signal, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap, catchError, throwError } from 'rxjs';
+import { Observable, BehaviorSubject, tap, catchError, throwError, finalize, shareReplay } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import {
@@ -32,6 +32,11 @@ export class AuthService {
   
   // Authentication state signal
   public isAuthenticated = signal<boolean>(this.hasValidToken());
+
+  // Single-flight token refresh: concurrent 401s share one refresh call so the
+  // rotate-refresh + blacklist-after-rotation backend config can't blacklist a
+  // token mid-flight and force a spurious logout.
+  private refreshInProgress$: Observable<any> | null = null;
 
   constructor(
     private http: HttpClient,
@@ -166,28 +171,64 @@ export class AuthService {
   }
 
   /**
-   * Refresh access token
+   * Refresh the access token. Single-flight: while one refresh is in progress,
+   * every caller gets the same observable so we issue exactly one refresh call.
    */
   refreshToken(): Observable<any> {
+    if (this.refreshInProgress$) {
+      return this.refreshInProgress$;
+    }
+
     const refreshToken = this.getRefreshToken();
-    return this.http.post(`${this.API_URL}/token/refresh/`, { refresh: refreshToken }).pipe(
-      tap((response: any) => {
-        this.setAccessToken(response.access);
-        if (response.refresh) {
-          this.setRefreshToken(response.refresh);
-        }
-      }),
-      catchError(error => {
-        this.clearAuthData();
-        return throwError(() => error);
-      })
-    );
+    if (!refreshToken) {
+      this.clearAuthData();
+      return throwError(() => new Error('No refresh token available'));
+    }
+
+    this.refreshInProgress$ = this.http
+      .post(`${this.API_URL}/token/refresh/`, { refresh: refreshToken })
+      .pipe(
+        tap((response: any) => {
+          this.setAccessToken(response.access);
+          if (response.refresh) {
+            this.setRefreshToken(response.refresh);
+          }
+          this.isAuthenticated.set(true);
+        }),
+        catchError((error) => {
+          this.clearAuthData();
+          return throwError(() => error);
+        }),
+        finalize(() => {
+          this.refreshInProgress$ = null;
+        }),
+        shareReplay(1)
+      );
+
+    return this.refreshInProgress$;
   }
 
   /**
-   * Check authentication status from backend
+   * Clear auth state and navigate to login without any network call.
+   * Used when a token refresh has definitively failed.
+   */
+  forceLogout(): void {
+    this.clearAuthData();
+    if (this.isBrowser) {
+      this.router.navigate(['/login']);
+    }
+  }
+
+  /**
+   * Check authentication status from backend. The interceptor now attaches the
+   * Bearer token to /auth/check/, so `authenticated: false` genuinely means the
+   * token is invalid. Only runs in the browser (SSR has no stored token) and
+   * only when we actually hold a token.
    */
   checkAuthStatus(): void {
+    if (!this.isBrowser || !this.getAccessToken()) {
+      return;
+    }
     this.http.get<CheckAuthResponse>(`${this.API_URL}/check/`).subscribe({
       next: (response) => {
         if (response.authenticated && response.user) {
@@ -198,9 +239,9 @@ export class AuthService {
           this.clearAuthData();
         }
       },
-      error: () => {
-        this.clearAuthData();
-      }
+      // On a network/5xx error keep the locally-stored session as-is; a genuine
+      // 401 is handled by the interceptor's refresh flow, not here.
+      error: () => {},
     });
   }
 

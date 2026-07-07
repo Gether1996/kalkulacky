@@ -46,7 +46,9 @@
       </div>
     </div>
 
-    <div class="loading-state" *ngIf="loading">{{ 'common.loading' | t }}…</div>
+    <div class="loading-state" *ngIf="loading">{{ 'common.loadingData' | t }}…</div>
+
+    <div class="action-error" *ngIf="actionError" role="alert">{{ actionError }}</div>
 
     <div class="empty-state" *ngIf="!loading && calculations.length === 0">
       <div class="empty-icon">📭</div>
