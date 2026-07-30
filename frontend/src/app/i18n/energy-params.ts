@@ -25,10 +25,11 @@ export interface CountryHeatPumpConfig {
 }
 
 export const HEAT_PUMP_PARAMS: Record<'SK' | 'CZ', CountryHeatPumpConfig> = {
-  // SK — Zelená domácnostiam (INDICATIVE).
+  // SK — Zelená domácnostiam 2026 (base rate; enhanced 437 €/kW / 4 370 € for
+  // air-quality zones / ceasing solid-fuel heating — not modelled).
   SK: {
     electricityPrice: 0.18, costBase: 9000, costPerKw: 1400,
-    subsidyPerKw: 380, subsidyMax: 3400,
+    subsidyPerKw: 380, subsidyMax: 3800,
     fuel: { gas: 0.10, electric: 0.18, coal: 0.08, oil: 0.13, wood: 0.06 },
   },
   // CZ — Nová zelená úsporám (INDICATIVE, CZK). Flat ~80 000 Kč air-water grant.
@@ -57,8 +58,9 @@ export interface RenoConfig {
 }
 
 export const RENOVATION_PARAMS: Record<'SK' | 'CZ', RenoConfig> = {
-  // SK — Obnov dom (Plán obnovy), INDICATIVE.
-  SK: { rate: 0.60, maxBasic: 14000, maxComprehensive: 19000, defaultCost: 25000, requiresOldHouse: true },
+  // SK — Obnov dom 2026: 75 % oprávnených nákladov, max 15 000 € (úspora 30–60 %)
+  // / 19 000 € (úspora > 60 %).
+  SK: { rate: 0.75, maxBasic: 15000, maxComprehensive: 19000, defaultCost: 25000, requiresOldHouse: true },
   // CZ — Nová zelená úsporám, INDICATIVE (CZK). Broader eligibility, higher caps.
   CZ: { rate: 0.50, maxBasic: 150000, maxComprehensive: 500000, defaultCost: 600000, requiresOldHouse: false },
 };

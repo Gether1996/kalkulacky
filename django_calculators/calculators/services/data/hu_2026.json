@@ -12,8 +12,7 @@
   "salary": {
     "social_rate": 0.185,
     "pit_rate": 0.15,
-    "family_allowance": [0.0, 133340.0, 266660.0],
-    "family_allowance_3plus": 440000.0,
+    "family_allowance_per_child": [133340.0, 266660.0, 440000.0],
     "employer_rate": 0.13
   }
 }

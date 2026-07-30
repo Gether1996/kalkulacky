@@ -146,23 +146,34 @@ def calculate_hu(gross_salary: float, children_under_15: int = 0,
     c = get_rates('HU')['salary']
     SOCIAL_RATE = c['social_rate']       # employee total social security contribution
     PIT_RATE = c['pit_rate']             # flat personal income tax
-    # Family allowance = monthly tax-BASE reduction (doubled from Jan 2026),
-    # indexed by number of children [0, 1, 2]; 3+ handled separately.
-    FAMILY_ALLOWANCE = c['family_allowance']
-    FAMILY_ALLOWANCE_3PLUS = c['family_allowance_3plus']
+    # Family allowance = monthly tax-BASE reduction PER CHILD (doubled from 2026),
+    # by family size: 1 child 133 340, 2 children 266 660/child, 3+ 440 000/child.
+    # Total reduction = per-child rate × number of children.
+    FAMILY_ALLOWANCE_PER_CHILD = c['family_allowance_per_child']
     EMPLOYER_RATE = c['employer_rate']   # szociális hozzájárulási adó
 
     gross = float(gross_salary)
-    social = gross * SOCIAL_RATE
 
     n = int(children_under_15 or 0) + int(children_15_to_18 or 0)
-    allowance = FAMILY_ALLOWANCE_3PLUS if n >= 3 else FAMILY_ALLOWANCE[n]
+    if n > 0:
+        per_child = FAMILY_ALLOWANCE_PER_CHILD[min(n, 3) - 1]
+        allowance = per_child * n
+    else:
+        allowance = 0.0
+
+    # 15% SZJA on the tax base after the allowance.
     pit_base = max(0.0, gross - allowance)
     income_tax = pit_base * PIT_RATE
 
+    # Családi járulékkedvezmény: if the allowance exceeds the SZJA base, 15% of the
+    # unused part is credited against the 18.5% social contribution (down to 0).
+    unused_allowance = max(0.0, allowance - gross)
+    social_credit = unused_allowance * PIT_RATE
+    social = max(0.0, gross * SOCIAL_RATE - social_credit)
+
     net = gross - social - income_tax
-    # Surface the family allowance as a "child bonus"-style line for the UI.
-    child_bonus = _round((gross * 0 + (gross - pit_base) * PIT_RATE)) if allowance else 0.0
+    # Total family saving surfaced as the "child bonus" line (SZJA + social credit).
+    child_bonus = _round((gross * SOCIAL_RATE - social) + (allowance - unused_allowance) * PIT_RATE) if allowance else 0.0
     return _result(country='HU', currency='HUF', gross=gross, social=social,
                    health=0.0, income_tax=income_tax, child_bonus=child_bonus,
                    net=net, employer_cost=gross * EMPLOYER_RATE)
