@@ -43,6 +43,28 @@ Zdroje: Sociálna poisťovňa, Finančná správa SR, ŠÚ SR, podnikajte.sk, fi
 
 ---
 
-**Zhrnutie:** ~20 hodnôt overených/opravených naprieč SK/CZ/PL/HU. Zvyšok (⚠️) sú 2 dizajnové
+---
+
+## 🌍 POKRYTIE KRAJÍN — teraz PLNÉ (SK/CZ/PL/HU pre všetky kalkulačky)
+
+Doplnené **PL a HU enginy** pre freelancer, dôchodok, dovolenku, PN, rodičovský a solár
+(predtým len mzda + DPH; zvyšok padal na SK pravidlá). Sú **INDIKATÍVNE** (ako CZ) — model je
+správny, ale tieto čísla treba časom potvrdiť:
+
+**PL (`pl_2026.json`)** — freelancer paušál 20 % (placeholder; PL skala paušál nemá — zvážiť ryčzałt),
+ZUS základ 5 652,60 zł (60 % z prognóz. mzdy 9 420), zdrav. min. 432,54 zł, dôchodok NDC aproximácia
+(÷220,8), min. dôchodok 1 978,49 zł, PN predpoklad vek < 50 (33 dní zamestnávateľ), materská 20 týž.
+100 % + 41 týž. 70 %, solár Mój Prąd 6.0 (PV max 7 000 + batéria 16 000 zł).
+
+**HU (`hu_2026.json`)** — freelancer átalány 40 % (môže stúpnuť na 45 %), min. mzda 322 800 Ft,
+dôchodok násobková tabuľka + valorizácia (aproximácia), min. dôchodok / GYES 28 500 Ft, GYED max
+451 920 Ft, CSED 24 týž. 100 %, táppénz 60 % / betegszabadság 70 % (15 dní), solár Napenergia Plusz
+(batéria strop 2,5 mil. Ft, cena 350 000 Ft/kWp).
+
+CZ ostáva potvrdené správne (hlavné hodnoty), okrem hlbších dôchodkových redukčných hraníc.
+
+---
+
+**Zhrnutie:** ~20 SK hodnôt overených/opravených + plné PL/HU enginy (indikatívne). Zvyšok (⚠️) sú 2 dizajnové
 rozhodnutia (rodičovský model, dôchodkový vek), 1 potvrdenie na odstránenie (ZŤP NČZD) a
 dotačné detaily podľa aktuálneho kola — všetko nízky dopad. Assety/legal sú na tebe.
