@@ -9,6 +9,8 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
 import { DebouncedCalc } from '../../utils/debounced-calc';
+import { SeoService } from '../../services/seo.service';
+import { getSeoContent } from '../../i18n/seo';
 
 @Component({
   selector: 'app-parental-benefit-calculator',
@@ -21,6 +23,7 @@ export class ParentalBenefitCalculatorComponent implements OnInit, OnDestroy {
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
+  private seo = inject(SeoService);
 
   // Input fields
   birthDate: string = '';
@@ -63,6 +66,8 @@ export class ParentalBenefitCalculatorComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    const s = getSeoContent('parental-benefit', this.locale.locale());
+    this.seo.apply({ title: s.title, description: s.description, keywords: s.keywords, faq: s.faq, path: '/calculator/parental-benefit', isCalculator: true });
     // Set today's date
     const now = new Date();
     this.today = now;

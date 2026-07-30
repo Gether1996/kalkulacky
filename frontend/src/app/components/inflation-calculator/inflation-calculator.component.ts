@@ -9,6 +9,8 @@ import {
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { DebouncedCalc } from '../../utils/debounced-calc';
+import { SeoService } from '../../services/seo.service';
+import { getSeoContent } from '../../i18n/seo';
 
 @Component({
   selector: 'app-inflation-calculator',
@@ -22,6 +24,7 @@ export class InflationCalculatorComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
   private locale = inject(LocaleService);
+  private seo = inject(SeoService);
 
   // Input values
   presentValue: number = 10000;
@@ -35,6 +38,8 @@ export class InflationCalculatorComponent implements OnInit, OnDestroy {
   error: string | null = null;
 
   ngOnInit() {
+    const s = getSeoContent('inflation', this.locale.locale());
+    this.seo.apply({ title: s.title, description: s.description, keywords: s.keywords, faq: s.faq, path: '/calculator/inflation', isCalculator: true });
     if (isPlatformBrowser(this.platformId)) {
       this.calculate();
     }

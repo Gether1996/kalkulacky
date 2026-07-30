@@ -9,6 +9,8 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
 import { DebouncedCalc } from '../../utils/debounced-calc';
+import { SeoService } from '../../services/seo.service';
+import { getSeoContent } from '../../i18n/seo';
 
 @Component({
   selector: 'app-vacation-calculator',
@@ -21,6 +23,7 @@ export class VacationCalculatorComponent implements OnInit, OnDestroy {
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
+  private seo = inject(SeoService);
 
   currentYear: number = new Date().getFullYear();
 
@@ -59,6 +62,8 @@ export class VacationCalculatorComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    const s = getSeoContent('vacation', this.locale.locale());
+    this.seo.apply({ title: s.title, description: s.description, keywords: s.keywords, faq: s.faq, path: '/calculator/vacation', isCalculator: true });
     // Set today's date
     this.today = new Date();
     this.currentDate = new Date();

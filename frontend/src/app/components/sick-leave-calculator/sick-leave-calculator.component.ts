@@ -9,6 +9,8 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
 import { DebouncedCalc } from '../../utils/debounced-calc';
+import { SeoService } from '../../services/seo.service';
+import { getSeoContent } from '../../i18n/seo';
 
 @Component({
   selector: 'app-sick-leave-calculator',
@@ -19,6 +21,7 @@ import { DebouncedCalc } from '../../utils/debounced-calc';
 })
 export class SickLeaveCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
+  private seo = inject(SeoService);
 
   // Form fields
   gross_salary: number = 1500;
@@ -56,6 +59,8 @@ export class SickLeaveCalculatorComponent implements OnInit, OnDestroy {
   private get numberLocale(): string { return this.isSK ? 'sk-SK' : 'cs-CZ'; }
 
   ngOnInit() {
+    const s = getSeoContent('sick-leave', this.locale.locale());
+    this.seo.apply({ title: s.title, description: s.description, keywords: s.keywords, faq: s.faq, path: '/calculator/sick-leave', isCalculator: true });
     // Initial calculation driven by the locale effect (constructor).
   }
 

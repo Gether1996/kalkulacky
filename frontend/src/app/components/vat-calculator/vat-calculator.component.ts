@@ -8,6 +8,8 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
 import { DebouncedCalc } from '../../utils/debounced-calc';
+import { SeoService } from '../../services/seo.service';
+import { getSeoContent } from '../../i18n/seo';
 
 @Component({
   selector: 'app-vat-calculator',
@@ -20,6 +22,7 @@ export class VatCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   private locale = inject(LocaleService);
+  private seo = inject(SeoService);
   // Inputs — VAT rate defaults to the current country's standard rate.
   amount: number = 1000;
   vatRate: number = getCountryParams(this.locale.locale()).vat.standard;
@@ -68,6 +71,8 @@ export class VatCalculatorComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    const s = getSeoContent('vat', this.locale.locale());
+    this.seo.apply({ title: s.title, description: s.description, keywords: s.keywords, faq: s.faq, path: '/calculator/vat', isCalculator: true });
     // Auto-calculate on component init (browser only)
     if (isPlatformBrowser(this.platformId)) {
       this.calculate();

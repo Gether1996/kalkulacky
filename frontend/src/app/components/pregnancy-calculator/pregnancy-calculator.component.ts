@@ -8,6 +8,8 @@ import { DatePickerComponent } from '../date-picker/date-picker.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { DebouncedCalc } from '../../utils/debounced-calc';
+import { SeoService } from '../../services/seo.service';
+import { getSeoContent } from '../../i18n/seo';
 
 @Component({
   selector: 'app-pregnancy-calculator',
@@ -21,6 +23,7 @@ export class PregnancyCalculatorComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
   private locale = inject(LocaleService);
+  private seo = inject(SeoService);
 
   // Input fields
   calculationMethod: 'lmp' | 'conception' = 'lmp';
@@ -38,6 +41,8 @@ export class PregnancyCalculatorComponent implements OnInit, OnDestroy {
   maxDate: Date = new Date();
 
   ngOnInit() {
+    const s = getSeoContent('pregnancy', this.locale.locale());
+    this.seo.apply({ title: s.title, description: s.description, keywords: s.keywords, faq: s.faq, path: '/calculator/pregnancy', isCalculator: true });
     // Set today's date
     this.today = new Date();
     this.currentDate = new Date();

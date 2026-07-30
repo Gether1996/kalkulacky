@@ -7,6 +7,8 @@ import { CalculatorService } from '../../services/calculator.service';
 import { PercentageCalculationResponse } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { DebouncedCalc } from '../../utils/debounced-calc';
+import { SeoService } from '../../services/seo.service';
+import { getSeoContent } from '../../i18n/seo';
 
 interface CalculationType {
   id: string;
@@ -26,6 +28,7 @@ export class PercentageCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   private locale = inject(LocaleService);
+  private seo = inject(SeoService);
 
   private calc = new DebouncedCalc<PercentageCalculationResponse | null>(
     () => {
@@ -102,6 +105,9 @@ export class PercentageCalculatorComponent implements OnInit, OnDestroy {
   constructor(private calculatorService: CalculatorService) {}
 
   ngOnInit(): void {
+    const s = getSeoContent('percentage', this.locale.locale());
+    this.seo.apply({ title: s.title, description: s.description, keywords: s.keywords, faq: s.faq, path: '/calculator/percentage', isCalculator: true });
+
     if (isPlatformBrowser(this.platformId)) {
       this.calculate();
     }

@@ -7,6 +7,8 @@ import { UnitCategory, UnitOption, UnitConverterResponse } from '../../models/ca
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { DebouncedCalc } from '../../utils/debounced-calc';
+import { SeoService } from '../../services/seo.service';
+import { getSeoContent } from '../../i18n/seo';
 
 @Component({
   selector: 'app-unit-converter',
@@ -18,6 +20,7 @@ import { DebouncedCalc } from '../../utils/debounced-calc';
 export class UnitConverterComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private locale = inject(LocaleService);
+  private seo = inject(SeoService);
 
   private calc = new DebouncedCalc<UnitConverterResponse | null>(
     () =>
@@ -57,6 +60,9 @@ export class UnitConverterComponent implements OnInit, OnDestroy {
   constructor(private calculatorService: CalculatorService) {}
 
   ngOnInit() {
+    const s = getSeoContent('unit-converter', this.locale.locale());
+    this.seo.apply({ title: s.title, description: s.description, keywords: s.keywords, faq: s.faq, path: '/calculator/unit-converter', isCalculator: true });
+
     if (isPlatformBrowser(this.platformId)) {
       this.loadCategories();
     }

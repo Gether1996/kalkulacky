@@ -6,6 +6,8 @@ import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { FuelCostCalculationResponse } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { SeoService } from '../../services/seo.service';
+import { getSeoContent } from '../../i18n/seo';
 import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
@@ -19,7 +21,8 @@ export class FuelCostCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   private locale = inject(LocaleService);
-  
+  private seo = inject(SeoService);
+
   distance: number = 350;
   consumption: number = 6.5;
   fuelPrice: number = 1.65;
@@ -44,6 +47,8 @@ export class FuelCostCalculatorComponent implements OnInit, OnDestroy {
   constructor(private calculatorService: CalculatorService) {}
 
   ngOnInit(): void {
+    const s = getSeoContent('fuel-cost', this.locale.locale());
+    this.seo.apply({ title: s.title, description: s.description, keywords: s.keywords, faq: s.faq, path: '/calculator/fuel-cost', isCalculator: true });
     // Auto-calculate on component init for immediate results
     this.calculate();
   }

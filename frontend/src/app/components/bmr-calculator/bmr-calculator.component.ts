@@ -5,6 +5,8 @@ import { CalculatorService } from '../../services/calculator.service';
 import { BMRCalculationResponse } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
+import { SeoService } from '../../services/seo.service';
+import { getSeoContent } from '../../i18n/seo';
 import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
@@ -19,6 +21,7 @@ export class BmrCalculatorComponent implements OnInit, OnDestroy {
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
   private locale = inject(LocaleService);
+  private seo = inject(SeoService);
 
   // Input values
   weight: number = 75;
@@ -54,6 +57,8 @@ export class BmrCalculatorComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit(): void {
+    const s = getSeoContent('bmr', this.locale.locale());
+    this.seo.apply({ title: s.title, description: s.description, keywords: s.keywords, faq: s.faq, path: '/calculator/bmr', isCalculator: true });
     if (isPlatformBrowser(this.platformId)) {
       this.calculate();
     }

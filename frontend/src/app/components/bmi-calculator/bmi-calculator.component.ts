@@ -6,6 +6,8 @@ import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { BMICalculationResponse } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { SeoService } from '../../services/seo.service';
+import { getSeoContent } from '../../i18n/seo';
 import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
@@ -19,7 +21,8 @@ export class BmiCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   private locale = inject(LocaleService);
-  
+  private seo = inject(SeoService);
+
   weight: number = 75;
   height: number = 175;
   
@@ -30,6 +33,8 @@ export class BmiCalculatorComponent implements OnInit, OnDestroy {
   constructor(private calculatorService: CalculatorService) {}
 
   ngOnInit(): void {
+    const s = getSeoContent('bmi', this.locale.locale());
+    this.seo.apply({ title: s.title, description: s.description, keywords: s.keywords, faq: s.faq, path: '/calculator/bmi', isCalculator: true });
     // Auto-calculate on component init for immediate results
     this.calculate();
   }

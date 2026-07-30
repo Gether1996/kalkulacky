@@ -3,6 +3,9 @@ import { SeoEntry, SeoContentMap } from './types';
 import { SEO_BATCH_A } from './batch-a';
 import { SEO_BATCH_B } from './batch-b';
 import { SEO_BATCH_C } from './batch-c';
+import { SEO_BATCH_D } from './batch-d';
+import { SEO_BATCH_E } from './batch-e';
+import { SEO_BATCH_F } from './batch-f';
 
 /**
  * Localized per-page SEO content (title, description, keywords, FAQ) for the
@@ -10,7 +13,10 @@ import { SEO_BATCH_C } from './batch-c';
  * merged here. Each calculator reads its entry via getSeoContent() and feeds it
  * to SeoService.apply() together with its path.
  */
-const ALL: SeoContentMap = { ...SEO_BATCH_A, ...SEO_BATCH_B, ...SEO_BATCH_C };
+const ALL: SeoContentMap = {
+  ...SEO_BATCH_A, ...SEO_BATCH_B, ...SEO_BATCH_C,
+  ...SEO_BATCH_D, ...SEO_BATCH_E, ...SEO_BATCH_F,
+};
 
 /** Localized SEO content for a page id, falling back to Slovak then empty. */
 export function getSeoContent(id: string, locale: Locale): SeoEntry {

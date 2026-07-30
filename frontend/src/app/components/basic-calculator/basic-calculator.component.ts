@@ -2,6 +2,9 @@ import { Component, OnInit, PLATFORM_ID, inject, HostListener } from '@angular/c
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
+import { SeoService } from '../../services/seo.service';
+import { getSeoContent } from '../../i18n/seo';
 
 interface CalculationHistory {
   expression: string;
@@ -18,7 +21,9 @@ interface CalculationHistory {
 })
 export class BasicCalculatorComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
-  
+  private locale = inject(LocaleService);
+  private seo = inject(SeoService);
+
   // Display values
   display: string = '0';
   previousValue: number = 0;
@@ -36,6 +41,9 @@ export class BasicCalculatorComponent implements OnInit {
   error: boolean = false;
 
   ngOnInit(): void {
+    const s = getSeoContent('basic', this.locale.locale());
+    this.seo.apply({ title: s.title, description: s.description, keywords: s.keywords, faq: s.faq, path: '/calculator/basic', isCalculator: true });
+
     if (isPlatformBrowser(this.platformId)) {
       this.loadHistory();
     }
