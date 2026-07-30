@@ -34,8 +34,9 @@ interface Calculator {
   styleUrls: ['./navbar.component.css']
 })
 export class NavbarComponent implements OnInit {
-  isMenuOpen = false;
-  openCategory: string | null = null;
+  isMenuOpen = false;          // mobile slide-in panel
+  openCategory: string | null = null;  // mobile accordion category
+  toolsOpen = false;           // desktop "Kalkulačky" mega-menu
   isUserMenuOpen = false;
   currentUser: User | null = null;
 
@@ -90,6 +91,7 @@ export class NavbarComponent implements OnInit {
   onDocumentClick(event: MouseEvent): void {
     if (!this.el.nativeElement.contains(event.target)) {
       this.openCategory = null;
+      this.toolsOpen = false;
       this.isUserMenuOpen = false;
       this.searchOpen = false;
     }
@@ -98,9 +100,25 @@ export class NavbarComponent implements OnInit {
   @HostListener('document:keydown.escape')
   onEscape(): void {
     this.openCategory = null;
+    this.toolsOpen = false;
     this.isUserMenuOpen = false;
     this.searchOpen = false;
     this.isMenuOpen = false;
+  }
+
+  /** Toggle the desktop mega-menu; closes the user menu so only one is open. */
+  toggleTools(): void {
+    this.toolsOpen = !this.toolsOpen;
+    if (this.toolsOpen) this.isUserMenuOpen = false;
+  }
+
+  /** Close every open surface (used after navigating from the mega-menu). */
+  closeAll(): void {
+    this.toolsOpen = false;
+    this.openCategory = null;
+    this.isUserMenuOpen = false;
+    this.isMenuOpen = false;
+    this.searchOpen = false;
   }
 
   categories: Category[] = [
@@ -182,11 +200,13 @@ export class NavbarComponent implements OnInit {
   closeMenu() {
     this.isMenuOpen = false;
     this.openCategory = null;
+    this.toolsOpen = false;
     this.isUserMenuOpen = false;
   }
 
   toggleUserMenu() {
     this.isUserMenuOpen = !this.isUserMenuOpen;
+    if (this.isUserMenuOpen) this.toolsOpen = false;
   }
 
   logout() {

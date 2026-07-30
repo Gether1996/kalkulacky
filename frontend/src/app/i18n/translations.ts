@@ -19,6 +19,7 @@ const sk: TranslationDict = {
 
   // navbar / common
   'nav.home': 'Domov',
+  'nav.tools': 'Kalkulačky',
   'nav.blog': 'Blog',
   'nav.login': 'Prihlásiť sa',
   'nav.register': 'Registrácia',
@@ -63,6 +64,7 @@ const sk: TranslationDict = {
 const cs: TranslationDict = {
   'lang.label': 'Jazyk',
   'nav.home': 'Domů',
+  'nav.tools': 'Kalkulačky',
   'nav.blog': 'Blog',
   'nav.login': 'Přihlásit se',
   'nav.register': 'Registrace',
@@ -99,6 +101,7 @@ const cs: TranslationDict = {
 const en: TranslationDict = {
   'lang.label': 'Language',
   'nav.home': 'Home',
+  'nav.tools': 'Calculators',
   'nav.blog': 'Blog',
   'nav.login': 'Log in',
   'nav.register': 'Sign up',
@@ -135,6 +138,7 @@ const en: TranslationDict = {
 const pl: TranslationDict = {
   'lang.label': 'Język',
   'nav.home': 'Strona główna',
+  'nav.tools': 'Kalkulatory',
   'nav.blog': 'Blog',
   'nav.login': 'Zaloguj się',
   'nav.register': 'Rejestracja',
@@ -171,6 +175,7 @@ const pl: TranslationDict = {
 const hu: TranslationDict = {
   'lang.label': 'Nyelv',
   'nav.home': 'Főoldal',
+  'nav.tools': 'Kalkulátorok',
   'nav.blog': 'Blog',
   'nav.login': 'Bejelentkezés',
   'nav.register': 'Regisztráció',
