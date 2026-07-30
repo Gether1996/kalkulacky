@@ -29,8 +29,8 @@ class ParentalBenefitCalculator(BaseCalculator):
     """
     
     # Slovak parental benefit rates (2026) - imported from config_variables
-    MATERNITY_RATE = cfg.MATERNITY_BENEFIT_RATE  # 70% of daily assessment base
-    MATERNITY_WEEKS = cfg.MATERNITY_BENEFIT_WEEKS  # 34 weeks (28 single, 43 twins)
+    MATERNITY_RATE = cfg.MATERNITY_BENEFIT_RATE  # 75% of daily assessment base
+    MATERNITY_WEEKS = cfg.MATERNITY_BENEFIT_WEEKS  # 34 weeks (43 for twins+)
     
     PARENTAL_BASIC_MONTHLY = cfg.PARENTAL_BENEFIT_BASIC_MONTHLY  # €381.90/month
     PARENTAL_BASIC_YEARS = cfg.PARENTAL_BENEFIT_BASIC_YEARS  # 3 years (until child is 3)
@@ -43,7 +43,7 @@ class ParentalBenefitCalculator(BaseCalculator):
     WORK_INCOME_LIMIT_ALT = cfg.PARENTAL_WORK_INCOME_LIMIT_ALT  # €635.70/month for alternative
     
     # Minimum health insurance assessment base
-    MIN_ASSESSMENT_BASE_MONTHLY = cfg.PARENTAL_MIN_ASSESSMENT_BASE  # €750/month (minimum wage 2026)
+    MIN_ASSESSMENT_BASE_MONTHLY = cfg.PARENTAL_MIN_ASSESSMENT_BASE  # €915/month (minimálna mzda 2026)
     
     def calculate(
         self,

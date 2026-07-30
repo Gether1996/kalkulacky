@@ -226,11 +226,11 @@ class SalaryCalculator(BaseCalculator):
                 'non_taxable_amount_monthly': float(self.NON_TAXABLE_AMOUNT_MONTHLY),
                 'child_tax_bonus_under_15': float(self.CHILD_TAX_BONUS_UNDER_15),
                 'child_tax_bonus_15_to_18': float(self.CHILD_TAX_BONUS_15_TO_18),
+                # SK employee PIT has only two rates (19% / 25%). The old
+                # response advertised non-existent 30%/35% brackets (AUDIT §3/K3).
                 'tax_brackets': {
                     'bracket_1': {'rate': 19, 'up_to_monthly': float(self.TAX_THRESHOLD_1_MONTHLY)},
-                    'bracket_2': {'rate': 25, 'up_to_monthly': float(self.TAX_THRESHOLD_2_MONTHLY)},
-                    'bracket_3': {'rate': 30, 'up_to_monthly': float(self.TAX_THRESHOLD_3_MONTHLY)},
-                    'bracket_4': {'rate': 35, 'above': float(self.TAX_THRESHOLD_3_MONTHLY)},
+                    'bracket_2': {'rate': 25, 'above': float(self.TAX_THRESHOLD_1_MONTHLY)},
                 }
             }
         }
@@ -239,17 +239,14 @@ class SalaryCalculator(BaseCalculator):
         return result
     
     def _get_applicable_tax_rate(self, taxable_base: Decimal) -> float:
-        """Get the highest applicable tax rate based on taxable base"""
+        """Highest tax rate actually applied. SK employee PIT is 19% / 25% only —
+        the calculation never applies 30%/35%, so this caps at 25% (AUDIT §3/K3)."""
         if taxable_base <= Decimal('0'):
             return 0.0
         elif taxable_base <= self.TAX_THRESHOLD_1_MONTHLY:
             return float(self.TAX_RATE_1 * 100)
-        elif taxable_base <= self.TAX_THRESHOLD_2_MONTHLY:
-            return float(self.TAX_RATE_2 * 100)
-        elif taxable_base <= self.TAX_THRESHOLD_3_MONTHLY:
-            return float(self.TAX_RATE_3 * 100)
         else:
-            return float(self.TAX_RATE_4 * 100)
+            return float(self.TAX_RATE_2 * 100)
 
 
 # Example usage and testing

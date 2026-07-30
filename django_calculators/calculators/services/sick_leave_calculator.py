@@ -30,7 +30,7 @@ class SickLeaveCalculator:
     MAX_ASSESSMENT_BASE_DAILY = cfg.SICK_LEAVE_MAX_ASSESSMENT_BASE_DAILY  # €241.64 denne
     
     # Minimum mzda 2026
-    MIN_WAGE_MONTHLY = cfg.SICK_LEAVE_MIN_WAGE_MONTHLY  # €750/month
+    MIN_WAGE_MONTHLY = cfg.SICK_LEAVE_MIN_WAGE_MONTHLY  # €915/month (minimálna mzda 2026)
     MIN_WAGE_DAILY = cfg.SICK_LEAVE_MIN_WAGE_DAILY  # Daily minimum
     
     @classmethod
