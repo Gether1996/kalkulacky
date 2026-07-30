@@ -803,6 +803,12 @@ class PensionCalculatorView(APIView):
             if country == 'CZ':
                 from .services.international_benefits import calculate_cz_pension
                 result = calculate_cz_pension(**data)
+            elif country == 'PL':
+                from .services.pl_calculators import calculate_pl_pension
+                result = calculate_pl_pension(**data)
+            elif country == 'HU':
+                from .services.hu_calculators import calculate_hu_pension
+                result = calculate_hu_pension(**data)
             else:
                 result = PensionCalculator().calculate(**data)
                 result.setdefault('country', 'SK')
@@ -855,6 +861,12 @@ class VacationCalculatorView(APIView):
             if country == 'CZ':
                 from .services.international_benefits import calculate_cz_vacation
                 result = calculate_cz_vacation(**data)
+            elif country == 'PL':
+                from .services.pl_calculators import calculate_pl_vacation
+                result = calculate_pl_vacation(**data)
+            elif country == 'HU':
+                from .services.hu_calculators import calculate_hu_vacation
+                result = calculate_hu_vacation(**data)
             else:
                 result = VacationCalculator().calculate(**data)
                 result.setdefault('country', 'SK')
@@ -1039,12 +1051,19 @@ class FreelancerTaxCalculatorView(APIView):
             data = dict(serializer.validated_data)
             country = (data.pop('country', 'SK') or 'SK').upper()
 
-            if country == 'CZ':
-                from .services.freelancer_international import calculate_cz_freelancer
+            if country in ('CZ', 'PL', 'HU'):
                 data['annual_revenue'] = float(data['annual_revenue'])
                 if data.get('annual_expenses') is not None:
                     data['annual_expenses'] = float(data['annual_expenses'])
-                result = calculate_cz_freelancer(**data)
+                if country == 'CZ':
+                    from .services.freelancer_international import calculate_cz_freelancer
+                    result = calculate_cz_freelancer(**data)
+                elif country == 'PL':
+                    from .services.pl_calculators import calculate_pl_freelancer
+                    result = calculate_pl_freelancer(**data)
+                else:
+                    from .services.hu_calculators import calculate_hu_freelancer
+                    result = calculate_hu_freelancer(**data)
             else:
                 calculator = FreelancerTaxCalculator()
                 result = calculator.calculate(**data)
@@ -1433,9 +1452,14 @@ class SickLeaveCalculatorView(APIView):
             from decimal import Decimal
             vd = serializer.validated_data
             country = (vd.get('country', 'SK') or 'SK').upper()
-            if country == 'CZ':
-                from .services.international_benefits import calculate_cz_sick_leave
-                result = calculate_cz_sick_leave(
+            if country in ('CZ', 'PL', 'HU'):
+                if country == 'CZ':
+                    from .services.international_benefits import calculate_cz_sick_leave as _sick_fn
+                elif country == 'PL':
+                    from .services.pl_calculators import calculate_pl_sick_leave as _sick_fn
+                else:
+                    from .services.hu_calculators import calculate_hu_sick_leave as _sick_fn
+                result = _sick_fn(
                     gross_salary=float(vd['gross_salary']),
                     days_sick=vd['days_sick'],
                     leave_type=vd.get('leave_type', 'illness'),
@@ -1726,10 +1750,15 @@ class ParentalBenefitCalculatorView(APIView):
         try:
             data = dict(serializer.validated_data)
             country = (data.pop('country', 'SK') or 'SK').upper()
-            if country == 'CZ':
-                from .services.international_benefits import calculate_cz_parental
-                # CZ engine accepts birth_date, gross_salary, twins_or_more, current_date.
-                result = calculate_cz_parental(
+            if country in ('CZ', 'PL', 'HU'):
+                # These engines accept birth_date, gross_salary, twins_or_more, current_date.
+                if country == 'CZ':
+                    from .services.international_benefits import calculate_cz_parental as _par_fn
+                elif country == 'PL':
+                    from .services.pl_calculators import calculate_pl_parental as _par_fn
+                else:
+                    from .services.hu_calculators import calculate_hu_parental as _par_fn
+                result = _par_fn(
                     birth_date=data.get('birth_date'),
                     gross_salary=data.get('gross_salary'),
                     twins_or_more=data.get('twins_or_more', False),
@@ -2581,6 +2610,12 @@ class SolarSubsidyCalculatorView(APIView):
             if country == 'CZ':
                 from .services.solar_international import calculate_cz_solar
                 result = calculate_cz_solar(**data)
+            elif country == 'PL':
+                from .services.pl_calculators import calculate_pl_solar
+                result = calculate_pl_solar(**data)
+            elif country == 'HU':
+                from .services.hu_calculators import calculate_hu_solar
+                result = calculate_hu_solar(**data)
             else:
                 result = SolarSubsidyCalculator().calculate(**data)
                 result.setdefault('country', 'SK')

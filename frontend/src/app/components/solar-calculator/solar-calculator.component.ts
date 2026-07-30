@@ -46,17 +46,17 @@ export class SolarCalculatorComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** Engine country — SK + CZ implemented; other locales fall back to SK. */
-  get country(): 'SK' | 'CZ' {
-    return getCountryParams(this.locale.locale()).countryCode === 'CZ' ? 'CZ' : 'SK';
+  /** Engine country (SK/CZ/PL/HU) from the active locale. */
+  get country(): string {
+    return getCountryParams(this.locale.locale()).countryCode;
   }
   get isSK(): boolean { return this.country === 'SK'; }
-  get currency(): string { return this.isSK ? 'EUR' : 'CZK'; }
-  get currencySymbol(): string { return this.isSK ? '€' : 'Kč'; }
-  get countryName(): string { return this.isSK ? 'Slovensko' : 'Česko'; }
+  get currency(): string { return getCountryParams(this.locale.locale()).currency; }
+  get currencySymbol(): string { return getCountryParams(this.locale.locale()).currencySymbol; }
+  get countryName(): string { return getCountryParams(this.locale.locale()).countryName; }
   get programName(): string { return getCountryParams(this.locale.locale()).energyProgram.name; }
   get programUrl(): string { return getCountryParams(this.locale.locale()).energyProgram.url; }
-  private get numberLocale(): string { return this.isSK ? 'sk-SK' : 'cs-CZ'; }
+  private get numberLocale(): string { return getCountryParams(this.locale.locale()).numberLocale; }
 
   result: SolarSubsidyCalculationResponse | null = null;
   loading = false;

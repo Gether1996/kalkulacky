@@ -47,10 +47,10 @@ export class VacationCalculatorComponent implements OnInit, OnDestroy {
 
   /** Engine country — SK + CZ implemented; other locales fall back to SK. */
   get country(): string {
-    return getCountryParams(this.locale.locale()).countryCode === 'CZ' ? 'CZ' : 'SK';
+    return getCountryParams(this.locale.locale()).countryCode;
   }
   get isSK(): boolean { return this.country === 'SK'; }
-  get countryName(): string { return this.isSK ? 'Slovensko' : 'Česko'; }
+  get countryName(): string { return getCountryParams(this.locale.locale()).countryName; }
 
   constructor() {
     effect(() => {

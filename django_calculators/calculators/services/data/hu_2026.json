@@ -6,13 +6,95 @@
     "valid_from": "2026-01-01",
     "valid_until": "2026-12-31",
     "currency": "HUF",
-    "note": "INDIKATÍVNE hodnoty pre HU 2026 — overiť voči NAV. Iba mzdový engine. Rodinná úľava zdvojnásobená od 1/2026. Menené raz ročne.",
-    "sources": ["helpers.hu", "PwC Worldwide Tax Summaries", "OECD Taxing Wages 2026"]
+    "note": "INDIKATÍVNE hodnoty pre HU 2026 — overiť voči NAV / MÁK / Kormányzat. Rodinná úľava zdvojnásobená od 1/2026. Medzinárodné služby sú float-based, hodnoty sú preto JSON čísla (nie stringy). Menené raz ročne.",
+    "sources": [
+      "helpers.hu / helpersfinance.hu (minimum wage & self-employment 2026)",
+      "taxravens.com (Hungary minimum wages & contribution bases 2026)",
+      "officina.hu (szabadság / táppénz / nyugdíjszámítás 2026)",
+      "penzcentrum.hu, forvismazars.com (GYED/GYES/CSED 2026)",
+      "PwC Worldwide Tax Summaries", "OECD Taxing Wages 2026",
+      "lakossagiakkumulatorprogram.hu (Otthoni Energiatároló / Napenergia Plusz 2026)"
+    ]
   },
   "salary": {
     "social_rate": 0.185,
     "pit_rate": 0.15,
     "family_allowance_per_child": [133340.0, 266660.0, 440000.0],
     "employer_rate": 0.13
+  },
+  "freelancer": {
+    "expense_ratio_standard": 0.40,
+    "expense_ratio_alt1": 0.80,
+    "expense_ratio_alt2": 0.90,
+    "pit_rate": 0.15,
+    "tb_rate": 0.185,
+    "tb_pension_rate": 0.10,
+    "tb_health_labour_rate": 0.085,
+    "szocho_rate": 0.13,
+    "min_wage_monthly": 322800.0,
+    "tax_free_annual": 1936800.0,
+    "revenue_cap_general": 38736000.0,
+    "revenue_cap_retail": 193680000.0
+  },
+  "sick_leave": {
+    "min_wage_monthly": 322800.0,
+    "max_daily_multiplier": 2.0,
+    "betegszabadsag_working_days": 15,
+    "employer_calendar_days": 21,
+    "employer_rate": 0.70,
+    "tappenz_rate": 0.60,
+    "tappenz_rate_reduced": 0.50,
+    "care_rate": 0.60,
+    "working_day_factor_num": 5,
+    "working_day_factor_den": 7
+  },
+  "vacation": {
+    "base_days": 20,
+    "age_bonus_table": [[25, 1], [28, 2], [31, 3], [33, 4], [35, 5], [37, 6], [39, 7], [41, 8], [43, 9], [45, 10]]
+  },
+  "pension": {
+    "retirement_age": 65,
+    "min_pension": 28500.0,
+    "employee_rate": 10.0,
+    "employer_rate": 13.0,
+    "eligibility_years_for_min": 20,
+    "life_expectancy_after_retirement": 18,
+    "base_multiplier_at_10y": 0.33,
+    "mult_11_25_per_year": 0.02,
+    "mult_26_36_per_year": 0.01,
+    "mult_37_40_per_year": 0.015,
+    "mult_41plus_per_year": 0.02
+  },
+  "parental": {
+    "csed_weeks": 24,
+    "csed_rate": 1.00,
+    "gyed_rate": 0.70,
+    "gyed_monthly_max": 451920.0,
+    "gyes_monthly": 28500.0,
+    "gyed_until_age_months": 24,
+    "gyes_until_age_months": 36,
+    "total_months": 36,
+    "twins_extra_months": 12,
+    "min_wage_monthly": 322800.0
+  },
+  "solar": {
+    "yield_kwh_per_kwp": 1150,
+    "price_per_kwp": 350000,
+    "battery_price_per_kwh": 250000,
+    "default_self_consumption": 0.40,
+    "battery_self_consumption": 0.75,
+    "default_electricity_rate": 36.0,
+    "feed_in_price": 5.0,
+    "co2_kg_per_kwh": 0.20,
+    "nzu_base": 0,
+    "nzu_per_kwp": 0,
+    "nzu_kwp_cap": 10,
+    "nzu_battery_bonus": 2500000,
+    "subsidy_rate_of_cost": 1.0,
+    "battery_min_kwh": 10.0,
+    "kwp_min": 2.0,
+    "kwp_max": 15.0,
+    "battery_ratio": 2.0,
+    "battery_max": 20.0
   }
 }

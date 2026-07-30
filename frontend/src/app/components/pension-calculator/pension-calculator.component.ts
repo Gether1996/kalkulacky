@@ -58,12 +58,12 @@ export class PensionCalculatorComponent implements OnInit, OnDestroy {
 
   /** Engine country — SK + CZ implemented; other locales fall back to SK. */
   get country(): string {
-    return getCountryParams(this.locale.locale()).countryCode === 'CZ' ? 'CZ' : 'SK';
+    return getCountryParams(this.locale.locale()).countryCode;
   }
   get isSK(): boolean { return this.country === 'SK'; }
-  get currency(): string { return this.isSK ? 'EUR' : 'CZK'; }
-  get countryName(): string { return this.isSK ? 'Slovensko' : 'Česko'; }
-  private get numberLocale(): string { return this.isSK ? 'sk-SK' : 'cs-CZ'; }
+  get currency(): string { return getCountryParams(this.locale.locale()).currency; }
+  get countryName(): string { return getCountryParams(this.locale.locale()).countryName; }
+  private get numberLocale(): string { return getCountryParams(this.locale.locale()).numberLocale; }
 
   // Country-appropriate quick salary presets.
   get salaryBenchmarks() {

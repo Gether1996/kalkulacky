@@ -62,13 +62,13 @@ export class FreelancerTaxCalculatorComponent implements OnInit, OnDestroy {
 
   /** Engine country — only SK and CZ are implemented; everything else → SK. */
   get country(): string {
-    return getCountryParams(this.locale.locale()).countryCode === 'CZ' ? 'CZ' : 'SK';
+    return getCountryParams(this.locale.locale()).countryCode;
   }
   get isSK(): boolean { return this.country === 'SK'; }
-  get currencySymbol(): string { return this.isSK ? '€' : 'Kč'; }
-  get currency(): string { return this.isSK ? 'EUR' : 'CZK'; }
-  get countryName(): string { return this.isSK ? 'Slovensko' : 'Česko'; }
-  private get numberLocale(): string { return this.isSK ? 'sk-SK' : 'cs-CZ'; }
+  get currencySymbol(): string { return getCountryParams(this.locale.locale()).currencySymbol; }
+  get currency(): string { return getCountryParams(this.locale.locale()).currency; }
+  get countryName(): string { return getCountryParams(this.locale.locale()).countryName; }
+  private get numberLocale(): string { return getCountryParams(this.locale.locale()).numberLocale; }
 
   ngOnInit() {
     const s = getSeoContent('freelancer', this.locale.locale());

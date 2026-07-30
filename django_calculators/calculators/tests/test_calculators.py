@@ -54,6 +54,26 @@ class CalculatorHappyPathTests(BaseAPITestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json().get('country'), 'CZ')
 
+    # Every international calculator dispatches to its own PL/HU engine.
+    INTL = {
+        'pension/': {'current_age': 40, 'gross_salary': 500000, 'years_worked': 15},
+        'vacation/': {'age': 40, 'employment_start_date': '2015-01-01'},
+        'freelancer-tax/': {'annual_revenue': 5000000},
+        'sick-leave/': {'gross_salary': 500000, 'days_sick': 20},
+        'parental-benefit/': {'birth_date': '2025-01-01', 'gross_salary': 500000},
+        'solar/': {'annual_consumption_kwh': 4000},
+    }
+
+    def test_pl_hu_country_dispatch(self):
+        for country in ('PL', 'HU'):
+            for path, payload in self.INTL.items():
+                with self.subTest(country=country, calc=path):
+                    resp = self.client.post(f'{PREFIX}/{path}', {**payload, 'country': country}, format='json')
+                    self.assertEqual(resp.status_code, 200, f'{country} {path} -> {resp.content[:200]}')
+                    body = resp.json()
+                    data = body.get('data', body)
+                    self.assertEqual(data.get('country'), country, f'{country} {path} wrong country')
+
     def test_vat_add_and_remove_consistent(self):
         add = self.client.post(f'{PREFIX}/vat/', {'amount': 100, 'vat_rate': 20, 'calculation_type': 'add_vat'}, format='json')
         rem = self.client.post(f'{PREFIX}/vat/', {'amount': 120, 'vat_rate': 20, 'calculation_type': 'remove_vat'}, format='json')

@@ -269,7 +269,7 @@ class PregnancyCalculatorSerializer(serializers.Serializer):
 class PensionCalculatorSerializer(serializers.Serializer):
     """Serializer for Pension Calculator API (SK + CZ via `country`)."""
     country = serializers.ChoiceField(
-        choices=['SK', 'CZ'], required=False, default='SK',
+        choices=['SK', 'CZ', 'PL', 'HU'], required=False, default='SK',
         help_text="Country whose pension rules to apply (default SK)",
     )
     current_age = serializers.IntegerField(
@@ -310,7 +310,7 @@ class PensionCalculatorSerializer(serializers.Serializer):
 class VacationCalculatorSerializer(serializers.Serializer):
     """Serializer for Vacation Days Calculator API (SK + CZ via `country`)."""
     country = serializers.ChoiceField(
-        choices=['SK', 'CZ'], required=False, default='SK',
+        choices=['SK', 'CZ', 'PL', 'HU'], required=False, default='SK',
         help_text="Country whose vacation rules to apply (default SK)",
     )
     age = serializers.IntegerField(
@@ -489,7 +489,7 @@ class PaymentCalculatorSerializer(serializers.Serializer):
 class FreelancerTaxCalculatorSerializer(serializers.Serializer):
     """Serializer for Freelancer Tax Calculator API (SK + CZ via `country`)."""
     country = serializers.ChoiceField(
-        choices=['SK', 'CZ'], required=False, default='SK',
+        choices=['SK', 'CZ', 'PL', 'HU'], required=False, default='SK',
         help_text="Country whose self-employed rules to apply (default SK)",
     )
     annual_revenue = serializers.DecimalField(
@@ -763,7 +763,7 @@ class UnitConverterSerializer(serializers.Serializer):
 class SickLeaveCalculatorSerializer(serializers.Serializer):
     """Serializer for Sick Leave (PN / nemocenská) Calculator API (SK + CZ)."""
     country = serializers.ChoiceField(
-        choices=['SK', 'CZ'], required=False, default='SK',
+        choices=['SK', 'CZ', 'PL', 'HU'], required=False, default='SK',
         help_text="Country whose sick-leave rules to apply (default SK)",
     )
     gross_salary = serializers.DecimalField(
@@ -947,7 +947,7 @@ class SplitBillCalculatorSerializer(serializers.Serializer):
 class ParentalBenefitCalculatorSerializer(serializers.Serializer):
     """Serializer for Parental Benefit Calculator API (SK + CZ via `country`)."""
     country = serializers.ChoiceField(
-        choices=['SK', 'CZ'], required=False, default='SK',
+        choices=['SK', 'CZ', 'PL', 'HU'], required=False, default='SK',
         help_text="Country whose parental rules to apply (default SK)",
     )
     birth_date = serializers.DateField(
@@ -1350,7 +1350,7 @@ class SavingsGoalSerializer(serializers.ModelSerializer):
 class SolarSubsidyCalculatorSerializer(serializers.Serializer):
     """Serializer for Solar/PV Subsidy & Payback Calculator API (SK + CZ)."""
     country = serializers.ChoiceField(
-        choices=['SK', 'CZ'], required=False, default='SK',
+        choices=['SK', 'CZ', 'PL', 'HU'], required=False, default='SK',
         help_text="Country whose PV subsidy programme to apply (default SK)",
     )
     annual_consumption_kwh = serializers.DecimalField(

@@ -2,12 +2,20 @@
   "meta": {
     "country": "PL",
     "year": 2026,
-    "version": "2026.1.0",
+    "version": "2026.2.0",
     "valid_from": "2026-01-01",
     "valid_until": "2026-12-31",
     "currency": "PLN",
-    "note": "INDIKATÍVNE hodnoty pre PL 2026 — overiť voči ZUS / KIS. Iba mzdový engine. Menené raz ročne.",
-    "sources": ["getsix.eu ZUS 2026", "PwC Worldwide Tax Summaries", "OECD Taxing Wages 2026"]
+    "note": "INDIKATÍVNE hodnoty pre PL 2026 — overiť voči ZUS / KAS / MRiPS / NFOŚiGW. Medzinárodné služby (freelancer/pension/vacation/sick_leave/parental/solar) sú float-based, hodnoty sú JSON čísla (nie stringy). Menené raz ročne.",
+    "sources": [
+      "getsix.eu ZUS 2026", "PwC Worldwide Tax Summaries", "OECD Taxing Wages 2026",
+      "ifirma.pl / poradnikprzedsiebiorcy.pl (Skladki ZUS 2026)",
+      "pit.pl / e-pity.pl (skala podatkowa 2026)",
+      "infakt.pl / gofin.pl (skladka zdrowotna 2026)",
+      "zus.pl / infor.pl (najnizsza emerytura, tablice trwania zycia)",
+      "gazetaprawna.pl (Kodeks pracy 2026, zasilek macierzynski)",
+      "mojprad.gov.pl / NFOSiGW (Moj Prad 6.0 2026)"
+    ]
   },
   "salary": {
     "social_rate": 0.1371,
@@ -18,5 +26,79 @@
     "monthly_tax_reducing": 300.0,
     "employee_costs": 250.0,
     "employer_rate": 0.2048
+  },
+  "freelancer": {
+    "health_rate": 0.09,
+    "health_base_share": 1.0,
+    "health_min_base_monthly": 4806.0,
+    "health_min_payment_monthly": 432.54,
+    "social_base_monthly": 5652.60,
+    "pension_rate": 0.1952,
+    "disability_rate": 0.08,
+    "sickness_rate": 0.0245,
+    "accident_rate": 0.0167,
+    "reserve_rate": 0.0245,
+    "tax_rate_1": 0.12,
+    "tax_rate_2": 0.32,
+    "tax_threshold_yearly": 120000.0,
+    "tax_reducing_yearly": 3600.0,
+    "flat_expense_rate": 0.20,
+    "flat_expense_revenue_cap": 999999999.0
+  },
+  "sick_leave": {
+    "reduce_share": 0.1371,
+    "rate_illness": 0.80,
+    "rate_care": 0.80,
+    "employer_calendar_days": 33,
+    "max_base_monthly": 23550.0,
+    "care_max_days": 60
+  },
+  "vacation": {
+    "base_days": 20,
+    "higher_days": 26,
+    "tenure_threshold_years": 10,
+    "bonus_days": 6
+  },
+  "pension": {
+    "retirement_age_male": 65,
+    "retirement_age_female": 60,
+    "pension_rate": 0.1952,
+    "employee_rate": 9.76,
+    "employer_rate": 9.76,
+    "min_pension": 1978.49,
+    "min_years_male": 25,
+    "min_years_female": 20,
+    "divisor_months": 220.8,
+    "life_expectancy_after_retirement": 18
+  },
+  "parental": {
+    "mat_weeks_single": 20,
+    "mat_weeks_multiple": 31,
+    "parental_weeks_single": 41,
+    "parental_weeks_multiple": 43,
+    "mat_rate": 1.00,
+    "parental_rate": 0.70,
+    "blended_rate": 0.815,
+    "reduce_share": 0.1371,
+    "benefit_horizon_years": 1
+  },
+  "solar": {
+    "yield_kwh_per_kwp": 1000,
+    "price_per_kwp": 5000,
+    "battery_price_per_kwh": 3500,
+    "default_self_consumption": 0.40,
+    "battery_self_consumption": 0.75,
+    "default_electricity_rate": 1.10,
+    "feed_in_price": 0.40,
+    "co2_kg_per_kwh": 0.65,
+    "nzu_base": 7000,
+    "nzu_per_kwp": 0,
+    "nzu_kwp_cap": 20,
+    "nzu_battery_bonus": 16000,
+    "subsidy_rate_of_cost": 0.50,
+    "kwp_min": 2.0,
+    "kwp_max": 20.0,
+    "battery_ratio": 1.5,
+    "battery_max": 20.0
   }
 }
