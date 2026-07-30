@@ -48,13 +48,12 @@ SOCIAL_INSURANCE_MAX_BASE_MONTHLY = _salary['social_insurance_max_base_monthly']
 SOCIAL_INSURANCE_MAX_BASE_YEARLY = SOCIAL_INSURANCE_MAX_BASE_MONTHLY * 12
 
 # --- INCOME TAX BRACKETS ---
-# NOTE: SK personal income tax uses only 19% / 25%. Brackets 3/4 (30%/35%) and
-# thresholds 2/3 are legacy/fictional for PIT (see AUDIT §3/K3) — kept for
-# backwards compatibility; the salary engine never applies them.
+# From 1.1.2026 SK employee PIT is a 4-bracket progressive scale (19/25/30/35 %),
+# split at 154.8× / 212.4× / 264× the subsistence minimum. Verified 2026.
 TAX_RATE_BRACKET_1 = _salary['tax_rate_bracket_1']  # 19%
 TAX_RATE_BRACKET_2 = _salary['tax_rate_bracket_2']  # 25%
-TAX_RATE_BRACKET_3 = _salary['tax_rate_bracket_3']  # 30% (legacy/unused)
-TAX_RATE_BRACKET_4 = _salary['tax_rate_bracket_4']  # 35% (legacy/unused)
+TAX_RATE_BRACKET_3 = _salary['tax_rate_bracket_3']  # 30%
+TAX_RATE_BRACKET_4 = _salary['tax_rate_bracket_4']  # 35%
 
 TAX_THRESHOLD_1_YEARLY = _salary['tax_threshold_1_yearly']
 TAX_THRESHOLD_2_YEARLY = _salary['tax_threshold_2_yearly']

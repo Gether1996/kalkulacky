@@ -7,6 +7,8 @@
     "valid_from": "2026-01-01",
     "valid_until": "2026-12-31",
     "currency": "EUR",
+    "zivotne_minimum_monthly": "284.13",
+    "average_wage_2024": "1524",
     "sources": [
       "Finančná správa SR",
       "Sociálna poisťovňa",
@@ -22,7 +24,7 @@
     "employer_contributions_rate": "0.362",
     "social_insurance_rate_employer": "0.262",
     "health_insurance_rate_employer": "0.10",
-    "social_insurance_max_base_monthly": "8862",
+    "social_insurance_max_base_monthly": "16764",
     "tax_rate_bracket_1": "0.19",
     "tax_rate_bracket_2": "0.25",
     "tax_rate_bracket_3": "0.30",
@@ -30,7 +32,7 @@
     "tax_threshold_1_yearly": "43983.32",
     "tax_threshold_2_yearly": "60349.21",
     "tax_threshold_3_yearly": "75010.32",
-    "non_taxable_amount_yearly": "5966.76",
+    "non_taxable_amount_yearly": "5966.73",
     "non_taxable_amount_monthly": "497.23",
     "non_taxable_amount_disability_yearly": "59825.28",
     "non_taxable_amount_disability_monthly": "4985.44",
@@ -38,7 +40,7 @@
     "child_tax_bonus_15_to_18": "50.00",
     "minimum_wage_monthly": "915",
     "minimum_wage_hourly": "5.259",
-    "average_wage_monthly": "1400"
+    "average_wage_monthly": "1524"
   },
   "vat": {
     "standard": "23",
@@ -74,7 +76,7 @@
     "employee_contribution_rate": "4.0",
     "employer_contribution_rate": "14.0",
     "average_pension": "650.00",
-    "pension_point_value": "14.50",
+    "pension_point_value": "19.7633",
     "minimum_pension": "370.00",
     "second_pillar_default_rate": "6.0",
     "life_expectancy_after_retirement": 20
@@ -85,7 +87,7 @@
     "employer_rate": "0.25",
     "insurance_rate_illness": "0.55",
     "insurance_rate_care": "0.55",
-    "max_assessment_base_yearly": "88200",
+    "max_assessment_base_yearly": "36576",
     "min_wage_monthly": "915"
   },
   "freelancer": {
@@ -96,7 +98,7 @@
     "tax_rate_5": "0.35",
     "tax_threshold_1": "20000",
     "health_insurance_rate": "0.16",
-    "min_health_base_monthly": "762",
+    "min_health_base_monthly": "914.40",
     "social_sickness_rate": "0.044",
     "social_pension_rate": "0.18",
     "social_disability_rate": "0.06",
@@ -119,9 +121,9 @@
     "maternity_benefit_rate": "0.75",
     "maternity_weeks": 34,
     "maternity_weeks_twins": 43,
-    "basic_monthly": "381.90",
+    "basic_monthly": "364.80",
     "basic_years": 3,
-    "alt_monthly": "270.00",
+    "alt_monthly": "500.10",
     "alt_years": 6,
     "work_income_limit_basic": "635.70",
     "work_income_limit_alt": "635.70",
@@ -147,12 +149,17 @@
   },
   "_notes": {
     "__doc__": "Editovateľný zdroj hodnôt pre SK 2026. Menené raz ročne. Hodnoty sú stringy (prevedú sa na Decimal); celé čísla (počty rokov/týždňov/dní) sú JSON čísla.",
-    "salary.tax_threshold_2_yearly / tax_threshold_3_yearly / tax_rate_bracket_3 / tax_rate_bracket_4": "PODOZRIVÉ (AUDIT §3/K3): SK daň z príjmu má len 19%/25%. Pásma 3/4 (30%/35%) a thresholdy 2/3 sú historicky fiktívne pre PIT a v čistej mzde sa reálne neaplikujú. Ponechané kvôli spätnej kompatibilite; zvážiť odstránenie.",
-    "salary.tax_threshold_1_yearly": "OVERIŤ (AUDIT §8): 43983.32 implikuje životné minimum ~248.77 € (2023). Pre 2026 pravdepodobne vyššie.",
-    "salary.non_taxable_amount_disability_*": "PODOZRIVÉ (AUDIT §8): ~10× nafúknuté a koncept vyššej NČZD pre ZŤP pri dani z príjmu neexistuje. Nepoužíva sa vo výpočte.",
-    "salary.average_wage_monthly": "OVERIŤ: 1400 je odhad; iné miesta pracujú s ~1524 €. Kŕmi dôchodkový výpočet.",
-    "sick_leave.max_assessment_base_yearly": "OVERIŤ URGENTNE (AUDIT §8): 88200 → max DVZ 241.64 €/deň je ~2.5× priveľa (reálne ~90 €/deň 2025).",
-    "pension.pension_point_value": "OVERIŤ (AUDIT §8): 14.50 je stale; aktuálna dôchodková hodnota 2025 ~17.77 €.",
-    "freelancer.min_health_base_monthly / min_social_base_monthly": "OVERIŤ: 762 vs 914.40 — historicky bývajú rovnaké."
+    "_zivotne_minimum": "284.13 €/mes od 1.7.2025 (základ pre NČZD a daňové pásma 2026). Zdroj: MPSVR/Finsider.",
+    "salary.tax_rate_bracket_3 / bracket_4 + thresholds": "OVERENÉ 2026: od 1.1.2026 platí 4-pásmový systém 19/25/30/35 %. Pásma: ≤43983.32 (154.8×ŽM) 19%, ≤60349.21 (212.4×ŽM) 25%, ≤75010.32 (264×ŽM) 30%, nad 35%. Config je SPRÁVNY. Zdroj: podnikajte.sk/wellbens.sk (konsolidácia 2026).",
+    "salary.non_taxable_amount_yearly": "OVERENÉ: 5966.73 = 21×284.13 (bolo 5966.76). NČZD plná do ZD 26083.13, nula od 43983.32.",
+    "salary.social_insurance_max_base_monthly": "OVERENÉ 2026: 16764 € = 11× priemerná mzda 1524 (bolo 8862). Zdroj: Sociálna poisťovňa.",
+    "salary.average_wage_monthly": "OVERENÉ: priemerná mzda SR 2024 = 1524 € (bolo 1400). Zdroj: ŠÚ SR/Sociálna poisťovňa.",
+    "salary.non_taxable_amount_disability_*": "PODOZRIVÉ: vyššia NČZD pre ZŤP pri dani z príjmu neexistuje; nepoužíva sa vo výpočte. Zvážiť odstránenie.",
+    "sick_leave.max_assessment_base_yearly": "OVERENÉ 2026: 36576 → max DVZ 100.2083 €/deň (bolo 88200→241.64). Zdroj: Sociálna poisťovňa.",
+    "pension.pension_point_value": "OVERENÉ 2026: aktuálna dôchodková hodnota 19.7633 € (bolo 14.50). Zdroj: Sociálna poisťovňa.",
+    "freelancer.min_health_base_monthly": "OVERENÉ 2026: 914.40 € = 60% priemernej mzdy (bolo 762); zhoduje sa s min. sociálnym základom. Zdroj: Sociálna poisťovňa.",
+    "parental.basic_monthly / alt_monthly": "OVERENÉ 2026: rodičovský 364.80 € (bez predch. materského) / 500.10 € (s materským). POZOR: model osnova(3r)/alternatíva(6r) v kalkulačke je nesprávny — správne rozlíšenie je 'mal/nemal materské'. Sumy opravené, logika kalkulačky ešte na doriešenie.",
+    "average_pension / minimum_pension": "OVERIŤ: 650/370 sú odhady.",
+    "solar / heat-pump / renovation dotácie": "OVERIŤ podľa aktuálneho kola výzvy (SIEA/Obnov dom)."
   }
 }

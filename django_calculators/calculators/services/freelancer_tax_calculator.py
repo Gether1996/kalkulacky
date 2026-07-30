@@ -28,8 +28,8 @@ class FreelancerTaxCalculator(BaseCalculator):
     
     TAX_THRESHOLD_1 = cfg.FREELANCER_TAX_THRESHOLD_1  # €20,000/year
     TAX_THRESHOLD_2 = cfg.FREELANCER_TAX_THRESHOLD_2  # €43,983.32/year
-    TAX_THRESHOLD_3 = cfg.FREELANCER_TAX_THRESHOLD_3  # €60,349.21/year (legacy/unused)
-    TAX_THRESHOLD_4 = cfg.FREELANCER_TAX_THRESHOLD_4  # €75,010.32/year (legacy/unused)
+    TAX_THRESHOLD_3 = cfg.FREELANCER_TAX_THRESHOLD_3  # €60,349.21/year (25%→30% od 2026)
+    TAX_THRESHOLD_4 = cfg.FREELANCER_TAX_THRESHOLD_4  # €75,010.32/year (30%→35% od 2026)
     
     # Health insurance
     HEALTH_INSURANCE_RATE = cfg.FREELANCER_HEALTH_INSURANCE_RATE  # 16%

@@ -127,20 +127,28 @@ class SalaryCalculator(BaseCalculator):
         non_taxable_amount = self.NON_TAXABLE_AMOUNT_MONTHLY if apply_nontaxable_amount else Decimal('0')
         taxable_base = max(Decimal('0'), tax_base - non_taxable_amount)
         
-        # 5. Income tax — Slovak employee PIT has TWO rates only: 19% and 25%.
-        #    25% applies to the part of the (monthly) taxable base above
-        #    176.8x the subsistence minimum = €3,665.28/mo (€43,983.32/yr).
-        #    (The 30%/35% brackets do NOT exist for personal income tax.)
-        income_tax_before_child_bonus = Decimal('0')
+        # 5. Income tax — from 1.1.2026 SK uses a 4-bracket progressive scale on the
+        #    (monthly) taxable base (fiscal-consolidation reform):
+        #      19% up to T1 (154.8× subsistence min = €43,983.32/yr, €3,665.28/mo)
+        #      25% from T1 to T2 (212.4× = €60,349.21/yr, €5,029.10/mo)
+        #      30% from T2 to T3 (264×   = €75,010.32/yr, €6,250.86/mo)
+        #      35% above T3
+        t1 = self.TAX_THRESHOLD_1_MONTHLY
+        t2 = self.TAX_THRESHOLD_2_MONTHLY
+        t3 = self.TAX_THRESHOLD_3_MONTHLY
+        tb = taxable_base
 
-        if taxable_base <= Decimal('0'):
+        if tb <= Decimal('0'):
             income_tax_before_child_bonus = Decimal('0')
-        elif taxable_base <= self.TAX_THRESHOLD_1_MONTHLY:
-            income_tax_before_child_bonus = taxable_base * self.TAX_RATE_1
         else:
-            bracket_1 = self.TAX_THRESHOLD_1_MONTHLY * self.TAX_RATE_1
-            bracket_2 = (taxable_base - self.TAX_THRESHOLD_1_MONTHLY) * self.TAX_RATE_2
-            income_tax_before_child_bonus = bracket_1 + bracket_2
+            tax = min(tb, t1) * self.TAX_RATE_1
+            if tb > t1:
+                tax += (min(tb, t2) - t1) * self.TAX_RATE_2
+            if tb > t2:
+                tax += (min(tb, t3) - t2) * self.TAX_RATE_3
+            if tb > t3:
+                tax += (tb - t3) * self.TAX_RATE_4
+            income_tax_before_child_bonus = tax
         
         # 6. Apply Child Tax Bonus (if applicable) - reduces tax (cannot be negative)
         child_tax_bonus_total = Decimal('0')
@@ -226,11 +234,12 @@ class SalaryCalculator(BaseCalculator):
                 'non_taxable_amount_monthly': float(self.NON_TAXABLE_AMOUNT_MONTHLY),
                 'child_tax_bonus_under_15': float(self.CHILD_TAX_BONUS_UNDER_15),
                 'child_tax_bonus_15_to_18': float(self.CHILD_TAX_BONUS_15_TO_18),
-                # SK employee PIT has only two rates (19% / 25%). The old
-                # response advertised non-existent 30%/35% brackets (AUDIT §3/K3).
+                # SK 2026 4-bracket progressive scale (19/25/30/35 %).
                 'tax_brackets': {
                     'bracket_1': {'rate': 19, 'up_to_monthly': float(self.TAX_THRESHOLD_1_MONTHLY)},
-                    'bracket_2': {'rate': 25, 'above': float(self.TAX_THRESHOLD_1_MONTHLY)},
+                    'bracket_2': {'rate': 25, 'up_to_monthly': float(self.TAX_THRESHOLD_2_MONTHLY)},
+                    'bracket_3': {'rate': 30, 'up_to_monthly': float(self.TAX_THRESHOLD_3_MONTHLY)},
+                    'bracket_4': {'rate': 35, 'above': float(self.TAX_THRESHOLD_3_MONTHLY)},
                 }
             }
         }
@@ -239,14 +248,17 @@ class SalaryCalculator(BaseCalculator):
         return result
     
     def _get_applicable_tax_rate(self, taxable_base: Decimal) -> float:
-        """Highest tax rate actually applied. SK employee PIT is 19% / 25% only —
-        the calculation never applies 30%/35%, so this caps at 25% (AUDIT §3/K3)."""
+        """Highest tax rate applied to this taxable base (SK 2026 4-bracket scale)."""
         if taxable_base <= Decimal('0'):
             return 0.0
         elif taxable_base <= self.TAX_THRESHOLD_1_MONTHLY:
             return float(self.TAX_RATE_1 * 100)
-        else:
+        elif taxable_base <= self.TAX_THRESHOLD_2_MONTHLY:
             return float(self.TAX_RATE_2 * 100)
+        elif taxable_base <= self.TAX_THRESHOLD_3_MONTHLY:
+            return float(self.TAX_RATE_3 * 100)
+        else:
+            return float(self.TAX_RATE_4 * 100)
 
 
 # Example usage and testing
