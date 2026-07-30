@@ -15,20 +15,31 @@ Interest is compounded monthly: each month the balance grows by the monthly
 rate, then the contribution is added (contributions at period end / ordinary
 annuity). This matches how a typical savings account / regular investment is
 quoted from an annual nominal rate.
+
+Money maths is done in ``Decimal`` (repo convention); values are returned as
+plain floats rounded to cents (like the other calculators) so the JSON API
+keeps returning numbers.
 """
 
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
 MAX_MONTHS = 1200  # 100 years — hard cap so an unreachable goal can't loop forever
 
+_CENT = Decimal('0.01')
 
-def _f(value):
-    """Coerce Decimal/str/int to float for the iterative maths."""
+
+def _d(value):
+    """Coerce Decimal/str/int/float to Decimal for the money maths."""
     if value is None:
-        return 0.0
+        return Decimal('0')
     if isinstance(value, Decimal):
-        return float(value)
-    return float(value)
+        return value
+    return Decimal(str(value))
+
+
+def _money(value: Decimal) -> float:
+    """Round a Decimal to cents and return a float for the JSON response."""
+    return float(value.quantize(_CENT, rounding=ROUND_HALF_UP))
 
 
 def project_time_to_goal(target_amount, initial_amount, monthly_contribution,
@@ -41,10 +52,10 @@ def project_time_to_goal(target_amount, initial_amount, monthly_contribution,
     Returns a dict with months/years to goal, whether it's reachable, the
     projected balance, total contributed and interest earned.
     """
-    target = _f(target_amount)
-    balance = _f(initial_amount)
-    monthly = _f(monthly_contribution)
-    r = _f(annual_rate) / 100.0 / 12.0
+    target = _d(target_amount)
+    balance = _d(initial_amount)
+    monthly = _d(monthly_contribution)
+    r = _d(annual_rate) / Decimal('100') / Decimal('12')
 
     total_contributed = balance  # the starting balance is money you put in
 
@@ -58,7 +69,7 @@ def project_time_to_goal(target_amount, initial_amount, monthly_contribution,
 
     months = 0
     while balance < target and months < MAX_MONTHS:
-        balance = balance * (1 + r) + monthly
+        balance = balance * (Decimal('1') + r) + monthly
         total_contributed += monthly
         months += 1
 
@@ -80,28 +91,28 @@ def required_monthly_contribution(target_amount, initial_amount, months,
     a negative contribution (if the starting balance already grows past the
     target, the required contribution is 0).
     """
-    target = _f(target_amount)
-    pv = _f(initial_amount)
+    target = _d(target_amount)
+    pv = _d(initial_amount)
     n = int(months)
-    r = _f(annual_rate) / 100.0 / 12.0
+    r = _d(annual_rate) / Decimal('100') / Decimal('12')
 
     if n <= 0:
         return None
 
     if r == 0:
-        monthly = (target - pv) / n
+        monthly = (target - pv) / Decimal(n)
     else:
-        growth = (1 + r) ** n
+        growth = (Decimal('1') + r) ** n
         fv_initial = pv * growth
-        annuity_factor = (growth - 1) / r
+        annuity_factor = (growth - Decimal('1')) / r
         monthly = (target - fv_initial) / annuity_factor
 
-    monthly = max(0.0, monthly)
+    monthly = max(Decimal('0'), monthly)
 
     # Sanity projection so the response is self-describing.
     projection = project_time_to_goal(target, pv, monthly, annual_rate)
     return {
-        'required_monthly': round(monthly, 2),
+        'required_monthly': _money(monthly),
         'months': n,
         'years': round(n / 12.0, 1),
         'projected_balance': projection['projected_balance'],
@@ -116,9 +127,9 @@ def _projection_result(months, reached, balance, total_contributed):
         'reached': reached,
         'months': months,
         'years': round(months / 12.0, 1) if months is not None else None,
-        'projected_balance': round(balance, 2),
-        'total_contributed': round(total_contributed, 2),
-        'interest_earned': round(interest, 2),
+        'projected_balance': _money(balance),
+        'total_contributed': _money(total_contributed),
+        'interest_earned': _money(interest),
     }
 
 
@@ -132,13 +143,15 @@ def status_for_goal(target_amount, current_balance, monthly_contribution,
     None (no deadline) → status 'no_deadline'. Returns a small dict used by the
     dashboard to colour the goal.
     """
-    target = _f(target_amount)
-    balance = _f(current_balance)
-    progress_pct = round((balance / target) * 100, 1) if target > 0 else 0.0
+    target = _d(target_amount)
+    balance = _d(current_balance)
+    progress_pct = (
+        round(float(balance / target * Decimal('100')), 1) if target > 0 else 0.0
+    )
 
     if balance >= target:
         return {'status': 'reached', 'progress_pct': min(progress_pct, 100.0),
-                'projected_balance': round(balance, 2), 'shortfall': 0.0}
+                'projected_balance': _money(balance), 'shortfall': 0.0}
 
     if months_remaining is None:
         return {'status': 'no_deadline', 'progress_pct': progress_pct,
@@ -147,19 +160,19 @@ def status_for_goal(target_amount, current_balance, monthly_contribution,
     if months_remaining <= 0:
         # Deadline passed and target not met.
         return {'status': 'behind', 'progress_pct': progress_pct,
-                'projected_balance': round(balance, 2),
-                'shortfall': round(target - balance, 2)}
+                'projected_balance': _money(balance),
+                'shortfall': _money(target - balance)}
 
-    monthly = _f(monthly_contribution)
-    r = _f(annual_rate) / 100.0 / 12.0
+    monthly = _d(monthly_contribution)
+    r = _d(annual_rate) / Decimal('100') / Decimal('12')
     projected = balance
     for _ in range(int(months_remaining)):
-        projected = projected * (1 + r) + monthly
+        projected = projected * (Decimal('1') + r) + monthly
 
     on_track = projected >= target
     return {
         'status': 'on_track' if on_track else 'behind',
         'progress_pct': progress_pct,
-        'projected_balance': round(projected, 2),
-        'shortfall': 0.0 if on_track else round(target - projected, 2),
+        'projected_balance': _money(projected),
+        'shortfall': 0.0 if on_track else _money(target - projected),
     }

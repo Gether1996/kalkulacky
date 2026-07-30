@@ -95,19 +95,20 @@ class ROICalculator(BaseCalculator):
         investment_years = None
         if investment_period_months is not None and investment_period_months > 0:
             investment_years = Decimal(str(investment_period_months)) / Decimal('12')
-            
-            # Annualized ROI = ((1 + Total ROI)^(1/years)) - 1) × 100
-            # For simplicity, we use: Annualized ROI ≈ ROI / years
-            # More accurate formula for compound growth:
-            if roi_percentage > -100:  # Avoid negative base for power
+
+            # True annualized return (CAGR): ((final / initial)^(1/years) - 1) × 100.
+            # The n-th root is irrational, so the fractional power is done in float
+            # (a rate, not a monetary amount) and converted back to Decimal; display
+            # is rounded to 2 dp by round_decimal below.
+            if investment_years > 0:
                 total_return_multiplier = Decimal('1') + (roi_percentage / Decimal('100'))
-                # Use simple calculation instead of complex power for Decimal
-                # Approximation: ((final/initial)^(1/years) - 1) * 100
-                if investment_years > 0:
-                    # Simple annualized return
+                if total_return_multiplier > 0:
+                    mult = float(total_return_multiplier)
+                    cagr = (mult ** (1.0 / float(investment_years)) - 1.0) * 100.0
+                    annualized_roi = Decimal(str(cagr))
+                else:
+                    # Total loss (or worse) — CAGR is undefined; fall back to linear.
                     annualized_roi = roi_percentage / investment_years
-            else:
-                annualized_roi = roi_percentage / investment_years if investment_years > 0 else Decimal('0')
         
         # Payback period (months)
         # If positive ROI, calculate how long to recover initial investment
