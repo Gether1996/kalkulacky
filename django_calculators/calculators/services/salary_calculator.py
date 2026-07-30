@@ -53,6 +53,8 @@ class SalaryCalculator(BaseCalculator):
     # Child tax bonus
     CHILD_TAX_BONUS_UNDER_15 = config.CHILD_TAX_BONUS_UNDER_15
     CHILD_TAX_BONUS_15_TO_18 = config.CHILD_TAX_BONUS_15_TO_18
+    CHILD_BONUS_PCT_BY_CHILDREN = config.CHILD_BONUS_PCT_BY_CHILDREN
+    CHILD_BONUS_REDUCTION_BASE_MONTHLY = config.CHILD_BONUS_REDUCTION_BASE_MONTHLY
     
     # Social insurance limits
     SOCIAL_INSURANCE_MAX_BASE_MONTHLY = config.SOCIAL_INSURANCE_MAX_BASE_MONTHLY
@@ -150,18 +152,32 @@ class SalaryCalculator(BaseCalculator):
                 tax += (tb - t3) * self.TAX_RATE_4
             income_tax_before_child_bonus = tax
         
-        # 6. Apply Child Tax Bonus (if applicable) - reduces tax (cannot be negative)
+        # 6. Child tax bonus (SK 2026). The bonus is:
+        #    - capped per age band (€100 under 15, €50 for 15–17),
+        #    - additionally capped at a % of the (monthly) partial tax base
+        #      (tax_base = gross − odvody), by number of children:
+        #      1→29%, 2→36%, 3→43%, 4→50%, 5→57%, 6+→64%,
+        #    - reduced for higher earners: for a monthly base above €2,286 it
+        #      drops by 1/10 of the excess per child,
+        #    - REFUNDABLE: it can exceed the tax and be paid out (negative tax).
         child_tax_bonus_total = Decimal('0')
-        if children_under_15 > 0 or children_15_to_18 > 0:
-            # Calculate bonus for each age group
-            bonus_under_15 = self.CHILD_TAX_BONUS_UNDER_15 * children_under_15
-            bonus_15_to_18 = self.CHILD_TAX_BONUS_15_TO_18 * children_15_to_18
-            total_bonus = bonus_under_15 + bonus_15_to_18
-            
-            # Bonus cannot exceed the tax amount
-            child_tax_bonus_total = min(income_tax_before_child_bonus, total_bonus)
-        
-        final_tax = max(Decimal('0'), income_tax_before_child_bonus - child_tax_bonus_total)
+        n_children = children_under_15 + children_15_to_18
+        if n_children > 0:
+            age_cap = (self.CHILD_TAX_BONUS_UNDER_15 * children_under_15
+                       + self.CHILD_TAX_BONUS_15_TO_18 * children_15_to_18)
+            pct = self.CHILD_BONUS_PCT_BY_CHILDREN[min(n_children, 6) - 1]
+            base_cap = pct * tax_base
+            bonus = min(age_cap, base_cap)
+            # High-income reduction (per child) above the monthly base threshold.
+            if tax_base > self.CHILD_BONUS_REDUCTION_BASE_MONTHLY:
+                reduction = ((tax_base - self.CHILD_BONUS_REDUCTION_BASE_MONTHLY)
+                             / Decimal('10')) * n_children
+                bonus = max(Decimal('0'), bonus - reduction)
+            child_tax_bonus_total = bonus
+
+        # The bonus is refundable, so the tax after bonus may be negative (the
+        # difference is paid out to the employee) — do NOT floor at 0 here.
+        final_tax = income_tax_before_child_bonus - child_tax_bonus_total
         
         # 7. Calculate Net Salary
         net_salary = gross - social_insurance - health_insurance - final_tax

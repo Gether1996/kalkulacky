@@ -90,12 +90,18 @@ def calculate_cz(gross_salary: float, children_under_15: int = 0,
                  + TAX_RATE_2 * max(0.0, taxable - TAX_THRESHOLD_MONTHLY))
     tax_after_credit = max(0.0, tax_gross - TAXPAYER_CREDIT_MONTHLY)
 
-    # Child tax advantage reduces tax (can go negative as a bonus in CZ, but we
-    # floor at 0 here for a conservative net estimate).
+    # Child tax advantage. In CZ it is REFUNDABLE — if it exceeds the tax, the
+    # difference (daňový bonus) is paid out as a negative tax — provided the
+    # income is at least half the minimum wage (2026: ≥ 11 200 CZK/month).
     n = int(children_under_15 or 0) + int(children_15_to_18 or 0)
     child_credit = sum(CHILD_CREDIT[min(i, len(CHILD_CREDIT) - 1)] for i in range(n))
-    child_bonus = min(tax_after_credit, child_credit)
-    income_tax = max(0.0, tax_after_credit - child_bonus)
+    MIN_INCOME_FOR_BONUS = c['min_income_for_child_bonus']
+    if n > 0 and gross >= MIN_INCOME_FOR_BONUS:
+        income_tax = tax_after_credit - child_credit  # may be negative → paid out
+        child_bonus = max(0.0, child_credit - tax_after_credit)
+    else:
+        child_bonus = min(tax_after_credit, child_credit)
+        income_tax = max(0.0, tax_after_credit - child_bonus)
 
     net = gross - social - health - income_tax
     return _result(country='CZ', currency='CZK', gross=gross, social=social,

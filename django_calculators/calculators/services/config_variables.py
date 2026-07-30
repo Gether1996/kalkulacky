@@ -71,6 +71,11 @@ NON_TAXABLE_AMOUNT_DISABILITY_MONTHLY = _salary['non_taxable_amount_disability_m
 # --- CHILD TAX BONUS ---
 CHILD_TAX_BONUS_UNDER_15 = _salary['child_tax_bonus_under_15']
 CHILD_TAX_BONUS_15_TO_18 = _salary['child_tax_bonus_15_to_18']
+# 2026 child bonus: % of the (monthly) partial tax base by number of children
+# (index 0 = 1 child … index 5 = 6+), and the monthly base above which the bonus
+# is reduced for higher earners.
+CHILD_BONUS_PCT_BY_CHILDREN = _salary['child_bonus_pct_by_children']
+CHILD_BONUS_REDUCTION_BASE_MONTHLY = _salary['child_bonus_reduction_base_monthly']
 
 # --- MINIMUM / AVERAGE WAGE ---
 MINIMUM_WAGE_MONTHLY = _salary['minimum_wage_monthly']

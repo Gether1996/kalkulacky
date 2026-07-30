@@ -20,6 +20,7 @@
     "tax_threshold_monthly": 146901.0,
     "taxpayer_credit_monthly": 2570.0,
     "child_credit": [1267.0, 1860.0, 2320.0],
+    "min_income_for_child_bonus": 11200.0,
     "employer_rate": 0.338
   },
   "freelancer": {

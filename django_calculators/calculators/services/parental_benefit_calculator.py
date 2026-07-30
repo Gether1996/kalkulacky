@@ -101,7 +101,7 @@ class ParentalBenefitCalculator(BaseCalculator):
             yearly_salary = Decimal(str(gross_salary)) * 12
             daily_assessment_base = yearly_salary / 365
             
-            # Maternity benefit = 70% of DVZ
+            # Maternity benefit = 75% of DVZ (materské, SK 2026)
             daily_maternity = daily_assessment_base * self.MATERNITY_RATE
             weekly_maternity = daily_maternity * 7
             monthly_maternity = daily_maternity * 30
@@ -153,24 +153,19 @@ class ParentalBenefitCalculator(BaseCalculator):
             remaining_months = total_months - elapsed_months
             benefit_status = 'Poberáte rodičovský príspevok'
         
-        # --- WORK COMPATIBILITY CHECK ---
+        # --- WORK COMPATIBILITY ---
+        # Correction (verified 2026): the Slovak rodičovský príspevok is NOT
+        # income-tested — a parent may work full- or part-time and earn any amount
+        # without losing or reducing the benefit. (The earlier "loses entitlement
+        # above a limit" rule was incorrect.)
         can_work = True
         work_warning = None
-        
         if plan_to_work and planned_monthly_income > 0:
             planned_income = Decimal(str(planned_monthly_income))
-            
-            if planned_income > work_limit:
-                can_work = False
-                work_warning = (
-                    f"POZOR! Váš plánovaný príjem €{planned_income:.2f}/mes prevyšuje limit "
-                    f"€{work_limit:.2f}/mes. Stratíte nárok na rodičovský príspevok!"
-                )
-            else:
-                work_warning = (
-                    f"Môžete pracovať. Váš príjem €{planned_income:.2f}/mes je pod limitom "
-                    f"€{work_limit:.2f}/mes."
-                )
+            work_warning = (
+                f"Príjem zo zamestnania (€{planned_income:.2f}/mes) NEOVPLYVŇUJE výšku "
+                f"rodičovského príspevku — môžete pracovať bez straty nároku."
+            )
         
         # --- SECOND CHILD EXTENSION ---
         second_child_extension = None

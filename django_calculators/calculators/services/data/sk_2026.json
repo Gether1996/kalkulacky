@@ -38,6 +38,8 @@
     "non_taxable_amount_disability_monthly": "4985.44",
     "child_tax_bonus_under_15": "100.00",
     "child_tax_bonus_15_to_18": "50.00",
+    "child_bonus_pct_by_children": ["0.29", "0.36", "0.43", "0.50", "0.57", "0.64"],
+    "child_bonus_reduction_base_monthly": "2286",
     "minimum_wage_monthly": "915",
     "minimum_wage_hourly": "5.259",
     "average_wage_monthly": "1524"
@@ -75,9 +77,9 @@
     "retirement_age_female": 64,
     "employee_contribution_rate": "4.0",
     "employer_contribution_rate": "14.0",
-    "average_pension": "650.00",
+    "average_pension": "701.00",
     "pension_point_value": "19.7633",
-    "minimum_pension": "370.00",
+    "minimum_pension": "411.90",
     "second_pillar_default_rate": "6.0",
     "life_expectancy_after_retirement": 20
   },
