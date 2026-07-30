@@ -367,9 +367,51 @@ class NotificationService:
             context: Template context
         
         Returns:
-            Rendered HTML string, or None if template doesn't exist
+            Rendered HTML string, or None if a template/config isn't available.
         """
-        # TODO: Implement HTML template rendering
-        # For now, return None (plain text only)
-        # In future, create templates in calculators/templates/emails/
-        return None
+        from html import escape
+
+        config = NotificationService._get_template_config(
+            notification_type, calculator_type
+        )
+        if not config:
+            return None
+        try:
+            subject = config['subject'].format(**context)
+            message = config['message'].format(**context)
+        except (KeyError, IndexError, ValueError):
+            # Missing context key — fall back to plain text only.
+            return None
+
+        action_url = str(context.get('action_url') or '').strip()
+
+        # Escape everything, then turn the (already-escaped) action URL into a
+        # link and newlines into <br> for a simple, safe HTML body.
+        body = escape(message)
+        if action_url:
+            esc_url = escape(action_url)
+            body = body.replace(
+                esc_url, f'<a href="{esc_url}" style="color:#2563eb;">{esc_url}</a>'
+            )
+        body = body.replace('\n', '<br>')
+
+        return (
+            '<!DOCTYPE html><html lang="sk"><head><meta charset="utf-8">'
+            '<meta name="viewport" content="width=device-width, initial-scale=1"></head>'
+            '<body style="margin:0;padding:0;background:#f4f5f7;'
+            'font-family:Arial,Helvetica,sans-serif;color:#1f2937;">'
+            '<table role="presentation" width="100%" cellpadding="0" cellspacing="0">'
+            '<tr><td align="center" style="padding:24px 12px;">'
+            '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"'
+            ' style="max-width:560px;background:#ffffff;border-radius:12px;overflow:hidden;'
+            'box-shadow:0 1px 3px rgba(0,0,0,0.08);">'
+            '<tr><td style="background:#2563eb;padding:18px 24px;">'
+            '<span style="color:#ffffff;font-size:18px;font-weight:bold;">🧮 Kalkulačky.sk</span>'
+            '</td></tr>'
+            f'<tr><td style="padding:24px;"><h2 style="margin:0 0 12px;font-size:18px;">{escape(subject)}</h2>'
+            f'<div style="font-size:15px;line-height:1.6;">{body}</div></td></tr>'
+            '<tr><td style="padding:16px 24px;background:#f9fafb;font-size:12px;color:#6b7280;">'
+            'Tento e-mail vám prišiel, pretože ste si zapli pripomienky k uloženému výpočtu na '
+            'Kalkulačky.sk.</td></tr>'
+            '</table></td></tr></table></body></html>'
+        )
