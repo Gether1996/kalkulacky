@@ -318,7 +318,9 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@kalkulacky.sk
 SERVER_EMAIL = config('SERVER_EMAIL', default='server@kalkulacky.sk')
 
 # Where user "wrong data" reports are emailed (env-overridable).
-DATA_REPORT_RECIPIENT = config('DATA_REPORT_RECIPIENT', default='pat.kredatus@gmail.com')
+# Recipient for user-submitted data reports. Set DATA_REPORT_RECIPIENT in the
+# environment; no personal address is committed as a default.
+DATA_REPORT_RECIPIENT = config('DATA_REPORT_RECIPIENT', default='')
 
 # Public site URL used to build links in emails (e.g. password reset).
 FRONTEND_URL = config('FRONTEND_URL', default='https://kalkulacky.sk')

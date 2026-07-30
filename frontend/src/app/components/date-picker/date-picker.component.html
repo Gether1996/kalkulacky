@@ -11,6 +11,12 @@
       [value]="displayValue"
       [placeholder]="placeholder"
       readonly
+      [attr.aria-label]="label || placeholder || 'Vybrať dátum'"
+      aria-haspopup="dialog"
+      [attr.aria-expanded]="isOpen"
+      (keydown.enter)="toggleCalendar(); $event.preventDefault()"
+      (keydown.space)="toggleCalendar(); $event.preventDefault()"
+      (keydown.escape)="isOpen && toggleCalendar()"
     />
     <span class="date-picker-icon">📅</span>
     <button
