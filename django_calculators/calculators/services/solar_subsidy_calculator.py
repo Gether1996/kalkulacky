@@ -13,30 +13,26 @@ Always show results as "orientačné" (indicative) in the UI.
 
 from typing import Dict, Any
 from .base_calculator import BaseCalculator
+from .data import get_rates
 
 
-# --- Tunable constants (update per subsidy round / market prices) -------------
-# Sources (verified 2026-06): zelenadomacnostiam.sk (SIEA official), ZSE/VSE,
-# Slovak installer pricing (solarsystem.sk, vainex.sk, energala.sk).
-SK_YIELD_KWH_PER_KWP = 1000      # avg annual production per kWp in SK (~1000) [VSE]
-PRICE_PER_KWP_EUR = 1100         # turnkey PV price per kWp incl. VAT (~900–1200) [installers]
-BATTERY_PRICE_PER_KWH_EUR = 550  # usable storage price per kWh (indicative)
-DEFAULT_SELF_CONSUMPTION = 0.40  # share used directly without battery (~30–40 %)
-BATTERY_SELF_CONSUMPTION = 0.75  # raised self-consumption with a battery (~70–80 %)
-FEED_IN_PRICE_EUR = 0.05         # export/feed-in value per kWh (indicative)
-CO2_KG_PER_KWH = 0.20            # grid CO2 intensity (kg/kWh)
-
-# Zelená domácnostiam (SIEA, programme 2023–2029) — verified official rules:
-#   • €500 per kW of installed PV output.
-#   • Eligible power: 3 kW by default, up to 7 kW with documented consumption.
-#   • Max PV subsidy €3 500 (base), up to €4 025 with the +15 % bonus
-#     (air-quality zone / ceasing solid-fuel heating).
-#   • Capped at 50 % of total eligible costs (battery counts into eligible costs,
-#     there is no separate per-kWh battery voucher).
-SUBSIDY_PER_KWP_EUR = 500
-SUBSIDY_ELIGIBLE_KWP_MAX = 7     # max kW eligible (with consumption documentation)
-SUBSIDY_MAX_EUR = 3500           # base cap (€4 025 only with the +15 % bonus)
-SUBSIDY_RATE_OF_COST = 0.50      # subsidy ≤ 50 % of eligible costs
+# --- Constants loaded from the editable data file (data/sk_2026.json → solar) --
+# This calculator is float-based, so the Decimal values are coerced to float/int.
+# Update the numbers in sk_<year>.json (per subsidy round / market prices).
+# Zelená domácnostiam (SIEA, programme 2023–2029): €500/kW, up to 7 kW eligible
+# (=> €3 500 base cap), capped at ≤50 % of eligible costs.
+_S = get_rates('SK')['solar']
+SK_YIELD_KWH_PER_KWP = int(_S['yield_kwh_per_kwp'])          # avg annual production per kWp
+PRICE_PER_KWP_EUR = int(_S['price_per_kwp_eur'])             # turnkey PV price per kWp incl. VAT
+BATTERY_PRICE_PER_KWH_EUR = int(_S['battery_price_per_kwh_eur'])
+DEFAULT_SELF_CONSUMPTION = float(_S['default_self_consumption'])
+BATTERY_SELF_CONSUMPTION = float(_S['battery_self_consumption'])
+FEED_IN_PRICE_EUR = float(_S['feed_in_price_eur'])
+CO2_KG_PER_KWH = float(_S['co2_kg_per_kwh'])
+SUBSIDY_PER_KWP_EUR = int(_S['subsidy_per_kwp_eur'])
+SUBSIDY_ELIGIBLE_KWP_MAX = int(_S['subsidy_eligible_kwp_max'])  # max kW eligible
+SUBSIDY_MAX_EUR = int(_S['subsidy_max_eur'])                 # base cap
+SUBSIDY_RATE_OF_COST = float(_S['subsidy_rate_of_cost'])     # subsidy ≤ 50 % of eligible costs
 
 
 class SolarSubsidyCalculator(BaseCalculator):
@@ -87,7 +83,8 @@ class SolarSubsidyCalculator(BaseCalculator):
         if total_subsidy >= subsidy_by_cost_cap:
             subsidy_limited_by = '50 % oprávnených nákladov'
         elif eligible_kwp * SUBSIDY_PER_KWP_EUR >= SUBSIDY_MAX_EUR:
-            subsidy_limited_by = 'maximálna dotácia (3 500 €)'
+            # Derive the amount from the constant so it can't desync from SUBSIDY_MAX_EUR.
+            subsidy_limited_by = f'maximálna dotácia ({SUBSIDY_MAX_EUR:,} €)'.replace(',', ' ')
         else:
             subsidy_limited_by = 'výkon (€500/kW, max 7 kW)'
 

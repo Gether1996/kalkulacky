@@ -1,0 +1,19 @@
+{
+  "meta": {
+    "country": "HU",
+    "year": 2026,
+    "version": "2026.1.0",
+    "valid_from": "2026-01-01",
+    "valid_until": "2026-12-31",
+    "currency": "HUF",
+    "note": "INDIKATÍVNE hodnoty pre HU 2026 — overiť voči NAV. Iba mzdový engine. Rodinná úľava zdvojnásobená od 1/2026. Menené raz ročne.",
+    "sources": ["helpers.hu", "PwC Worldwide Tax Summaries", "OECD Taxing Wages 2026"]
+  },
+  "salary": {
+    "social_rate": 0.185,
+    "pit_rate": 0.15,
+    "family_allowance": [0.0, 133340.0, 266660.0],
+    "family_allowance_3plus": 440000.0,
+    "employer_rate": 0.13
+  }
+}

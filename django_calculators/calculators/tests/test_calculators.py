@@ -96,3 +96,51 @@ class CalculatorValidationTests(BaseAPITestCase):
     def test_calculator_list_is_public(self):
         resp = self.client.get(f'{PREFIX}/')
         self.assertEqual(resp.status_code, 200)
+
+
+@override_settings(REST_FRAMEWORK=NO_THROTTLE_RF)
+class ConfigDataTests(BaseAPITestCase):
+    """Centralised per-country/per-year rate data + the /config/ endpoint."""
+
+    def test_config_endpoint_sk(self):
+        resp = self.client.get(f'{PREFIX}/config/?country=SK')
+        self.assertEqual(resp.status_code, 200)
+        body = resp.json()
+        self.assertTrue(body['success'])
+        self.assertEqual(body['country'], 'SK')
+        self.assertIn(2026, body['available_years'])
+        # A representative rate is present and correct.
+        self.assertEqual(body['data']['salary']['non_taxable_amount_monthly'], '497.23')
+        self.assertEqual(body['data']['vat']['standard'], '23')
+
+    def test_config_endpoint_cz(self):
+        resp = self.client.get(f'{PREFIX}/config/?country=CZ&year=2026')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()['data']['salary']['social_rate'], 0.071)
+
+    def test_config_unknown_country_404(self):
+        self.assertEqual(self.client.get(f'{PREFIX}/config/?country=XX').status_code, 404)
+
+    def test_config_invalid_year_400(self):
+        self.assertEqual(self.client.get(f'{PREFIX}/config/?country=SK&year=abc').status_code, 400)
+
+    def test_loader_returns_decimal(self):
+        from decimal import Decimal
+        from calculators.services.data import get_rates
+        sk = get_rates('SK')
+        self.assertIsInstance(sk['salary']['non_taxable_amount_monthly'], Decimal)
+        self.assertEqual(sk['salary']['non_taxable_amount_monthly'], Decimal('497.23'))
+
+    def test_config_shim_matches_data(self):
+        # The config_variables shim must expose the same values as the data file.
+        from calculators.services import config_variables as cfg
+        from calculators.services.data import get_rates
+        sk = get_rates('SK')
+        self.assertEqual(cfg.NON_TAXABLE_AMOUNT_MONTHLY, sk['salary']['non_taxable_amount_monthly'])
+        self.assertEqual(cfg.MINIMUM_WAGE_MONTHLY, sk['salary']['minimum_wage_monthly'])
+        self.assertEqual(cfg.VAT_RATE_STANDARD, sk['vat']['standard'])
+
+    def test_validate_config_year(self):
+        from calculators.services import config_variables as cfg
+        self.assertTrue(cfg.validate_config_year(2026))
+        self.assertFalse(cfg.validate_config_year(1999))

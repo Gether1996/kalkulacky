@@ -361,6 +361,55 @@ class CalculatorListView(APIView):
         })
 
 
+class CalculatorConfigView(APIView):
+    """
+    Expose the per-country / per-year calculator rate data (single source of
+    truth in ``services/data/<cc>_<year>.json``). Lets the frontend read the
+    authoritative rates instead of hardcoding/duplicating them.
+
+    GET /api/calculators/config/?country=SK[&year=2026]
+    """
+    def get(self, request):
+        from decimal import Decimal
+        from .services.data import get_rates, available_years, latest_year
+
+        country = (request.query_params.get('country') or 'SK').upper()
+        year_param = request.query_params.get('year')
+        try:
+            year = int(year_param) if year_param else None
+        except (TypeError, ValueError):
+            return Response(
+                {'success': False, 'error': 'Neplatný rok'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            data = get_rates(country, year)
+        except FileNotFoundError:
+            return Response(
+                {'success': False, 'error': f'Nie sú dostupné dáta pre {country}'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        def _json_safe(obj):
+            # Decimals → str (keep exact precision for the client to parse).
+            if isinstance(obj, dict):
+                return {k: _json_safe(v) for k, v in obj.items()}
+            if isinstance(obj, list):
+                return [_json_safe(v) for v in obj]
+            if isinstance(obj, Decimal):
+                return str(obj)
+            return obj
+
+        return Response({
+            'success': True,
+            'country': country,
+            'year': year or latest_year(country),
+            'available_years': available_years(country),
+            'data': _json_safe(data),
+        })
+
+
 class SalaryCalculatorView(APIView):
     """
     Calculate Slovak net salary from gross salary.

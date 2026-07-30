@@ -89,7 +89,7 @@ class FreelancerTaxCalculator(BaseCalculator):
         if use_flat_expenses:
             # 60% flat expenses, capped at the statutory €20,000/year maximum.
             annual_expenses = min(
-                annual_revenue * self.FLAT_EXPENSE_RATE, Decimal('20000')
+                annual_revenue * self.FLAT_EXPENSE_RATE, cfg.FREELANCER_FLAT_EXPENSE_CAP
             )
             expenses_note = "Paušálne výdavky (60 %, max. 20 000 €)"
         else:
@@ -113,7 +113,7 @@ class FreelancerTaxCalculator(BaseCalculator):
         #  • 15% if annual taxable income (turnover) ≤ €100,000,
         #  • otherwise the standard 19% / 25% progression (25% on the part of the
         #    base above €43,983.32). The 30%/35% rates do not exist.
-        TURNOVER_15_LIMIT = Decimal('100000')
+        TURNOVER_15_LIMIT = cfg.FREELANCER_TURNOVER_15_LIMIT
         income_tax = Decimal('0')
         tax_rate_applied = Decimal('0')
 

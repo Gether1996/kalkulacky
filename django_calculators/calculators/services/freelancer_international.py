@@ -12,6 +12,8 @@ podnikáním, podnikatel.cz — OSVČ 2026.
 
 from typing import Dict, Any
 
+from .data import get_rates
+
 
 def _r(x: float) -> float:
     return round(float(x) + 1e-9, 2)
@@ -25,23 +27,25 @@ def calculate_cz_freelancer(
     months_active: int = 12,
     **kwargs,
 ) -> Dict[str, Any]:
-    # --- Czech OSVČ 2026 constants (CZK) --------------------------------------
-    HEALTH_RATE = 0.135          # zdravotní pojištění
-    HEALTH_BASE_SHARE = 0.50     # assessment base = 50 % of profit
-    HEALTH_MIN_BASE_MONTHLY = 24483.50   # 50 % of avg wage 48,967
-    HEALTH_MIN_PAYMENT_MONTHLY = 3306.0  # 13.5 % of the min base
+    # Czech OSVČ 2026 constants loaded from the editable data file
+    # (data/cz_2026.json → freelancer).
+    c = get_rates('CZ')['freelancer']
+    HEALTH_RATE = c['health_rate']                       # zdravotní pojištění
+    HEALTH_BASE_SHARE = c['health_base_share']           # assessment base = 50 % of profit
+    HEALTH_MIN_BASE_MONTHLY = c['health_min_base_monthly']
+    HEALTH_MIN_PAYMENT_MONTHLY = c['health_min_payment_monthly']
 
-    SOCIAL_RATE = 0.292          # důchodové (28%) + státní pol. zaměstnanosti (1.2%)
-    SOCIAL_BASE_SHARE = 0.55     # assessment base = 55 % of profit (2024+)
-    SOCIAL_MIN_PAYMENT_MONTHLY = 5720.0  # 2026 minimum monthly social advance
+    SOCIAL_RATE = c['social_rate']                       # důchodové + pol. zaměstnanosti
+    SOCIAL_BASE_SHARE = c['social_base_share']           # assessment base = 55 % of profit
+    SOCIAL_MIN_PAYMENT_MONTHLY = c['social_min_payment_monthly']
 
-    SICKNESS_RATE = 0.027        # nemocenské (voluntary) ~2.7 % of base
-    TAX_RATE_1 = 0.15
-    TAX_RATE_2 = 0.23
-    TAX_THRESHOLD_YEARLY = 1762812.0     # 36× avg wage
-    TAXPAYER_CREDIT_YEARLY = 30840.0     # sleva na poplatníka
-    FLAT_EXPENSE_RATE = 0.60             # paušální výdaje 60 %
-    FLAT_EXPENSE_REVENUE_CAP = 2000000.0 # 60 % applies up to 2M revenue
+    SICKNESS_RATE = c['sickness_rate']                   # nemocenské (voluntary)
+    TAX_RATE_1 = c['tax_rate_1']
+    TAX_RATE_2 = c['tax_rate_2']
+    TAX_THRESHOLD_YEARLY = c['tax_threshold_yearly']     # 36× avg wage
+    TAXPAYER_CREDIT_YEARLY = c['taxpayer_credit_yearly']  # sleva na poplatníka
+    FLAT_EXPENSE_RATE = c['flat_expense_rate']           # paušální výdaje 60 %
+    FLAT_EXPENSE_REVENUE_CAP = c['flat_expense_revenue_cap']
 
     annual_revenue = float(annual_revenue)
     months_active = max(1, min(int(months_active or 12), 12))

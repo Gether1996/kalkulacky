@@ -18,6 +18,7 @@ Blog Endpoints:
 from django.urls import path
 from .views import (
     CalculatorListView,
+    CalculatorConfigView,
     SalaryCalculatorView,
     MortgageCalculatorView,
     VATCalculatorView,
@@ -78,6 +79,7 @@ app_name = 'calculators'
 urlpatterns = [
     # Calculator list
     path('', CalculatorListView.as_view(), name='calculator-list'),
+    path('config/', CalculatorConfigView.as_view(), name='calculator-config'),
     
     # Individual calculators
     path('salary/', SalaryCalculatorView.as_view(), name='salary-calculator'),

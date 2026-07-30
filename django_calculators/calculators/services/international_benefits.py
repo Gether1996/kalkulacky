@@ -13,6 +13,15 @@ Constants centralised per function for yearly updates.
 from datetime import datetime, timedelta, date
 from typing import Dict, Any
 
+from .data import get_rates
+
+# CZ 2026 values loaded from the editable data file (data/cz_2026.json).
+_CZ = get_rates('CZ')
+_SICK = _CZ['sick_leave']
+_VAC = _CZ['vacation']
+_PEN = _CZ['pension']
+_PAR = _CZ['parental']
+
 
 def _r(x, d=2):
     return round(float(x) + 1e-9, d)
@@ -29,10 +38,12 @@ def _parse_date(v):
 
 
 # --- CZ daily-assessment-base reduction (nemocenská/PPM redukční hranice 2026) -
-RH1, RH2, RH3 = 1633.0, 2449.0, 4897.0
+RH1 = _SICK['reduction_bound_1']
+RH2 = _SICK['reduction_bound_2']
+RH3 = _SICK['reduction_bound_3']
 
 
-def _reduce_dvz(dvz, r1=0.90, r2=0.60, r3=0.30):
+def _reduce_dvz(dvz, r1=_SICK['reduce_coeff_1'], r2=_SICK['reduce_coeff_2'], r3=_SICK['reduce_coeff_3']):
     """Reduce the daily assessment base through the 3 reduction brackets."""
     part1 = min(dvz, RH1) * r1
     part2 = (min(dvz, RH2) - RH1) * r2 if dvz > RH1 else 0.0
@@ -50,27 +61,36 @@ def calculate_cz_sick_leave(gross_salary, days_sick, leave_type='illness', **kwa
     reduced = _reduce_dvz(dvz)
     is_capped = dvz > RH3
 
+    # Payout rates + windows from data/cz_2026.json → sick_leave.
+    r1_30 = _SICK['rate_day_1_30']
+    r31_60 = _SICK['rate_day_31_60']
+    r61 = _SICK['rate_day_61plus']
+    care_rate = _SICK['care_rate']
+    emp_cal = _SICK['employer_calendar_days']
+    wf_num = _SICK['working_day_factor_num']
+    wf_den = _SICK['working_day_factor_den']
+
     if leave_type == 'care':
         # Ošetřovné: 60 % of reduced DVZ from day 1 (ČSSZ), typically max 9 days.
         employer_days, insurance_days = 0, days_sick
         employer_payment = 0.0
-        insurance_payment = insurance_days * reduced * 0.60
+        insurance_payment = insurance_days * reduced * care_rate
         ins_rate = 60.0
     else:
         # Employer náhrada mzdy: working days within the first 14 calendar days.
-        emp_cal_days = min(days_sick, 14)
-        employer_days = round(emp_cal_days * 5 / 7)          # working days only
-        employer_payment = employer_days * reduced * 0.60
+        emp_cal_days = min(days_sick, emp_cal)
+        employer_days = round(emp_cal_days * wf_num / wf_den)  # working days only
+        employer_payment = employer_days * reduced * r1_30
         # ČSSZ nemocenská from day 15 (calendar days), tiered.
-        insurance_days = max(0, days_sick - 14)
+        insurance_days = max(0, days_sick - emp_cal)
         ins_payment = 0.0
-        for day in range(15, days_sick + 1):
+        for day in range(emp_cal + 1, days_sick + 1):
             if day <= 30:
-                rate = 0.60
+                rate = r1_30
             elif day <= 60:
-                rate = 0.66
+                rate = r31_60
             else:
-                rate = 0.72
+                rate = r61
             ins_payment += reduced * rate
         insurance_payment = ins_payment
         ins_rate = 60.0
@@ -84,15 +104,15 @@ def calculate_cz_sick_leave(gross_salary, days_sick, leave_type='illness', **kwa
     breakdown = []
     for day in range(1, days_sick + 1):
         if leave_type == 'care':
-            payer, rate = 'ČSSZ', 0.60
-        elif day <= 14:
-            payer, rate = ('Zaměstnavatel', 0.60) if (day % 7) not in (6, 0) else ('Víkend (neplaceno)', 0.0)
+            payer, rate = 'ČSSZ', care_rate
+        elif day <= emp_cal:
+            payer, rate = ('Zaměstnavatel', r1_30) if (day % 7) not in (6, 0) else ('Víkend (neplaceno)', 0.0)
         elif day <= 30:
-            payer, rate = 'ČSSZ', 0.60
+            payer, rate = 'ČSSZ', r1_30
         elif day <= 60:
-            payer, rate = 'ČSSZ', 0.66
+            payer, rate = 'ČSSZ', r31_60
         else:
-            payer, rate = 'ČSSZ', 0.72
+            payer, rate = 'ČSSZ', r61
         breakdown.append({'day': day, 'payer': payer, 'rate_percent': _r(rate * 100),
                           'daily_amount': _r(reduced * rate)})
 
@@ -128,7 +148,7 @@ def calculate_cz_vacation(age, employment_start_date, current_date=None,
                           vacation_days_used=0, days_carried_over=0,
                           planned_vacation_days=0, **kwargs):
     """Czech dovolená 2026: basic 4 weeks (20 days), no age bonus."""
-    BASE_DAYS = 20  # 4 weeks (legal minimum; many employers grant 5)
+    BASE_DAYS = _VAC['base_days']  # 4 weeks (legal minimum; many employers grant 5)
     age = int(age)
     start = _parse_date(employment_start_date)
     cur = _parse_date(current_date)
@@ -189,13 +209,14 @@ def calculate_cz_pension(current_age, gross_salary, years_worked, gender='male',
                          include_second_pillar=False, second_pillar_rate=0, **kwargs):
     """Czech starobní důchod 2026: základní výměra 4 900 Kč + procentní výměra
     1,495 % za rok z redukovaného výpočtového základu. Min 9 800 Kč."""
-    BASIC_AMOUNT = 4900.0
-    PCT_PER_YEAR = 0.01495
-    MIN_PENSION = 9800.0
-    RETIREMENT_AGE = 65
-    EMP_RATE, EMPLOYER_RATE = 6.5, 21.5   # pension portion of social insurance
-    # Computing-base reduction (2026): 99 % up to 21 546, 26 % to 195 868.
-    RB1, RB2 = 21546.0, 195868.0
+    # CZ pension 2026 constants from data/cz_2026.json → pension.
+    BASIC_AMOUNT = _PEN['basic_amount']
+    PCT_PER_YEAR = _PEN['pct_per_year']
+    MIN_PENSION = _PEN['min_pension']
+    RETIREMENT_AGE = _PEN['retirement_age']
+    EMP_RATE, EMPLOYER_RATE = _PEN['employee_rate'], _PEN['employer_rate']  # pension portion of social
+    # Computing-base reduction (2026): 99 % up to RB1, 26 % to RB2.
+    RB1, RB2 = _PEN['reduction_bound_1'], _PEN['reduction_bound_2']
 
     current_age = int(current_age)
     gross = float(gross_salary)
@@ -208,7 +229,8 @@ def calculate_cz_pension(current_age, gross_salary, years_worked, gender='male',
     total_years = years_worked + years_to_ret
 
     vz = gross  # approximate osobní vyměřovací základ ≈ current monthly gross
-    comp_base = 0.99 * min(vz, RB1) + (0.26 * (min(vz, RB2) - RB1) if vz > RB1 else 0.0)
+    rc1, rc2 = _PEN['reduce_coeff_1'], _PEN['reduce_coeff_2']
+    comp_base = rc1 * min(vz, RB1) + (rc2 * (min(vz, RB2) - RB1) if vz > RB1 else 0.0)
     pct_amount = PCT_PER_YEAR * total_years * comp_base
     pension = BASIC_AMOUNT + pct_amount
     if pension < MIN_PENSION and total_years >= 30:
@@ -221,7 +243,7 @@ def calculate_cz_pension(current_age, gross_salary, years_worked, gender='male',
     future = total_m * years_to_ret * 12
     lifetime = contributed + future
     replacement = (pension / gross * 100) if gross > 0 else 0
-    life_after = 20
+    life_after = _PEN['life_expectancy_after_retirement']
     total_lifetime_pension = pension * 12 * life_after
     roi = ((total_lifetime_pension - lifetime) / lifetime * 100) if lifetime > 0 else 0
 
@@ -260,9 +282,9 @@ def calculate_cz_parental(birth_date, gross_salary=None, twins_or_more=False,
     """Czech mateřská (PPM) + rodičovský příspěvek 2026.
     PPM: 70 % of reduced daily DVZ, 28 weeks (37 for multiples).
     Rodičovský příspěvek: fixed pot 350 000 Kč (700 000 for multiples)."""
-    PPM_WEEKS = 37 if twins_or_more else 28
-    PARENTAL_TOTAL = 700000.0 if twins_or_more else 350000.0
-    PARENTAL_MONTHLY_MAX = 15000.0  # default cap; parents may draw faster
+    PPM_WEEKS = _PAR['ppm_weeks_multiple'] if twins_or_more else _PAR['ppm_weeks_single']
+    PARENTAL_TOTAL = _PAR['parental_total_multiple'] if twins_or_more else _PAR['parental_total_single']
+    PARENTAL_MONTHLY_MAX = _PAR['parental_monthly_max']  # default cap; parents may draw faster
     bd = _parse_date(birth_date)
     cur = _parse_date(current_date) if current_date else datetime.now().date()
     if bd > cur:
@@ -275,8 +297,9 @@ def calculate_cz_parental(birth_date, gross_salary=None, twins_or_more=False,
     if gross_salary and float(gross_salary) > 0:
         dvz = float(gross_salary) * 12 / 365.0
         # PPM reduction: 100 % / 60 % / 30 % through the brackets.
-        reduced = _reduce_dvz(dvz, r1=1.00, r2=0.60, r3=0.30)
-        daily = reduced * 0.70
+        reduced = _reduce_dvz(dvz, r1=_PAR['ppm_reduce_coeff_1'], r2=_PAR['ppm_reduce_coeff_2'],
+                              r3=_PAR['ppm_reduce_coeff_3'])
+        daily = reduced * _PAR['ppm_rate']
         maternity_benefit = {
             'daily_amount': _r(daily), 'weekly_amount': _r(daily * 7),
             'monthly_amount': _r(daily * 30), 'total_amount': _r(daily * PPM_WEEKS * 7),
@@ -286,9 +309,9 @@ def calculate_cz_parental(birth_date, gross_salary=None, twins_or_more=False,
 
     # Rodičovský příspěvek — fixed pot drawn flexibly until the child turns ~3–4.
     parental_start = maternity_end
-    benefit_end = bd + timedelta(days=365 * 3)
-    default_monthly = min(PARENTAL_MONTHLY_MAX, PARENTAL_TOTAL / 36.0)
-    total_months = 36
+    benefit_end = bd + timedelta(days=365 * _PAR['benefit_horizon_years'])
+    total_months = _PAR['total_months']
+    default_monthly = min(PARENTAL_MONTHLY_MAX, PARENTAL_TOTAL / float(total_months))
 
     if cur < parental_start:
         remaining_months, status = total_months, 'Ještě jste na mateřské'

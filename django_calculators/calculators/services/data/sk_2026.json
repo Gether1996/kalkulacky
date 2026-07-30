@@ -1,0 +1,158 @@
+{
+  "meta": {
+    "country": "SK",
+    "year": 2026,
+    "version": "2026.1.0",
+    "last_updated": "2026-03-06",
+    "valid_from": "2026-01-01",
+    "valid_until": "2026-12-31",
+    "currency": "EUR",
+    "sources": [
+      "Finančná správa SR",
+      "Sociálna poisťovňa",
+      "Ministerstvo financií SR",
+      "Zákon č. 595/2003 Z. z. o dani z príjmov",
+      "Zákon č. 461/2003 Z. z. o sociálnom poistení"
+    ]
+  },
+  "salary": {
+    "social_insurance_rate_employee": "0.094",
+    "health_insurance_rate_employee": "0.05",
+    "health_insurance_rate_disability": "0.025",
+    "employer_contributions_rate": "0.362",
+    "social_insurance_rate_employer": "0.262",
+    "health_insurance_rate_employer": "0.10",
+    "social_insurance_max_base_monthly": "8862",
+    "tax_rate_bracket_1": "0.19",
+    "tax_rate_bracket_2": "0.25",
+    "tax_rate_bracket_3": "0.30",
+    "tax_rate_bracket_4": "0.35",
+    "tax_threshold_1_yearly": "43983.32",
+    "tax_threshold_2_yearly": "60349.21",
+    "tax_threshold_3_yearly": "75010.32",
+    "non_taxable_amount_yearly": "5966.76",
+    "non_taxable_amount_monthly": "497.23",
+    "non_taxable_amount_disability_yearly": "59825.28",
+    "non_taxable_amount_disability_monthly": "4985.44",
+    "child_tax_bonus_under_15": "100.00",
+    "child_tax_bonus_15_to_18": "50.00",
+    "minimum_wage_monthly": "915",
+    "minimum_wage_hourly": "5.259",
+    "average_wage_monthly": "1400"
+  },
+  "vat": {
+    "standard": "23",
+    "reduced_1": "19",
+    "reduced_2": "5",
+    "zero": "0"
+  },
+  "mortgage": {
+    "typical_term_years": 25,
+    "typical_interest_rate": "3.5",
+    "typical_ltv_ratio": "0.80"
+  },
+  "leasing": {
+    "default_interest_rate": "0.05",
+    "default_loan_rate": "0.06",
+    "default_residual_value": "0.30"
+  },
+  "inflation": {
+    "default_rate": "3.0"
+  },
+  "energy": {
+    "electricity_rate_low": "0.15",
+    "electricity_rate_high": "0.20",
+    "electricity_fixed_monthly": "8.00",
+    "gas_rate": "0.06",
+    "gas_fixed_monthly": "6.00",
+    "avg_electricity_monthly": "250",
+    "avg_gas_monthly": "500"
+  },
+  "pension": {
+    "retirement_age_male": 64,
+    "retirement_age_female": 64,
+    "employee_contribution_rate": "4.0",
+    "employer_contribution_rate": "14.0",
+    "average_pension": "650.00",
+    "pension_point_value": "14.50",
+    "minimum_pension": "370.00",
+    "second_pillar_default_rate": "6.0",
+    "life_expectancy_after_retirement": 20
+  },
+  "sick_leave": {
+    "employer_payment_days": 10,
+    "employer_tier1_days": 3,
+    "employer_rate": "0.25",
+    "insurance_rate_illness": "0.55",
+    "insurance_rate_care": "0.55",
+    "max_assessment_base_yearly": "88200",
+    "min_wage_monthly": "915"
+  },
+  "freelancer": {
+    "tax_rate_1": "0.15",
+    "tax_rate_2": "0.19",
+    "tax_rate_3": "0.25",
+    "tax_rate_4": "0.30",
+    "tax_rate_5": "0.35",
+    "tax_threshold_1": "20000",
+    "health_insurance_rate": "0.16",
+    "min_health_base_monthly": "762",
+    "social_sickness_rate": "0.044",
+    "social_pension_rate": "0.18",
+    "social_disability_rate": "0.06",
+    "social_accident_rate": "0",
+    "social_guarantee_rate": "0",
+    "social_reserve_rate": "0.0475",
+    "min_social_base_monthly": "914.40",
+    "flat_expense_rate": "0.60",
+    "flat_expense_cap": "20000",
+    "turnover_15_limit": "100000"
+  },
+  "fuel": {
+    "price_petrol": "1.65",
+    "price_diesel": "1.55",
+    "consumption_city": "8.0",
+    "consumption_highway": "6.0",
+    "consumption_combined": "7.0"
+  },
+  "parental": {
+    "maternity_benefit_rate": "0.75",
+    "maternity_weeks": 34,
+    "maternity_weeks_twins": 43,
+    "basic_monthly": "381.90",
+    "basic_years": 3,
+    "alt_monthly": "270.00",
+    "alt_years": 6,
+    "work_income_limit_basic": "635.70",
+    "work_income_limit_alt": "635.70",
+    "min_assessment_base": "915.00"
+  },
+  "vacation": {
+    "base_days": 20,
+    "extra_days_from_age": 5,
+    "age_threshold": 33
+  },
+  "solar": {
+    "yield_kwh_per_kwp": "1000",
+    "price_per_kwp_eur": "1100",
+    "battery_price_per_kwh_eur": "550",
+    "default_self_consumption": "0.40",
+    "battery_self_consumption": "0.75",
+    "feed_in_price_eur": "0.05",
+    "co2_kg_per_kwh": "0.20",
+    "subsidy_per_kwp_eur": "500",
+    "subsidy_eligible_kwp_max": 7,
+    "subsidy_max_eur": "3500",
+    "subsidy_rate_of_cost": "0.50"
+  },
+  "_notes": {
+    "__doc__": "Editovateľný zdroj hodnôt pre SK 2026. Menené raz ročne. Hodnoty sú stringy (prevedú sa na Decimal); celé čísla (počty rokov/týždňov/dní) sú JSON čísla.",
+    "salary.tax_threshold_2_yearly / tax_threshold_3_yearly / tax_rate_bracket_3 / tax_rate_bracket_4": "PODOZRIVÉ (AUDIT §3/K3): SK daň z príjmu má len 19%/25%. Pásma 3/4 (30%/35%) a thresholdy 2/3 sú historicky fiktívne pre PIT a v čistej mzde sa reálne neaplikujú. Ponechané kvôli spätnej kompatibilite; zvážiť odstránenie.",
+    "salary.tax_threshold_1_yearly": "OVERIŤ (AUDIT §8): 43983.32 implikuje životné minimum ~248.77 € (2023). Pre 2026 pravdepodobne vyššie.",
+    "salary.non_taxable_amount_disability_*": "PODOZRIVÉ (AUDIT §8): ~10× nafúknuté a koncept vyššej NČZD pre ZŤP pri dani z príjmu neexistuje. Nepoužíva sa vo výpočte.",
+    "salary.average_wage_monthly": "OVERIŤ: 1400 je odhad; iné miesta pracujú s ~1524 €. Kŕmi dôchodkový výpočet.",
+    "sick_leave.max_assessment_base_yearly": "OVERIŤ URGENTNE (AUDIT §8): 88200 → max DVZ 241.64 €/deň je ~2.5× priveľa (reálne ~90 €/deň 2025).",
+    "pension.pension_point_value": "OVERIŤ (AUDIT §8): 14.50 je stale; aktuálna dôchodková hodnota 2025 ~17.77 €.",
+    "freelancer.min_health_base_monthly / min_social_base_monthly": "OVERIŤ: 762 vs 914.40 — historicky bývajú rovnaké."
+  }
+}

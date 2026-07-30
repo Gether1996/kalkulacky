@@ -15,6 +15,8 @@ getsix.eu ZUS 2026, helpers.hu, taxsummaries / countrytaxcalc).
 
 from typing import Dict, Any
 
+from .data import get_rates
+
 
 def _round(x: float) -> float:
     return round(float(x) + 1e-9, 2)
@@ -64,15 +66,16 @@ def _result(*, country, currency, gross, social, health, income_tax,
 def calculate_cz(gross_salary: float, children_under_15: int = 0,
                  children_15_to_18: int = 0, **kwargs) -> Dict[str, Any]:
     """Czech Republic 2026 (monthly, CZK). Super-gross abolished; tax base = gross."""
-    # --- 2026 constants (CZK) -------------------------------------------------
-    SOCIAL_RATE = 0.071          # employee: 6.5% pension + 0.6% sickness
-    HEALTH_RATE = 0.045          # employee health insurance
-    TAX_RATE_1 = 0.15
-    TAX_RATE_2 = 0.23
-    TAX_THRESHOLD_MONTHLY = 146901.0   # 36× avg wage / 12 (CZK 1,762,812 / yr)
-    TAXPAYER_CREDIT_MONTHLY = 2570.0   # sleva na poplatníka 30,840 / 12
-    CHILD_CREDIT = [1267.0, 1860.0, 2320.0]  # monthly per 1st/2nd/3rd+ child
-    EMPLOYER_RATE = 0.338        # 24.8% social + 9% health (employer)
+    # 2026 constants loaded from the editable data file (data/cz_2026.json → salary).
+    c = get_rates('CZ')['salary']
+    SOCIAL_RATE = c['social_rate']            # employee: 6.5% pension + 0.6% sickness
+    HEALTH_RATE = c['health_rate']            # employee health insurance
+    TAX_RATE_1 = c['tax_rate_1']
+    TAX_RATE_2 = c['tax_rate_2']
+    TAX_THRESHOLD_MONTHLY = c['tax_threshold_monthly']   # 36× avg wage / 12
+    TAXPAYER_CREDIT_MONTHLY = c['taxpayer_credit_monthly']  # sleva na poplatníka / 12
+    CHILD_CREDIT = c['child_credit']          # monthly per 1st/2nd/3rd+ child
+    EMPLOYER_RATE = c['employer_rate']        # 24.8% social + 9% health (employer)
 
     gross = float(gross_salary)
     social = gross * SOCIAL_RATE
@@ -99,15 +102,16 @@ def calculate_cz(gross_salary: float, children_under_15: int = 0,
 def calculate_pl(gross_salary: float, children_under_15: int = 0,
                  children_15_to_18: int = 0, **kwargs) -> Dict[str, Any]:
     """Poland 2026 (monthly, PLN). ZUS social, then 9% health on (gross−social)."""
-    # --- 2026 constants (PLN) -------------------------------------------------
-    SOCIAL_RATE = 0.1371         # 9.76% pension + 1.5% disability + 2.45% sickness
-    HEALTH_RATE = 0.09           # on (gross − social); NOT tax-deductible
-    TAX_RATE_1 = 0.12
-    TAX_RATE_2 = 0.32
-    TAX_THRESHOLD_MONTHLY = 10000.0     # 120,000 / yr
-    MONTHLY_TAX_REDUCING = 300.0        # kwota wolna 30,000 → 12% × 30,000 / 12
-    EMPLOYEE_COSTS = 250.0              # standard KUP / month
-    EMPLOYER_RATE = 0.2048              # ~ employer ZUS (pension/disability/FP/FGŚP/accident)
+    # 2026 constants loaded from the editable data file (data/pl_2026.json → salary).
+    c = get_rates('PL')['salary']
+    SOCIAL_RATE = c['social_rate']       # 9.76% pension + 1.5% disability + 2.45% sickness
+    HEALTH_RATE = c['health_rate']       # on (gross − social); NOT tax-deductible
+    TAX_RATE_1 = c['tax_rate_1']
+    TAX_RATE_2 = c['tax_rate_2']
+    TAX_THRESHOLD_MONTHLY = c['tax_threshold_monthly']   # 120,000 / yr
+    MONTHLY_TAX_REDUCING = c['monthly_tax_reducing']     # kwota wolna
+    EMPLOYEE_COSTS = c['employee_costs']                 # standard KUP / month
+    EMPLOYER_RATE = c['employer_rate']                   # ~ employer ZUS
 
     gross = float(gross_salary)
     social = gross * SOCIAL_RATE
@@ -128,19 +132,21 @@ def calculate_pl(gross_salary: float, children_under_15: int = 0,
 def calculate_hu(gross_salary: float, children_under_15: int = 0,
                  children_15_to_18: int = 0, **kwargs) -> Dict[str, Any]:
     """Hungary 2026 (monthly, HUF). Flat 15% PIT + 18.5% employee social."""
-    # --- 2026 constants (HUF) -------------------------------------------------
-    SOCIAL_RATE = 0.185          # employee total social security contribution
-    PIT_RATE = 0.15              # flat personal income tax
-    # Family allowance = monthly tax-BASE reduction (doubled from Jan 2026):
-    FAMILY_ALLOWANCE = {0: 0.0, 1: 133340.0, 2: 266660.0}  # 3+ handled below
-    FAMILY_ALLOWANCE_3PLUS = 440000.0
-    EMPLOYER_RATE = 0.13         # szociális hozzájárulási adó
+    # 2026 constants loaded from the editable data file (data/hu_2026.json → salary).
+    c = get_rates('HU')['salary']
+    SOCIAL_RATE = c['social_rate']       # employee total social security contribution
+    PIT_RATE = c['pit_rate']             # flat personal income tax
+    # Family allowance = monthly tax-BASE reduction (doubled from Jan 2026),
+    # indexed by number of children [0, 1, 2]; 3+ handled separately.
+    FAMILY_ALLOWANCE = c['family_allowance']
+    FAMILY_ALLOWANCE_3PLUS = c['family_allowance_3plus']
+    EMPLOYER_RATE = c['employer_rate']   # szociális hozzájárulási adó
 
     gross = float(gross_salary)
     social = gross * SOCIAL_RATE
 
     n = int(children_under_15 or 0) + int(children_15_to_18 or 0)
-    allowance = FAMILY_ALLOWANCE_3PLUS if n >= 3 else FAMILY_ALLOWANCE.get(n, 0.0)
+    allowance = FAMILY_ALLOWANCE_3PLUS if n >= 3 else FAMILY_ALLOWANCE[n]
     pit_base = max(0.0, gross - allowance)
     income_tax = pit_base * PIT_RATE
 

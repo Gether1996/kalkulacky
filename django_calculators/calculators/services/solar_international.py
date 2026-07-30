@@ -7,22 +7,31 @@ verify on novazelenausporam.cz. Constants centralised for yearly updates.
 """
 from typing import Dict, Any
 
-# --- CZ indicative constants (CZK) -------------------------------------------
-YIELD_KWH_PER_KWP = 1000
-PRICE_PER_KWP = 30000          # turnkey PV price per kWp
-BATTERY_PRICE_PER_KWH = 15000
-DEFAULT_SELF_CONSUMPTION = 0.40
-BATTERY_SELF_CONSUMPTION = 0.75
-DEFAULT_ELECTRICITY_RATE = 5.0  # Kč/kWh
-FEED_IN_PRICE = 1.5             # Kč/kWh
-CO2_KG_PER_KWH = 0.40           # CZ grid is more carbon-intensive than SK
+from .data import get_rates
+
+# --- CZ indicative constants (CZK) loaded from data/cz_2026.json → solar -------
+_S = get_rates('CZ')['solar']
+YIELD_KWH_PER_KWP = _S['yield_kwh_per_kwp']
+PRICE_PER_KWP = _S['price_per_kwp']              # turnkey PV price per kWp
+BATTERY_PRICE_PER_KWH = _S['battery_price_per_kwh']
+DEFAULT_SELF_CONSUMPTION = _S['default_self_consumption']
+BATTERY_SELF_CONSUMPTION = _S['battery_self_consumption']
+DEFAULT_ELECTRICITY_RATE = _S['default_electricity_rate']  # Kč/kWh
+FEED_IN_PRICE = _S['feed_in_price']             # Kč/kWh
+CO2_KG_PER_KWH = _S['co2_kg_per_kwh']           # CZ grid is more carbon-intensive than SK
 
 # Nová zelená úsporám — FVE (INDICATIVE): base + per-kWp + battery bonus, ≤50 % cost.
-NZU_BASE = 35000
-NZU_PER_KWP = 15000
-NZU_KWP_CAP = 10
-NZU_BATTERY_BONUS = 20000
-SUBSIDY_RATE_OF_COST = 0.50
+NZU_BASE = _S['nzu_base']
+NZU_PER_KWP = _S['nzu_per_kwp']
+NZU_KWP_CAP = _S['nzu_kwp_cap']
+NZU_BATTERY_BONUS = _S['nzu_battery_bonus']
+SUBSIDY_RATE_OF_COST = _S['subsidy_rate_of_cost']
+
+# System-sizing bounds (kWp / battery), also from the data file.
+KWP_MIN = _S['kwp_min']
+KWP_MAX = _S['kwp_max']
+BATTERY_RATIO = _S['battery_ratio']
+BATTERY_MAX = _S['battery_max']
 
 
 def _r(x, d=0):
@@ -39,10 +48,10 @@ def calculate_cz_solar(annual_consumption_kwh, electricity_rate=None,
     include_battery = bool(include_battery)
 
     kwp = float(system_size_kwp) if system_size_kwp else round(annual_consumption / YIELD_KWH_PER_KWP, 1)
-    kwp = max(2.0, min(kwp, 10.0))
+    kwp = max(KWP_MIN, min(kwp, KWP_MAX))
     battery_kwh = float(battery_capacity_kwh or 0)
     if include_battery and battery_kwh <= 0:
-        battery_kwh = round(min(kwp * 1.5, 10.0), 1)
+        battery_kwh = round(min(kwp * BATTERY_RATIO, BATTERY_MAX), 1)
     if not include_battery:
         battery_kwh = 0.0
 

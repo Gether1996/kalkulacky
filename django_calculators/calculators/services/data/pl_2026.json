@@ -1,0 +1,22 @@
+{
+  "meta": {
+    "country": "PL",
+    "year": 2026,
+    "version": "2026.1.0",
+    "valid_from": "2026-01-01",
+    "valid_until": "2026-12-31",
+    "currency": "PLN",
+    "note": "INDIKATÍVNE hodnoty pre PL 2026 — overiť voči ZUS / KIS. Iba mzdový engine. Menené raz ročne.",
+    "sources": ["getsix.eu ZUS 2026", "PwC Worldwide Tax Summaries", "OECD Taxing Wages 2026"]
+  },
+  "salary": {
+    "social_rate": 0.1371,
+    "health_rate": 0.09,
+    "tax_rate_1": 0.12,
+    "tax_rate_2": 0.32,
+    "tax_threshold_monthly": 10000.0,
+    "monthly_tax_reducing": 300.0,
+    "employee_costs": 250.0,
+    "employer_rate": 0.2048
+  }
+}

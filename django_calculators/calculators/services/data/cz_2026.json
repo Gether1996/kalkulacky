@@ -1,0 +1,104 @@
+{
+  "meta": {
+    "country": "CZ",
+    "year": 2026,
+    "version": "2026.1.0",
+    "valid_from": "2026-01-01",
+    "valid_until": "2026-12-31",
+    "currency": "CZK",
+    "note": "INDIKATÍVNE hodnoty pre CZ 2026 — overiť voči oficiálnym zdrojom (Finanční správa, ČSSZ, MPSV, novazelenausporam.cz). Menené raz ročne. Medzinárodné služby sú float-based, hodnoty sú preto JSON čísla (nie stringy).",
+    "sources": [
+      "PwC Worldwide Tax Summaries", "OECD Taxing Wages 2026",
+      "portal.pohoda.cz / fakturoid.cz (OSVČ 2026)", "ČSSZ", "MPSV", "novazelenausporam.cz"
+    ]
+  },
+  "salary": {
+    "social_rate": 0.071,
+    "health_rate": 0.045,
+    "tax_rate_1": 0.15,
+    "tax_rate_2": 0.23,
+    "tax_threshold_monthly": 146901.0,
+    "taxpayer_credit_monthly": 2570.0,
+    "child_credit": [1267.0, 1860.0, 2320.0],
+    "employer_rate": 0.338
+  },
+  "freelancer": {
+    "health_rate": 0.135,
+    "health_base_share": 0.50,
+    "health_min_base_monthly": 24483.50,
+    "health_min_payment_monthly": 3306.0,
+    "social_rate": 0.292,
+    "social_base_share": 0.55,
+    "social_min_payment_monthly": 5720.0,
+    "sickness_rate": 0.027,
+    "tax_rate_1": 0.15,
+    "tax_rate_2": 0.23,
+    "tax_threshold_yearly": 1762812.0,
+    "taxpayer_credit_yearly": 30840.0,
+    "flat_expense_rate": 0.60,
+    "flat_expense_revenue_cap": 2000000.0
+  },
+  "sick_leave": {
+    "reduction_bound_1": 1633.0,
+    "reduction_bound_2": 2449.0,
+    "reduction_bound_3": 4897.0,
+    "reduce_coeff_1": 0.90,
+    "reduce_coeff_2": 0.60,
+    "reduce_coeff_3": 0.30,
+    "rate_day_1_30": 0.60,
+    "rate_day_31_60": 0.66,
+    "rate_day_61plus": 0.72,
+    "care_rate": 0.60,
+    "employer_calendar_days": 14,
+    "working_day_factor_num": 5,
+    "working_day_factor_den": 7
+  },
+  "vacation": {
+    "base_days": 20
+  },
+  "pension": {
+    "basic_amount": 4900.0,
+    "pct_per_year": 0.01495,
+    "min_pension": 9800.0,
+    "retirement_age": 65,
+    "employee_rate": 6.5,
+    "employer_rate": 21.5,
+    "reduction_bound_1": 21546.0,
+    "reduction_bound_2": 195868.0,
+    "reduce_coeff_1": 0.99,
+    "reduce_coeff_2": 0.26,
+    "life_expectancy_after_retirement": 20
+  },
+  "parental": {
+    "ppm_weeks_single": 28,
+    "ppm_weeks_multiple": 37,
+    "parental_total_single": 350000.0,
+    "parental_total_multiple": 700000.0,
+    "parental_monthly_max": 15000.0,
+    "ppm_rate": 0.70,
+    "ppm_reduce_coeff_1": 1.00,
+    "ppm_reduce_coeff_2": 0.60,
+    "ppm_reduce_coeff_3": 0.30,
+    "benefit_horizon_years": 3,
+    "total_months": 36
+  },
+  "solar": {
+    "yield_kwh_per_kwp": 1000,
+    "price_per_kwp": 30000,
+    "battery_price_per_kwh": 15000,
+    "default_self_consumption": 0.40,
+    "battery_self_consumption": 0.75,
+    "default_electricity_rate": 5.0,
+    "feed_in_price": 1.5,
+    "co2_kg_per_kwh": 0.40,
+    "nzu_base": 35000,
+    "nzu_per_kwp": 15000,
+    "nzu_kwp_cap": 10,
+    "nzu_battery_bonus": 20000,
+    "subsidy_rate_of_cost": 0.50,
+    "kwp_min": 2.0,
+    "kwp_max": 10.0,
+    "battery_ratio": 1.5,
+    "battery_max": 10.0
+  }
+}

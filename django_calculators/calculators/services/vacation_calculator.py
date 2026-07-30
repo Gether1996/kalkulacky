@@ -6,6 +6,7 @@ from decimal import Decimal
 from datetime import datetime, date
 from typing import Dict, Any
 from .base_calculator import BaseCalculator
+from . import config_variables as cfg
 
 
 class VacationCalculator(BaseCalculator):
@@ -19,10 +20,10 @@ class VacationCalculator(BaseCalculator):
     - Carry-over rules for unused days
     """
     
-    # Slovak vacation law parameters
-    BASE_VACATION_DAYS = 20  # 4 weeks
-    ADDITIONAL_DAYS_AGE_33 = 5  # +1 week from age 33
-    AGE_THRESHOLD = 33
+    # Slovak vacation law parameters (from data/sk_2026.json → vacation)
+    BASE_VACATION_DAYS = cfg.VACATION_BASE_DAYS  # 4 weeks
+    ADDITIONAL_DAYS_AGE_33 = cfg.VACATION_EXTRA_DAYS_FROM_AGE  # +1 week from age 33
+    AGE_THRESHOLD = cfg.VACATION_AGE_THRESHOLD
     
     # Working days
     WORKING_DAYS_PER_WEEK = 5
