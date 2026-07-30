@@ -128,7 +128,7 @@ export class ParentalBenefitCalculatorComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
     },
     (err: any) => {
-      this.error = err.error?.error || 'Chyba pri výpočte rodičovského príspevku';
+      this.error = err.error?.error || this.locale.t('err.calc');
       this.loading = false;
       this.cdr.detectChanges();
     },

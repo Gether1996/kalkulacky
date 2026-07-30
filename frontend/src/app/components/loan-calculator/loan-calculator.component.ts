@@ -1,4 +1,5 @@
 import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
+import { LocaleService } from '../../i18n/locale.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -21,6 +22,7 @@ import { DebouncedCalc } from '../../utils/debounced-calc';
 export class LoanCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
+  private locale = inject(LocaleService);
   
   loanAmount: number = 50000;
   interestRate: number = 5.5;
@@ -71,7 +73,7 @@ export class LoanCalculatorComponent implements OnInit, OnDestroy {
     },
     (err: any) => {
       console.error('Loan calculation error:', err);
-      this.error = err.error?.error || 'Chyba pri výpočte úveru';
+      this.error = err.error?.error || this.locale.t('err.calc');
       this.loading = false;
       this.cdr.detectChanges();
     },

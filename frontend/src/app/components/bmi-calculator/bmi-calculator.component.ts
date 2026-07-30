@@ -1,4 +1,5 @@
 import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
+import { LocaleService } from '../../i18n/locale.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -17,6 +18,7 @@ import { DebouncedCalc } from '../../utils/debounced-calc';
 export class BmiCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
+  private locale = inject(LocaleService);
   
   weight: number = 75;
   height: number = 175;
@@ -44,7 +46,7 @@ export class BmiCalculatorComponent implements OnInit, OnDestroy {
     },
     (err: any) => {
       console.error('BMI calculation error:', err);
-      this.error = err.error?.error || 'Chyba pri výpočte BMI';
+      this.error = err.error?.error || this.locale.t('err.calc');
       this.loading = false;
       this.cdr.detectChanges();
     },

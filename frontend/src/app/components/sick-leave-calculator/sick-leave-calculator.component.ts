@@ -89,7 +89,7 @@ export class SickLeaveCalculatorComponent implements OnInit, OnDestroy {
     },
     (err: any) => {
       console.error('Calculation error:', err);
-      this.error = err.error?.error || 'Nastala chyba pri výpočte. Skúste to znova.';
+      this.error = err.error?.error || this.locale.t('err.calc');
       this.isLoading = false;
       this.result = null;
     },

@@ -67,13 +67,12 @@ export class CalculatorService {
   private apiUrl: string;
 
   constructor(private http: HttpClient) {
-    // Browser uses the configured public API URL (env-specific, correct in prod);
-    // SSR uses the internal Docker service name.
-    if (isPlatformBrowser(this.platformId)) {
-      this.apiUrl = environment.apiUrl;
-    } else {
-      this.apiUrl = 'http://backend:8000/api';
-    }
+    // Browser uses the public API URL; SSR uses the env-configured server-to-API
+    // URL (Docker service name in dev, overridable per environment) instead of a
+    // hardcoded host, so a non-Docker SSR deploy works too.
+    this.apiUrl = isPlatformBrowser(this.platformId)
+      ? environment.apiUrl
+      : environment.ssrApiUrl;
   }
 
   // Salary Calculator
