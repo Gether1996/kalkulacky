@@ -6,6 +6,7 @@ import { CalculatorService } from '../../services/calculator.service';
 import { PregnancyCalculationRequest, PregnancyCalculationResponse } from '../../models/calculator.models';
 import { DatePickerComponent } from '../date-picker/date-picker.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
 import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
@@ -19,6 +20,7 @@ export class PregnancyCalculatorComponent implements OnInit, OnDestroy {
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
+  private locale = inject(LocaleService);
 
   // Input fields
   calculationMethod: 'lmp' | 'conception' = 'lmp';
@@ -69,12 +71,12 @@ export class PregnancyCalculatorComponent implements OnInit, OnDestroy {
   calculate() {
     // Validate inputs
     if (this.calculationMethod === 'lmp' && !this.lmpDate) {
-      this.error = 'Prosím zadajte dátum poslednej menštruácie';
+      this.error = this.locale.t('err.lmpDate');
       return;
     }
     
     if (this.calculationMethod === 'conception' && !this.conceptionDate) {
-      this.error = 'Prosím zadajte dátum počatia';
+      this.error = this.locale.t('err.conceptionDate');
       return;
     }
 

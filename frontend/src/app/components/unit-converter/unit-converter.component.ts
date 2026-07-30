@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
 import { UnitCategory, UnitOption, UnitConverterResponse } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
 import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
@@ -16,6 +17,7 @@ import { DebouncedCalc } from '../../utils/debounced-calc';
 })
 export class UnitConverterComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
+  private locale = inject(LocaleService);
 
   private calc = new DebouncedCalc<UnitConverterResponse | null>(
     () =>
@@ -71,7 +73,7 @@ export class UnitConverterComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Error loading categories:', err);
-        this.error = 'Nepodarilo sa načítať kategórie jednotiek';
+        this.error = this.locale.t('err.categoriesLoad');
       }
     });
   }
@@ -95,7 +97,7 @@ export class UnitConverterComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Error loading units:', err);
-        this.error = 'Nepodarilo sa načítať jednotky pre túto kategóriu';
+        this.error = this.locale.t('err.unitsLoad');
       }
     });
   }

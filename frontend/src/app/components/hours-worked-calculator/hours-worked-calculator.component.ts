@@ -7,6 +7,7 @@ import {
   HoursWorkedCalculationResponse
 } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
 import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
@@ -20,6 +21,7 @@ export class HoursWorkedCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
+  private locale = inject(LocaleService);
 
   private calc = new DebouncedCalc<HoursWorkedCalculationResponse | null>(
     () =>
@@ -36,7 +38,7 @@ export class HoursWorkedCalculatorComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
     },
     (err) => {
-      this.error = 'Chyba pri výpočte. Skontrolujte zadané údaje.';
+      this.error = this.locale.t('err.calcCheck');
       this.loading = false;
       this.cdr.detectChanges();
     },

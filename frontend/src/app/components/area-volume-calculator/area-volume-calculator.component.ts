@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
 import { AreaVolumeCalculationResponse, ShapeInfo, AvailableShapes } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
 import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
@@ -16,6 +17,7 @@ import { DebouncedCalc } from '../../utils/debounced-calc';
 export class AreaVolumeCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
+  private locale = inject(LocaleService);
 
   private calc = new DebouncedCalc<AreaVolumeCalculationResponse | null>(
     () =>
@@ -30,7 +32,7 @@ export class AreaVolumeCalculatorComponent implements OnInit, OnDestroy {
     },
     (err) => {
       console.error('❌ Area/volume calculation error:', err);
-      this.error = 'Chyba pri výpočte. Skúste znova.';
+      this.error = this.locale.t('err.calc');
       this.loading = false;
       this.cdr.detectChanges();
     },
@@ -69,7 +71,7 @@ export class AreaVolumeCalculatorComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           console.error('❌ Error loading shapes:', err);
-          this.error = 'Chyba pri načítaní tvarov';
+          this.error = this.locale.t('err.shapesLoad');
           this.shapesLoading = false;
           this.cdr.detectChanges();
         }
@@ -105,7 +107,7 @@ export class AreaVolumeCalculatorComponent implements OnInit, OnDestroy {
     let valid = true;
     for (const key in this.dimensions) {
       if (this.dimensions[key] <= 0) {
-        this.error = 'Všetky rozmery musia byť kladné čísla';
+        this.error = this.locale.t('err.dimsPositive');
         valid = false;
         break;
       }

@@ -111,17 +111,17 @@ export class PensionCalculatorComponent implements OnInit, OnDestroy {
   calculate() {
     // Validate inputs
     if (this.currentAge < 18 || this.currentAge > 70) {
-      this.error = 'Vek musí byť medzi 18 a 70 rokmi';
+      this.error = this.locale.t('err.ageRange');
       return;
     }
     
     if (this.grossSalary <= 0) {
-      this.error = 'Hrubá mzda musí byť väčšia ako 0';
+      this.error = this.locale.t('err.grossPositive');
       return;
     }
     
     if (this.yearsWorked < 0 || this.yearsWorked > this.currentAge - 18) {
-      this.error = 'Neplatný počet odpracovaných rokov';
+      this.error = this.locale.t('err.yearsWorked');
       return;
     }
 

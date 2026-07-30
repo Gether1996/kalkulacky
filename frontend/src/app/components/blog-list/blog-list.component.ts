@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { BlogService } from '../../services/blog.service';
 import { BlogCategory, BlogPostSummary } from '../../models/blog.models';
 import { SeoService } from '../../services/seo.service';
+import { LocaleService } from '../../i18n/locale.service';
 
 @Component({
   selector: 'app-blog-list',
@@ -19,6 +20,8 @@ export class BlogListComponent implements OnInit {
   selectedCategory: string | null = null;
   loading: boolean = true;
   error: string | null = null;
+
+  private locale = inject(LocaleService);
 
   constructor(private blogService: BlogService, private seo: SeoService) {}
 
@@ -59,7 +62,7 @@ export class BlogListComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error loading posts:', err);
-        this.error = 'Chyba pri načítavaní blogových príspevkov';
+        this.error = this.locale.t('err.blogLoad');
         this.loading = false;
       }
     });

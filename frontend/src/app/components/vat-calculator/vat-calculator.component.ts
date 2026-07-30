@@ -88,7 +88,7 @@ export class VatCalculatorComponent implements OnInit, OnDestroy {
     },
     (err) => {
       console.error('VAT Calculation error:', err);
-      this.error = 'Chyba pri výpočte. Skúste to znova.';
+      this.error = this.locale.t('err.calc');
       this.isLoading = false;
       this.cdr.detectChanges();
     },
@@ -96,7 +96,7 @@ export class VatCalculatorComponent implements OnInit, OnDestroy {
 
   calculate() {
     if (this.amount <= 0) {
-      this.error = 'Čiastka musí byť väčšia ako 0';
+      this.error = this.locale.t('err.amountPositive');
       return;
     }
     this.isLoading = true;

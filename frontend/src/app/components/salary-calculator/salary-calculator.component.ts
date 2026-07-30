@@ -123,7 +123,7 @@ export class SalaryCalculatorComponent implements OnInit, OnDestroy {
             .pipe(
               catchError((err) => {
                 console.error('❌ Salary calculation error:', err);
-                this.error = 'Chyba pri výpočte. Skúste znova.';
+                this.error = this.locale.t('err.calc');
                 this.loading = false;
                 this.cdr.detectChanges();
                 return of(null);
@@ -152,7 +152,7 @@ export class SalaryCalculatorComponent implements OnInit, OnDestroy {
 
   calculate(): void {
     if (!this.grossSalary || this.grossSalary <= 0) {
-      this.error = 'Zadajte platnú hrubú mzdu';
+      this.error = this.locale.t('err.grossValid');
       this.result = null;
       return;
     }

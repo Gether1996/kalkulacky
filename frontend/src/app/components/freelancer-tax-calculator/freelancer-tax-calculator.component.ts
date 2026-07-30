@@ -125,7 +125,7 @@ export class FreelancerTaxCalculatorComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
     },
     (err) => {
-      this.error = 'Chyba pri výpočte. Skontrolujte zadané údaje.';
+      this.error = this.locale.t('err.calcCheck');
       this.loading = false;
       this.cdr.detectChanges();
     },

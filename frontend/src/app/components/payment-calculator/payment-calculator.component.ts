@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
 import { PaymentCalculationResponse } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
 import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
@@ -17,6 +18,7 @@ export class PaymentCalculatorComponent implements OnInit, OnDestroy {
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
+  private locale = inject(LocaleService);
 
   private calc = new DebouncedCalc<PaymentCalculationResponse | null>(
     () =>
@@ -33,7 +35,7 @@ export class PaymentCalculatorComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
     },
     (err) => {
-      this.error = 'Chyba pri výpočte splátky. Skontrolujte zadané údaje.';
+      this.error = this.locale.t('err.calcPayment');
       this.isLoading = false;
       this.cdr.detectChanges();
       console.error('Payment calculation error:', err);

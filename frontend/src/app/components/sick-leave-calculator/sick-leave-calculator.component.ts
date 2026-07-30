@@ -61,12 +61,12 @@ export class SickLeaveCalculatorComponent implements OnInit, OnDestroy {
 
   calculate() {
     if (!this.gross_salary || this.gross_salary <= 0) {
-      this.error = 'Zadajte hrubú mzdu';
+      this.error = this.locale.t('err.grossEnter');
       return;
     }
 
     if (!this.days_sick || this.days_sick < 1) {
-      this.error = 'Zadajte počet dní pracovnej neschopnosti';
+      this.error = this.locale.t('err.sickDays');
       return;
     }
 

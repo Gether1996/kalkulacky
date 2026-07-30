@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
 import { BMRCalculationResponse } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
 import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
@@ -17,6 +18,7 @@ export class BmrCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
+  private locale = inject(LocaleService);
 
   // Input values
   weight: number = 75;
@@ -72,7 +74,7 @@ export class BmrCalculatorComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
     },
     (err) => {
-      this.error = 'Chyba pri výpočte BMR. Skontrolujte zadané údaje.';
+      this.error = this.locale.t('err.calcBmr');
       this.isLoading = false;
       this.cdr.detectChanges();
       console.error('BMR calculation error:', err);

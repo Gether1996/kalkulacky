@@ -113,7 +113,7 @@ export class SolarCalculatorComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
     },
     (err) => {
-      this.error = 'Chyba pri výpočte. Skúste znova.';
+      this.error = this.locale.t('err.calc');
       this.loading = false;
       this.cdr.detectChanges();
       console.error(err);
@@ -122,7 +122,7 @@ export class SolarCalculatorComponent implements OnInit, OnDestroy {
 
   calculate(): void {
     if (!this.annualConsumption || this.annualConsumption <= 0) {
-      this.error = 'Zadajte ročnú spotrebu elektriny';
+      this.error = this.locale.t('err.consumption');
       return;
     }
     this.loading = true;

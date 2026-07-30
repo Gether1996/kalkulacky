@@ -10,6 +10,7 @@ import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.com
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
 import { SaveCalculationComponent } from '../shared/save-calculation/save-calculation.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
 
 @Component({
   selector: 'app-energy-calculator',
@@ -23,6 +24,7 @@ export class EnergyCalculatorComponent implements OnInit, OnDestroy {
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
   private seo = inject(SeoService);
+  private locale = inject(LocaleService);
 
   // Input values
   electricityConsumption: number = 300;
@@ -98,7 +100,7 @@ export class EnergyCalculatorComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
     },
     (err) => {
-      this.error = 'Chyba pri výpočte nákladov na energiu. Skontrolujte zadané údaje.';
+      this.error = this.locale.t('err.calcEnergy');
       this.isLoading = false;
       this.cdr.detectChanges();
       console.error('Energy calculation error:', err);

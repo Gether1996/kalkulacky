@@ -98,7 +98,7 @@ export class ParentalBenefitCalculatorComponent implements OnInit, OnDestroy {
   calculate() {
     // Validate inputs
     if (!this.birthDate) {
-      this.error = 'Prosím zadajte dátum narodenia dieťaťa';
+      this.error = this.locale.t('err.birthDate');
       return;
     }
 

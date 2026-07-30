@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { BlogService } from '../../services/blog.service';
 import { BlogPostDetail } from '../../models/blog.models';
 import { SeoService } from '../../services/seo.service';
+import { LocaleService } from '../../i18n/locale.service';
 
 @Component({
   selector: 'app-blog-detail',
@@ -18,6 +19,8 @@ export class BlogDetailComponent implements OnInit {
   safeHtmlContent: SafeHtml | null = null;
   loading: boolean = true;
   error: string | null = null;
+
+  private locale = inject(LocaleService);
 
   constructor(
     private route: ActivatedRoute,
@@ -49,7 +52,7 @@ export class BlogDetailComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error loading post:', err);
-        this.error = 'Blog príspevok sa nenašiel';
+        this.error = this.locale.t('err.blogNotFound');
         this.loading = false;
       }
     });

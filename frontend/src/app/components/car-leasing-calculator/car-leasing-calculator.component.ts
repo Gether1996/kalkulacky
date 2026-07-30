@@ -8,6 +8,7 @@ import { SeoService } from '../../services/seo.service';
 import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.component';
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
 
 @Component({
   selector: 'app-car-leasing-calculator',
@@ -20,6 +21,7 @@ export class CarLeasingCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   private seo = inject(SeoService);
+  private locale = inject(LocaleService);
 
   // Input parameters
   carPrice: number = 25000;
@@ -68,17 +70,17 @@ export class CarLeasingCalculatorComponent implements OnInit, OnDestroy {
 
   calculate(): void {
     if (!this.carPrice || this.carPrice <= 0) {
-      this.error = 'Zadajte platnú cenu auta';
+      this.error = this.locale.t('err.carPrice');
       return;
     }
 
     if (this.downPayment < 0 || this.downPayment >= this.carPrice) {
-      this.error = 'Akontácia musí byť medzi 0 a cenou auta';
+      this.error = this.locale.t('err.downPayment');
       return;
     }
 
     if (this.termMonths < 12 || this.termMonths > 120) {
-      this.error = 'Doba splácania musí byť medzi 12 a 120 mesiacmi';
+      this.error = this.locale.t('err.termMonths');
       return;
     }
 
@@ -105,7 +107,7 @@ export class CarLeasingCalculatorComponent implements OnInit, OnDestroy {
     },
     (err) => {
       console.error('❌ Car leasing calculation error:', err);
-      this.error = 'Chyba pri výpočte. Skúste znova.';
+      this.error = this.locale.t('err.calc');
       this.loading = false;
       this.cdr.detectChanges();
     },

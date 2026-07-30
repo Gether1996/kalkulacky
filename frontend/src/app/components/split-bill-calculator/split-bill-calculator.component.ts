@@ -5,6 +5,7 @@ import { CalculatorService } from '../../services/calculator.service';
 import { SplitBillCalculationResponse, TipSuggestionsResponse, BillItem, CustomAmount } from '../../models/calculator.models';
 import { DebouncedCalc } from '../../utils/debounced-calc';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
 
 @Component({
   selector: 'app-split-bill-calculator',
@@ -16,7 +17,8 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
 export class SplitBillCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
-  
+  private locale = inject(LocaleService);
+
   // Make Math accessible in template
   Math = Math;
   
@@ -65,12 +67,12 @@ export class SplitBillCalculatorComponent implements OnInit, OnDestroy {
 
     if (this.splitType === 'equal') {
       if (!this.totalAmount || this.totalAmount <= 0) {
-        this.error = 'Zadajte platnú sumu účtu';
+        this.error = this.locale.t('err.billAmount');
         this.loading = false;
         return;
       }
       if (!this.numPeople || this.numPeople < 1) {
-        this.error = 'Počet ľudí musí byť aspoň 1';
+        this.error = this.locale.t('err.peopleMin');
         this.loading = false;
         return;
       }
@@ -78,14 +80,14 @@ export class SplitBillCalculatorComponent implements OnInit, OnDestroy {
       requestData.num_people = this.numPeople;
     } else if (this.splitType === 'by_items') {
       if (this.items.length < 1) {
-        this.error = 'Pridajte aspoň jednu položku';
+        this.error = this.locale.t('err.addItem');
         this.loading = false;
         return;
       }
       requestData.items = this.items;
     } else if (this.splitType === 'custom') {
       if (this.customAmounts.length < 1) {
-        this.error = 'Pridajte aspoň jednu osobu';
+        this.error = this.locale.t('err.addPerson');
         this.loading = false;
         return;
       }
@@ -107,7 +109,7 @@ export class SplitBillCalculatorComponent implements OnInit, OnDestroy {
     },
     (err) => {
       console.error('❌ Split bill calculation error:', err);
-      this.error = 'Chyba pri výpočte. Skúste znova.';
+      this.error = this.locale.t('err.calc');
       this.loading = false;
       this.cdr.detectChanges();
     },

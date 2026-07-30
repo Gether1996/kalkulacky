@@ -145,7 +145,7 @@ export class HeatPumpCalculatorComponent implements OnInit {
 
   calculate(): void {
     if (!this.heatedArea || this.heatedArea <= 0) {
-      this.error = 'Zadajte vykurovanú plochu domu';
+      this.error = this.locale.t('err.heatedArea');
       this.result = null;
       return;
     }

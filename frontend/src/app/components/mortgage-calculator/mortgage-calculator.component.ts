@@ -130,7 +130,7 @@ export class MortgageCalculatorComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges(); // Force change detection
     },
     (err) => {
-      this.error = 'Chyba pri výpočte. Skúste znova.';
+      this.error = this.locale.t('err.calc');
       this.loading = false;
       this.cdr.detectChanges(); // Force change detection
       console.error(err);
@@ -139,17 +139,17 @@ export class MortgageCalculatorComponent implements OnInit, OnDestroy {
 
   calculate(): void {
     if (!this.loanAmount || this.loanAmount <= 0) {
-      this.error = 'Zadajte platnú výšku úveru';
+      this.error = this.locale.t('err.loanAmount');
       return;
     }
 
     if (!this.interestRate || this.interestRate < 0) {
-      this.error = 'Zadajte platnú úrokovú sadzbu';
+      this.error = this.locale.t('err.interestRate');
       return;
     }
 
     if (!this.loanTerm || this.loanTerm <= 0) {
-      this.error = 'Zadajte platnú dĺžku úveru';
+      this.error = this.locale.t('err.loanTerm');
       return;
     }
 
