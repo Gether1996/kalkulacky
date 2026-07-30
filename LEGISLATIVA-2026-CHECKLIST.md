@@ -1,47 +1,49 @@
 # Legislatíva 2026 — stav
 
-## ✅ VYRIEŠENÉ (dohľadal som z oficiálnych zdrojov a zapísal do `sk_2026.json`)
+## ✅ VYRIEŠENÉ (dohľadané z oficiálnych zdrojov + implementované)
 
-Zdroje: Sociálna poisťovňa, Finančná správa SR, ŠÚ SR, podnikajte.sk, finsider.sk, socpoist.sk.
+Hodnoty: životné minimum 284,13 € · **4-pásmová daň 19/25/30/35 %** (implementovaná) ·
+NČZD 5966,73 € · priemerná mzda 2024 = 1524 € · max. soc. základ 16 764 € ·
+max. DVZ nemocenské 100,21 €/deň · dôchodková hodnota 19,7633 € · SZČO min. zdrav. základ 914,40 € ·
+priemerný dôchodok 701 € · min. dôchodok 411,90 € · rodičovský 364,80/500,10 € · materské 75 %.
 
-| Hodnota | Bolo | Teraz (2026) | Zdroj |
-|---|---|---|---|
-| Životné minimum | (nekonzistentné) | **284,13 €/mes** (od 1.7.2025) | MPSVR/Finsider |
-| **Daň z príjmu — pásma** | „len 19/25 %" | **4 pásma 19/25/30/35 %** (154,8× / 212,4× / 264× ŽM) — REÁLNE od 2026! | podnikajte.sk, wellbens.sk |
-| → hranice | 43983,32 / 60349,21 / 75010,32 | **potvrdené správne** + implementované do výpočtu | Finančná správa |
-| NČZD ročná | 5966,76 | **5966,73 €** (21× ŽM) | Finsider/Podnikajte |
-| Priemerná mzda 2024 | 1400 | **1524 €** | ŠÚ SR / Soc. poisťovňa |
-| Max. vymeriavací základ soc. | 8862 | **16764 €/mes** (11× priem. mzda) | Sociálna poisťovňa |
-| Max. DVZ nemocenské | 241,64 €/deň | **100,2083 €/deň** | Sociálna poisťovňa |
-| Dôchodková hodnota (ADH) | 14,50 | **19,7633 €** | Sociálna poisťovňa |
-| SZČO min. základ zdravotné | 762 | **914,40 €** (= min. sociálny) | Sociálna poisťovňa |
-| Minimálna mzda | 915 / 5,259 | **potvrdené správne** | Podnikajte |
-| Daňový bonus na dieťa | 100 / 50 | **potvrdené správne** | Finančná správa |
-| Rodičovský príspevok | 381,90 / 270 | **364,80 € (bez materského) / 500,10 € (s materským)** | Peniaze.sk/socpoist |
-| Materské — sadzba | 75 % | **potvrdené správne** (max 2 254,70 / 2 329,90 €/mes) | JASPIS/socpoist |
-| DPH | 23/19/5 | **potvrdené správne** | — |
+Logika: **refundovateľný daňový bonus SK** (% zo základu 29/36/43/50/57/64 + krátenie) ·
+**refundovateľný bonus CZ** (záporná daň od 11 200 Kč) · **rodičovský bez príjmového testu** ·
+NČZD mesačne sa nekráti (rieši ročné zúčtovanie — správne).
+
+Zdroje: Sociálna poisťovňa, Finančná správa SR, ŠÚ SR, podnikajte.sk, finsider.sk, peniaze.sk.
 
 ---
 
-## 🔶 ZOSTÁVA — doménové rozhodnutia (mám čísla, ale treba tvoje „áno/nie/ako")
+## ❓ ČOMU SI NIE SOM ISTÝ — potrebujem od teba potvrdiť
 
-1. **NČZD phase-out (krátenie pri vysokých príjmoch)** — mám vzorec: plná NČZD do ročného základu **26 083,13 €**, nula od **43 983,32 €**. Pozn.: pri MESAČNEJ výplate sa NČZD bežne uplatňuje celá (497,23 €) a krátenie rieši ročné zúčtovanie — preto to väčšina mesačných kalkulačiek nekráti. **Chceš to krátiť aj v mesačnom výpočte?** áno / nie
-2. **Refundovateľný daňový bonus** — mám krátenie: od ročného základu **27 432 €** sa bonus na každé dieťa znižuje o 1/10 rozdielu. Chýba mi potvrdenie **% stropu z čiastkového základu dane podľa počtu detí** (1 dieťa 20 %, 2 = 27 %, 3 = 34 %…?). **Potvrď % tabuľku 2026** a implementujem.
-3. **Model rodičovského** — kalkulačka dnes rozlišuje „osnova (3 roky) / alternatíva (6 rokov)", ale správne rozlíšenie je **„mal / nemal predchádzajúce materské"** (sumy 364,80 / 500,10 už opravené). **Prepísať logiku kalkulačky na tento model?** áno / nie
-4. **CZ daňový bonus** — dnes zastropený na 0; v CZ je vyplácaný ako záporná daň. Opraviť? áno / nie
+### Daňový bonus — 2 detaily
+1. **Krátenie bonusu pri vysokých príjmoch** — implementoval som „na každé dieťa −1/10 × (mesačný základ − 2 286 €)". Formulácia zdroja bola trochu nejednoznačná. **Sedí tento vzorec?** (ovplyvňuje rodičov s mesačným základom nad ~2 286 €)
+2. **% sa počíta z „čiastkového základu dane"** = hrubá − odvody (pred NČZD). **Je to správny základ?** (predpokladám áno)
 
-## 🔶 ZOSTÁVA — nižšia istota / netlačí
+### Rodičovský príspevok — model
+3. Sumy (364,80/500,10) a zrušenie príjmového testu sú opravené. Ale kalkulačka stále ponúka výber **„osnova (3 r.) / alternatíva (6 r.)"** — v realite je rozdiel „mal/nemal materské" a 6 rokov platí len pri **dlhodobo nepriaznivom zdravotnom stave dieťaťa**. Úplné zladenie si vyžaduje aj zmenu frontendu. **Chceš prepísať aj tento výber, alebo stačí takto?**
 
-- **Priemerný dôchodok (650 €) a minimálny dôchodok (370 €) 2026** — nechal som ako odhad; ak máš presné, doplním.
-- **Dôchodkový vek** — dnes 64 pre oboch; v realite závisí od ročníka (zjednodušené).
-- **Dotácie 2026** (solár €500/kW·7kW·3500€·4025€ · tepelné čerpadlo 380€/kW·3400€ · Obnov dom 60%·14000/19000€) — over podľa **aktuálneho kola výzvy** (SIEA/Obnov dom), tie sa menia každé kolo.
-- **CZ/PL/HU** medzinárodné hodnoty — označené „orientačné", neoveril som (netlačí).
+### Dotácie — treba aktuálne kolo výzvy (nemenil som, len solár čiastočne potvrdený)
+4. **Solár Zelená domácnostiam:** základ **500 €/kW, max 7 kW, 3 500 €** potvrdené. Ale existuje aj **zvýhodnená sadzba 575 €/kW** (znečistené ovzdušie / koniec tuhého paliva) — mám ju pridať? A **nové kolo na jeseň 2026 môže sumy znížiť.**
+5. **Tepelné čerpadlo** (dnes 380 €/kW, max 3 400 €) a **Obnov dom** (60 %, 14 000/19 000 €) — **tieto som NEOVERIL**, over podľa aktuálneho kola SIEA/Obnov dom.
 
-## ⛔ ZOSTÁVA — len tvoje (nedá sa dohľadať)
+### Odhady / zjednodušenia (nízky dopad)
+6. **Priemerný dôchodok 701 €** — približná hodnota (zdroje sa mierne líšia).
+7. **Dôchodkový vek** — nechal som **64 pre oboch**; reálne závisí od ročníka (63–64+2 mes., znižuje sa za deti). Pri odhadovej kalkulačke je to zjednodušenie — **prepracovať na tabuľku podľa ročníka?**
+8. **NON_TAXABLE_AMOUNT_DISABILITY** (vyššia NČZD pre ZŤP) — som si takmer istý, že pri dani z príjmu **neexistuje** (je to mŕtvy kód). **Potvrď, že to môžem odstrániť.**
 
+### Neoverené (netlačí)
+9. **CZ / PL / HU medzinárodné hodnoty** — označené „orientačné", neoveril som ich voči oficiálnym zdrojom 2026.
+10. **VAT znížené sadzby 19 % a 5 %** — základná 23 % potvrdená; znížené predpokladám správne, ale explicitne som ich neoveril.
+
+---
+
+## ⛔ LEN TY (nedá sa dohľadať)
 - **Legal:** obchodné meno, IČO, sídlo prevádzkovateľa → `[DOPLŇTE]` v privacy/terms.
-- **og:image** (1200×630) + **PWA ikony** (192/512/maskable) — binárne assety.
+- **og:image** (1200×630) + **PWA ikony** (192/512/maskable).
 
 ---
 
-**Zhrnutie:** ~13 kľúčových hodnôt som overil a opravil sám (vrátane veľkej opravy — 4-pásmová daň je reálna od 2026). Zostávajú hlavne 4 doménové rozhodnutia (body 1–4) a assety/legal.
+**Zhrnutie:** overil a implementoval som ~15 hodnôt + 4 doménové rozhodnutia. Zostáva potvrdiť
+detaily vyššie (hlavne body 1, 3, 4–5) a dodať legal/assety.
