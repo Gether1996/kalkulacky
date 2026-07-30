@@ -1,7 +1,13 @@
 import { Injectable, PLATFORM_ID, inject, DOCUMENT } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
-import { LOCALE_META, SUPPORTED_LOCALES } from '../i18n/locales';
+import { LOCALE_META, SUPPORTED_LOCALES, Locale } from '../i18n/locales';
+import { LocaleService } from '../i18n/locale.service';
+
+/** Open Graph locale codes (og:locale format) per UI locale. */
+const OG_LOCALE: Record<Locale, string> = {
+  sk: 'sk_SK', cs: 'cs_CZ', en: 'en_US', pl: 'pl_PL', hu: 'hu_HU',
+};
 
 export interface SeoData {
   title: string;
@@ -30,6 +36,7 @@ export class SeoService {
   private meta = inject(Meta);
   private doc = inject(DOCUMENT);
   private platformId = inject(PLATFORM_ID);
+  private locale = inject(LocaleService);
 
   apply(data: SeoData): void {
     const fullTitle = data.title.includes(SITE_NAME)
@@ -47,7 +54,7 @@ export class SeoService {
     this.setProp('og:type', 'website');
     this.setProp('og:site_name', SITE_NAME);
     this.setProp('og:url', url);
-    this.setProp('og:locale', 'sk_SK');
+    this.setProp('og:locale', OG_LOCALE[this.locale.locale()] ?? 'sk_SK');
 
     // Twitter
     this.setName('twitter:card', 'summary_large_image');
@@ -96,7 +103,7 @@ export class SeoService {
         applicationCategory: 'FinanceApplication',
         operatingSystem: 'All',
         offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
-        inLanguage: 'sk',
+        inLanguage: this.locale.locale(),
       });
     }
 

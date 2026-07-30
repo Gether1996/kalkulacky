@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { CalculatorCard } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
+import { SeoService } from '../../services/seo.service';
 import { FavoritesService } from '../../services/favorites.service';
 import { AuthService } from '../../services/auth.service';
 import { RecentCalculatorsService } from '../../services/recent-calculators.service';
@@ -18,15 +19,29 @@ import { CALC_BY_ID, CalcMeta } from '../../config/calculator-registry';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
   private locale = inject(LocaleService);
   private router = inject(Router);
+  private seo = inject(SeoService);
   favorites = inject(FavoritesService);
   auth = inject(AuthService);
   recent = inject(RecentCalculatorsService);
 
   /** Live search term to filter the calculator grid. */
   searchTerm = '';
+
+  ngOnInit(): void {
+    // The homepage previously had no dynamic SEO (relied on the static
+    // index.html <title>). Emit proper title/description/canonical/OG/hreflang.
+    this.seo.apply({
+      title: 'Kalkulačky.sk – online kalkulačky (mzda, hypotéka, DPH, dane…)',
+      description:
+        'Bezplatné online kalkulačky pre Slovensko: čistá mzda, hypotéka, úver, DPH, daň SZČO, dôchodok, PN, materské, energie a solárne dotácie. Rýchly a presný výpočet 2026.',
+      path: '/',
+      keywords:
+        'kalkulačka, čistá mzda, hypotéka, DPH, daň, SZČO, dôchodok, PN, materské, kalkulačky online',
+    });
+  }
 
   /** Recently-visited calculators resolved to route + icon (most recent first). */
   get recentCalcs(): CalcMeta[] {
