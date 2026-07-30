@@ -1,49 +1,48 @@
-# Legislatíva 2026 — stav
+# Legislatíva 2026 — stav (finálny)
 
-## ✅ VYRIEŠENÉ (dohľadané z oficiálnych zdrojov + implementované)
+## ✅ OVERENÉ z oficiálnych zdrojov + implementované/opravené
 
-Hodnoty: životné minimum 284,13 € · **4-pásmová daň 19/25/30/35 %** (implementovaná) ·
-NČZD 5966,73 € · priemerná mzda 2024 = 1524 € · max. soc. základ 16 764 € ·
-max. DVZ nemocenské 100,21 €/deň · dôchodková hodnota 19,7633 € · SZČO min. zdrav. základ 914,40 € ·
-priemerný dôchodok 701 € · min. dôchodok 411,90 € · rodičovský 364,80/500,10 € · materské 75 %.
+**SK — dane a mzdy**
+- Životné minimum 284,13 € · **4-pásmová daň 19/25/30/35 %** (154,8×/212,4×/264× ŽM) — implementovaná
+- NČZD 5966,73 € (497,23 €/mes); mesačne sa nekráti (rieši ročné zúčtovanie — správne)
+- Priemerná mzda 2024 = 1524 € · max. soc. vymeriavací základ 16 764 €/mes
+- Minimálna mzda 915 € / 5,259 € · **DPH 23/19/5/0 %**
+- **Refundovateľný daňový bonus:** % z hrubá−odvody (1=29 %…6+=64 %), krátenie od mes. základu 2 286 € (−1/10 na dieťa), vyplácaný nad rámec dane
 
-Logika: **refundovateľný daňový bonus SK** (% zo základu 29/36/43/50/57/64 + krátenie) ·
-**refundovateľný bonus CZ** (záporná daň od 11 200 Kč) · **rodičovský bez príjmového testu** ·
-NČZD mesačne sa nekráti (rieši ročné zúčtovanie — správne).
+**SK — odvody a dávky**
+- Max. DVZ nemocenské 100,21 €/deň · dôchodková hodnota (ADH) 19,7633 €
+- Priemerný dôchodok ~701 € · min. dôchodok 411,90 €
+- SZČO min. zdrav./soc. základ 914,40 € · materské 75 %
+- Rodičovský 364,80 € (bez materského) / 500,10 € (s materským); **bez príjmového testu**
 
-Zdroje: Sociálna poisťovňa, Finančná správa SR, ŠÚ SR, podnikajte.sk, finsider.sk, peniaze.sk.
+**SK — dotácie**
+- Solár Zelená domácnostiam: 500 €/kW, max 7 kW, 3 500 € (základ)
+- Tepelné čerpadlo: 380 €/kW, **max 3 800 €** (opravené) · Obnov dom: **75 %, 15 000/19 000 €** (opravené)
 
----
+**CZ** ✅ potvrdené: sleva 30 840 Kč · daň 15/23 % nad 1 762 812 Kč · min. soc. záloha 5 720 Kč · min. zdrav. základ 24 483,50 Kč / záloha 3 306 Kč · detský kredit 1267/1860/2320 · **refundovateľný bonus** (od 11 200 Kč) · DPH 21/12 %
 
-## ❓ ČOMU SI NIE SOM ISTÝ — potrebujem od teba potvrdiť
+**PL** ✅ potvrdené: kwota wolna 30 000 zł (300/mes) · 12/32 % nad 120 000 zł · ZUS 13,71 % · KUP 250 zł · zdrav. 9 %
 
-### Daňový bonus — 2 detaily
-1. **Krátenie bonusu pri vysokých príjmoch** — implementoval som „na každé dieťa −1/10 × (mesačný základ − 2 286 €)". Formulácia zdroja bola trochu nejednoznačná. **Sedí tento vzorec?** (ovplyvňuje rodičov s mesačným základom nad ~2 286 €)
-2. **% sa počíta z „čiastkového základu dane"** = hrubá − odvody (pred NČZD). **Je to správny základ?** (predpokladám áno)
+**HU** ✅ opravené: SZJA 15 % · TB 18,5 % · **rodinná úľava PER DIEŤA × počet** (1=133 340, 2=266 660/dieťa, 3+=440 000/dieťa) + **családi járulékkedvezmény** (nevyužitá časť z odvodov)
 
-### Rodičovský príspevok — model
-3. Sumy (364,80/500,10) a zrušenie príjmového testu sú opravené. Ale kalkulačka stále ponúka výber **„osnova (3 r.) / alternatíva (6 r.)"** — v realite je rozdiel „mal/nemal materské" a 6 rokov platí len pri **dlhodobo nepriaznivom zdravotnom stave dieťaťa**. Úplné zladenie si vyžaduje aj zmenu frontendu. **Chceš prepísať aj tento výber, alebo stačí takto?**
-
-### Dotácie — treba aktuálne kolo výzvy (nemenil som, len solár čiastočne potvrdený)
-4. **Solár Zelená domácnostiam:** základ **500 €/kW, max 7 kW, 3 500 €** potvrdené. Ale existuje aj **zvýhodnená sadzba 575 €/kW** (znečistené ovzdušie / koniec tuhého paliva) — mám ju pridať? A **nové kolo na jeseň 2026 môže sumy znížiť.**
-5. **Tepelné čerpadlo** (dnes 380 €/kW, max 3 400 €) a **Obnov dom** (60 %, 14 000/19 000 €) — **tieto som NEOVERIL**, over podľa aktuálneho kola SIEA/Obnov dom.
-
-### Odhady / zjednodušenia (nízky dopad)
-6. **Priemerný dôchodok 701 €** — približná hodnota (zdroje sa mierne líšia).
-7. **Dôchodkový vek** — nechal som **64 pre oboch**; reálne závisí od ročníka (63–64+2 mes., znižuje sa za deti). Pri odhadovej kalkulačke je to zjednodušenie — **prepracovať na tabuľku podľa ročníka?**
-8. **NON_TAXABLE_AMOUNT_DISABILITY** (vyššia NČZD pre ZŤP) — som si takmer istý, že pri dani z príjmu **neexistuje** (je to mŕtvy kód). **Potvrď, že to môžem odstrániť.**
-
-### Neoverené (netlačí)
-9. **CZ / PL / HU medzinárodné hodnoty** — označené „orientačné", neoveril som ich voči oficiálnym zdrojom 2026.
-10. **VAT znížené sadzby 19 % a 5 %** — základná 23 % potvrdená; znížené predpokladám správne, ale explicitne som ich neoveril.
+Zdroje: Sociálna poisťovňa, Finančná správa SR, ŠÚ SR, podnikajte.sk, finsider.sk, officina.hu, e15.cz, infakt.pl, plan-obnovy-dotacie.sk, enerta.sk.
 
 ---
 
-## ⛔ LEN TY (nedá sa dohľadať)
-- **Legal:** obchodné meno, IČO, sídlo prevádzkovateľa → `[DOPLŇTE]` v privacy/terms.
+## ⚠️ TREBA 100 % POTVRDIŤ / ROZHODNÚŤ (zvyšok — nízky dopad)
+
+1. **Rodičovský — model výberu:** sumy a príjmový test opravené, ale kalkulačka stále ponúka „osnova (3 r.) / alternatíva (6 r.)". Reálne: rozdiel je „mal/nemal materské" a 6 rokov len pri chorom dieťati. **Prepísať aj tento výber + frontend?** (dizajnové rozhodnutie)
+2. **NON_TAXABLE_AMOUNT_DISABILITY** (vyššia NČZD pre ZŤP) — som si takmer istý, že pri dani z príjmu **neexistuje** (mŕtvy kód). **Potvrď odstránenie.**
+3. **Dôchodkový vek** — nechal som 64 pre oboch; reálne závisí od ročníka (63–64+2 mes., −6 mes./dieťa). **Prepracovať na tabuľku podľa ročníka?** (dizajnové rozhodnutie)
+4. **Solár — zvýhodnená sadzba 575 €/kW / 4 370 €** (znečistené ovzdušie / koniec tuhého paliva) — pridať ako druhú vetvu? A **nové kolo SIEA na jeseň 2026** môže sumy zmeniť.
+5. **HU zamestnávateľské szocho 13 %** a **CZ hlbšie sub-hodnoty** (dôchodkové redukčné hranice) — štrukturálne OK, ale explicitne som ich neoveril na 100 %.
+
+## ⛔ LEN TY
+- **Legal:** obchodné meno, IČO, sídlo → `[DOPLŇTE]` v privacy/terms.
 - **og:image** (1200×630) + **PWA ikony** (192/512/maskable).
 
 ---
 
-**Zhrnutie:** overil a implementoval som ~15 hodnôt + 4 doménové rozhodnutia. Zostáva potvrdiť
-detaily vyššie (hlavne body 1, 3, 4–5) a dodať legal/assety.
+**Zhrnutie:** ~20 hodnôt overených/opravených naprieč SK/CZ/PL/HU. Zvyšok (⚠️) sú 2 dizajnové
+rozhodnutia (rodičovský model, dôchodkový vek), 1 potvrdenie na odstránenie (ZŤP NČZD) a
+dotačné detaily podľa aktuálneho kola — všetko nízky dopad. Assety/legal sú na tebe.
