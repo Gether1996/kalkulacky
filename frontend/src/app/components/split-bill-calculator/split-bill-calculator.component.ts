@@ -1,8 +1,9 @@
-import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
 import { SplitBillCalculationResponse, TipSuggestionsResponse, BillItem, CustomAmount } from '../../models/calculator.models';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
@@ -12,7 +13,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
   templateUrl: './split-bill-calculator.component.html',
   styleUrls: ['./split-bill-calculator.component.css']
 })
-export class SplitBillCalculatorComponent implements OnInit {
+export class SplitBillCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   
@@ -91,20 +92,29 @@ export class SplitBillCalculatorComponent implements OnInit {
       requestData.custom_amounts = this.customAmounts;
     }
 
-    this.calculatorService.calculateSplitBill(requestData)
-      .subscribe({
-        next: (data) => {
-          this.result = data;
-          this.loading = false;
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          console.error('❌ Split bill calculation error:', err);
-          this.error = 'Chyba pri výpočte. Skúste znova.';
-          this.loading = false;
-          this.cdr.detectChanges();
-        }
-      });
+    this.pendingRequest = requestData;
+    this.calc.trigger();
+  }
+
+  private pendingRequest: any = null;
+
+  private calc = new DebouncedCalc<SplitBillCalculationResponse>(
+    () => this.calculatorService.calculateSplitBill(this.pendingRequest),
+    (data) => {
+      this.result = data;
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+    (err) => {
+      console.error('❌ Split bill calculation error:', err);
+      this.error = 'Chyba pri výpočte. Skúste znova.';
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+  );
+
+  ngOnDestroy(): void {
+    this.calc.destroy();
   }
 
   loadTipSuggestions(): void {

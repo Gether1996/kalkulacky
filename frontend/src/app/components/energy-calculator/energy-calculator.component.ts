@@ -1,8 +1,9 @@
-import { Component, inject, ChangeDetectorRef, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
 import { EnergyCalculationResponse } from '../../models/calculator.models';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 import { SeoService } from '../../services/seo.service';
 import { LeadFormComponent } from '../shared/lead-form/lead-form.component';
 import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.component';
@@ -17,7 +18,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
   templateUrl: './energy-calculator.component.html',
   styleUrl: './energy-calculator.component.css'
 })
-export class EnergyCalculatorComponent implements OnInit {
+export class EnergyCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
@@ -80,34 +81,39 @@ export class EnergyCalculatorComponent implements OnInit {
     };
   }
 
+  private calc = new DebouncedCalc<EnergyCalculationResponse>(
+    () =>
+      this.calculatorService.calculateEnergy({
+        electricity_consumption: this.electricityConsumption,
+        gas_consumption: this.gasConsumption || 0,
+        electricity_rate: this.electricityRate,
+        gas_rate: this.gasRate,
+        has_dual_tariff: this.hasDualTariff,
+        high_tariff_percentage: this.highTariffPercentage,
+        household_size: this.householdSize
+      }),
+    (data) => {
+      this.result = data;
+      this.isLoading = false;
+      this.cdr.detectChanges();
+    },
+    (err) => {
+      this.error = 'Chyba pri výpočte nákladov na energiu. Skontrolujte zadané údaje.';
+      this.isLoading = false;
+      this.cdr.detectChanges();
+      console.error('Energy calculation error:', err);
+    },
+  );
+
   calculate(): void {
     this.isLoading = true;
     this.error = null;
     this.result = null;
+    this.calc.trigger();
+  }
 
-    const requestData = {
-      electricity_consumption: this.electricityConsumption,
-      gas_consumption: this.gasConsumption || 0,
-      electricity_rate: this.electricityRate,
-      gas_rate: this.gasRate,
-      has_dual_tariff: this.hasDualTariff,
-      high_tariff_percentage: this.highTariffPercentage,
-      household_size: this.householdSize
-    };
-
-    this.calculatorService.calculateEnergy(requestData).subscribe({
-      next: (data) => {
-        this.result = data;
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.error = 'Chyba pri výpočte nákladov na energiu. Skontrolujte zadané údaje.';
-        this.isLoading = false;
-        this.cdr.detectChanges();
-        console.error('Energy calculation error:', err);
-      }
-    });
+  ngOnDestroy(): void {
+    this.calc.destroy();
   }
 
   formatNumber(value: number | null | undefined, decimals: number = 2): string {

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, PLATFORM_ID, inject, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -8,6 +8,7 @@ import { DatePickerComponent } from '../date-picker/date-picker.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
   selector: 'app-vacation-calculator',
@@ -16,7 +17,7 @@ import { getCountryParams } from '../../i18n/country-params';
   templateUrl: './vacation-calculator.component.html',
   styleUrls: ['./vacation-calculator.component.css']
 })
-export class VacationCalculatorComponent implements OnInit {
+export class VacationCalculatorComponent implements OnInit, OnDestroy {
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
@@ -93,8 +94,12 @@ export class VacationCalculatorComponent implements OnInit {
     this.error = '';
     this.loading = true;
     this.result = null;
+    this.calc.trigger();
+  }
 
-    const request: VacationCalculationRequest = {
+  // Debounced + cancellable calc pipeline (fixes per-keystroke API storm + race).
+  private calc = new DebouncedCalc<VacationCalculationResponse>(
+    () => this.calculatorService.calculateVacation({
       age: this.age,
       employment_start_date: this.formatDateForInput(this.employmentStartDate || this.today),
       current_date: this.formatDateForInput(this.currentDate),
@@ -102,20 +107,21 @@ export class VacationCalculatorComponent implements OnInit {
       days_carried_over: this.daysCarriedOver,
       planned_vacation_days: this.plannedVacationDays,
       country: this.country
-    };
+    } as VacationCalculationRequest),
+    (response) => {
+      this.result = response;
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+    (err: any) => {
+      this.error = err.error?.error || this.locale.t('common.error');
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+  );
 
-    this.calculatorService.calculateVacation(request).subscribe({
-      next: (response) => {
-        this.result = response;
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.error = err.error?.error || this.locale.t('common.error');
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
+  ngOnDestroy() {
+    this.calc.destroy();
   }
 
   // Helper methods

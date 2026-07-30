@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, PLATFORM_ID, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -6,6 +6,7 @@ import { CalculatorService } from '../../services/calculator.service';
 import { PregnancyCalculationRequest, PregnancyCalculationResponse } from '../../models/calculator.models';
 import { DatePickerComponent } from '../date-picker/date-picker.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
   selector: 'app-pregnancy-calculator',
@@ -14,7 +15,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
   templateUrl: './pregnancy-calculator.component.html',
   styleUrls: ['./pregnancy-calculator.component.css']
 })
-export class PregnancyCalculatorComponent implements OnInit {
+export class PregnancyCalculatorComponent implements OnInit, OnDestroy {
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
@@ -80,30 +81,39 @@ export class PregnancyCalculatorComponent implements OnInit {
     this.error = '';
     this.loading = true;
     this.result = null;
+    this.calc.trigger();
+  }
 
-    const request: PregnancyCalculationRequest = {
-      calculation_method: this.calculationMethod,
-      current_date: this.formatDateForInput(this.currentDate)
-    };
+  // Debounced + cancellable calc pipeline (fixes per-keystroke API storm + race).
+  private calc = new DebouncedCalc<PregnancyCalculationResponse>(
+    () => {
+      const request: PregnancyCalculationRequest = {
+        calculation_method: this.calculationMethod,
+        current_date: this.formatDateForInput(this.currentDate)
+      };
 
-    if (this.calculationMethod === 'lmp' && this.lmpDate) {
-      request.lmp_date = this.formatDateForInput(this.lmpDate);
-    } else if (this.conceptionDate) {
-      request.conception_date = this.formatDateForInput(this.conceptionDate);
-    }
-
-    this.calculatorService.calculatePregnancy(request).subscribe({
-      next: (response) => {
-        this.result = response;
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.error = err.error?.error || 'Chyba pri výpočte';
-        this.loading = false;
-        this.cdr.detectChanges();
+      if (this.calculationMethod === 'lmp' && this.lmpDate) {
+        request.lmp_date = this.formatDateForInput(this.lmpDate);
+      } else if (this.conceptionDate) {
+        request.conception_date = this.formatDateForInput(this.conceptionDate);
       }
-    });
+
+      return this.calculatorService.calculatePregnancy(request);
+    },
+    (response) => {
+      this.result = response;
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+    (err: any) => {
+      this.error = err.error?.error || 'Chyba pri výpočte';
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+  );
+
+  ngOnDestroy() {
+    this.calc.destroy();
   }
 
   // Helper methods

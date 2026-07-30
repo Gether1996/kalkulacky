@@ -174,13 +174,13 @@
       <h2>Výsledky</h2>
       
       <!-- Loading State -->
-      <div *ngIf="loading" class="loading">
+      <div *ngIf="loading" class="loading" role="status" aria-live="polite">
         <div class="spinner"></div>
         <p>Počítam...</p>
       </div>
 
       <!-- Error State -->
-      <div *ngIf="error && !loading" class="error-message">
+      <div *ngIf="error && !loading" class="error-message" role="alert">
         {{ error }}
       </div>
 

@@ -230,14 +230,14 @@
       <h2 class="section-title">Rozdelenie účtu</h2>
 
       <!-- Loading State -->
-      <div *ngIf="loading" class="loading-state">
+      <div *ngIf="loading" class="loading-state" role="status" aria-live="polite">
         <div class="spinner"></div>
         <p>Počítam...</p>
       </div>
 
       <!-- Error State -->
-      <div *ngIf="error" class="error-state">
-        <p class="error-message">{{ error }}</p>
+      <div *ngIf="error" class="error-state" role="alert">
+        <p class="error-message" role="alert">{{ error }}</p>
       </div>
 
       <!-- Summary -->

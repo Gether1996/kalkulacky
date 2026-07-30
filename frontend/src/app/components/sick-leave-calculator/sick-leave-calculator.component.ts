@@ -1,4 +1,4 @@
-import { Component, OnInit, PLATFORM_ID, inject, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, PLATFORM_ID, inject, effect } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,6 +8,7 @@ import { SickLeaveCalculationResponse } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
   selector: 'app-sick-leave-calculator',
@@ -16,7 +17,7 @@ import { getCountryParams } from '../../i18n/country-params';
   templateUrl: './sick-leave-calculator.component.html',
   styleUrls: ['./sick-leave-calculator.component.css']
 })
-export class SickLeaveCalculatorComponent implements OnInit {
+export class SickLeaveCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
 
   // Form fields
@@ -71,24 +72,31 @@ export class SickLeaveCalculatorComponent implements OnInit {
 
     this.isLoading = true;
     this.error = '';
+    this.calc.trigger();
+  }
 
-    this.calculatorService.calculateSickLeave({
+  // Debounced + cancellable calc pipeline (fixes per-keystroke API storm + race).
+  private calc = new DebouncedCalc<SickLeaveCalculationResponse>(
+    () => this.calculatorService.calculateSickLeave({
       gross_salary: this.gross_salary,
       days_sick: this.days_sick,
       leave_type: this.leave_type,
       country: this.country
-    }).subscribe({
-      next: (response) => {
-        this.result = response;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Calculation error:', err);
-        this.error = err.error?.error || 'Nastala chyba pri výpočte. Skúste to znova.';
-        this.isLoading = false;
-        this.result = null;
-      }
-    });
+    }),
+    (response) => {
+      this.result = response;
+      this.isLoading = false;
+    },
+    (err: any) => {
+      console.error('Calculation error:', err);
+      this.error = err.error?.error || 'Nastala chyba pri výpočte. Skúste to znova.';
+      this.isLoading = false;
+      this.result = null;
+    },
+  );
+
+  ngOnDestroy() {
+    this.calc.destroy();
   }
 
   // Preset scenarios for quick testing

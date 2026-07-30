@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef, inject, OnInit, PLATFORM_ID, effect } from '@angular/core';
+import { Component, ChangeDetectorRef, inject, OnInit, OnDestroy, PLATFORM_ID, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -15,6 +15,7 @@ import { SaveCalculationComponent } from '../shared/save-calculation/save-calcul
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
   selector: 'app-freelancer-tax-calculator',
@@ -23,7 +24,7 @@ import { getCountryParams } from '../../i18n/country-params';
   templateUrl: './freelancer-tax-calculator.component.html',
   styleUrl: './freelancer-tax-calculator.component.css'
 })
-export class FreelancerTaxCalculatorComponent implements OnInit {
+export class FreelancerTaxCalculatorComponent implements OnInit, OnDestroy {
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
@@ -108,31 +109,36 @@ export class FreelancerTaxCalculatorComponent implements OnInit {
     };
   }
 
-  calculate() {
-    this.loading = true;
-    this.error = null;
-
-    const request: FreelancerTaxCalculationRequest = {
+  // Debounced + cancellable calc pipeline (fixes per-keystroke API storm + race).
+  private calc = new DebouncedCalc<FreelancerTaxCalculationResponse>(
+    () => this.calculatorService.calculateFreelancerTax({
       annual_revenue: this.annualRevenue,
       country: this.country,
       annual_expenses: this.annualExpenses,
       use_flat_expenses: this.useFlatExpenses,
       include_sickness: this.includeSickness,
       months_active: this.monthsActive
-    };
+    } as FreelancerTaxCalculationRequest),
+    (response) => {
+      this.result = response;
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+    (err) => {
+      this.error = 'Chyba pri výpočte. Skontrolujte zadané údaje.';
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+  );
 
-    this.calculatorService.calculateFreelancerTax(request).subscribe({
-      next: (response) => {
-        this.result = response;
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.error = 'Chyba pri výpočte. Skontrolujte zadané údaje.';
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
+  calculate() {
+    this.loading = true;
+    this.error = null;
+    this.calc.trigger();
+  }
+
+  ngOnDestroy() {
+    this.calc.destroy();
   }
 
   formatNumber(value: number | string, decimals: number = 2): string {

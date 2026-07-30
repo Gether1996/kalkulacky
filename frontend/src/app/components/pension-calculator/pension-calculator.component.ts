@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, PLATFORM_ID, inject, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -11,6 +11,7 @@ import { SaveCalculationComponent } from '../shared/save-calculation/save-calcul
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
   selector: 'app-pension-calculator',
@@ -19,7 +20,7 @@ import { getCountryParams } from '../../i18n/country-params';
   templateUrl: './pension-calculator.component.html',
   styleUrls: ['./pension-calculator.component.css']
 })
-export class PensionCalculatorComponent implements OnInit {
+export class PensionCalculatorComponent implements OnInit, OnDestroy {
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
@@ -127,8 +128,12 @@ export class PensionCalculatorComponent implements OnInit {
     this.error = '';
     this.loading = true;
     this.result = null;
+    this.calc.trigger();
+  }
 
-    const request: PensionCalculationRequest = {
+  // Debounced + cancellable calc pipeline (fixes per-keystroke API storm + race).
+  private calc = new DebouncedCalc<PensionCalculationResponse>(
+    () => this.calculatorService.calculatePension({
       current_age: this.currentAge,
       gross_salary: this.grossSalary,
       years_worked: this.yearsWorked,
@@ -136,20 +141,21 @@ export class PensionCalculatorComponent implements OnInit {
       include_second_pillar: this.isSK && this.includeSecondPillar,
       second_pillar_rate: this.secondPillarRate,
       country: this.country
-    };
+    } as PensionCalculationRequest),
+    (response) => {
+      this.result = response;
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+    (err: any) => {
+      this.error = err.error?.error || 'Chyba pri výpočte';
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+  );
 
-    this.calculatorService.calculatePension(request).subscribe({
-      next: (response) => {
-        this.result = response;
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.error = err.error?.error || 'Chyba pri výpočte';
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
+  ngOnDestroy() {
+    this.calc.destroy();
   }
 
   // Helper methods

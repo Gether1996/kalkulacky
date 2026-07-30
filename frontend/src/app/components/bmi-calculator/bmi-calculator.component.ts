@@ -1,10 +1,11 @@
-import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { BMICalculationResponse } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
   selector: 'app-bmi-calculator',
@@ -13,7 +14,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
   templateUrl: './bmi-calculator.component.html',
   styleUrls: ['./bmi-calculator.component.css']
 })
-export class BmiCalculatorComponent implements OnInit {
+export class BmiCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   
@@ -31,26 +32,33 @@ export class BmiCalculatorComponent implements OnInit {
     this.calculate();
   }
 
+  private calc = new DebouncedCalc<BMICalculationResponse>(
+    () => this.calculatorService.calculateBMI({
+      weight: this.weight,
+      height: this.height
+    }),
+    (response) => {
+      this.result = response;
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+    (err: any) => {
+      console.error('BMI calculation error:', err);
+      this.error = err.error?.error || 'Chyba pri výpočte BMI';
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+  );
+
   calculate(): void {
     this.loading = true;
     this.error = null;
 
-    this.calculatorService.calculateBMI({
-      weight: this.weight,
-      height: this.height
-    }).subscribe({
-      next: (response) => {
-        this.result = response;
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('BMI calculation error:', err);
-        this.error = err.error?.error || 'Chyba pri výpočte BMI';
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
+    this.calc.trigger();
+  }
+
+  ngOnDestroy(): void {
+    this.calc.destroy();
   }
 
   formatNumber(num: number): string {

@@ -1,13 +1,14 @@
-import { Component, ChangeDetectorRef, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, ChangeDetectorRef, inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import {
   ROICalculationRequest,
-  ROICalculationResponse 
+  ROICalculationResponse
 } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
   selector: 'app-roi-calculator',
@@ -16,10 +17,30 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
   templateUrl: './roi-calculator.component.html',
   styleUrl: './roi-calculator.component.css'
 })
-export class RoiCalculatorComponent implements OnInit {
+export class RoiCalculatorComponent implements OnInit, OnDestroy {
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
+
+  private calc = new DebouncedCalc<ROICalculationResponse | null>(
+    () =>
+      this.calculatorService.calculateROI({
+        initial_investment: this.initialInvestment,
+        final_value: this.finalValue,
+        additional_costs: this.additionalCosts,
+        investment_period_months: this.investmentPeriodMonths,
+      } as ROICalculationRequest),
+    (response) => {
+      this.result = response;
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+    (err) => {
+      this.error = 'Chyba pri výpočte. Skontrolujte zadané údaje.';
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+  );
 
   // Input values
   initialInvestment: number = 10000;
@@ -41,26 +62,11 @@ export class RoiCalculatorComponent implements OnInit {
   calculate() {
     this.loading = true;
     this.error = null;
+    this.calc.trigger();
+  }
 
-    const request: ROICalculationRequest = {
-      initial_investment: this.initialInvestment,
-      final_value: this.finalValue,
-      additional_costs: this.additionalCosts,
-      investment_period_months: this.investmentPeriodMonths
-    };
-
-    this.calculatorService.calculateROI(request).subscribe({
-      next: (response) => {
-        this.result = response;
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.error = 'Chyba pri výpočte. Skontrolujte zadané údaje.';
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
+  ngOnDestroy() {
+    this.calc.destroy();
   }
 
   formatNumber(value: number | string | null, decimals: number = 2): string {

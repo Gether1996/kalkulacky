@@ -269,13 +269,13 @@
     </section>
 
     <!-- Loading State -->
-    <div class="loading-state" *ngIf="loading">
+    <div class="loading-state" role="status" aria-live="polite" *ngIf="loading">
       <div class="spinner"></div>
       <p>Počítam...</p>
     </div>
 
     <!-- Error State -->
-    <div class="error-state" *ngIf="error">
+    <div class="error-state" role="alert" *ngIf="error">
       <p>{{ error }}</p>
     </div>
   </div>

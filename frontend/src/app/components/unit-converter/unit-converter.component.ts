@@ -1,10 +1,11 @@
-import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
 import { UnitCategory, UnitOption, UnitConverterResponse } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
   selector: 'app-unit-converter',
@@ -13,8 +14,28 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
   templateUrl: './unit-converter.component.html',
   styleUrls: ['./unit-converter.component.css']
 })
-export class UnitConverterComponent implements OnInit {
+export class UnitConverterComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
+
+  private calc = new DebouncedCalc<UnitConverterResponse | null>(
+    () =>
+      this.calculatorService.convertUnit({
+        value: this.value,
+        from_unit: this.fromUnit,
+        to_unit: this.toUnit,
+        category: this.category,
+      }),
+    (response) => {
+      this.result = response;
+      this.isLoading = false;
+    },
+    (err: any) => {
+      console.error('Calculation error:', err);
+      this.error = err.error?.error || 'Nastala chyba pri výpočte. Skúste to znova.';
+      this.isLoading = false;
+      this.result = null;
+    },
+  );
 
   // Form fields
   category: string = 'length';
@@ -86,24 +107,11 @@ export class UnitConverterComponent implements OnInit {
 
     this.isLoading = true;
     this.error = '';
+    this.calc.trigger();
+  }
 
-    this.calculatorService.convertUnit({
-      value: this.value,
-      from_unit: this.fromUnit,
-      to_unit: this.toUnit,
-      category: this.category
-    }).subscribe({
-      next: (response) => {
-        this.result = response;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Calculation error:', err);
-        this.error = err.error?.error || 'Nastala chyba pri výpočte. Skúste to znova.';
-        this.isLoading = false;
-        this.result = null;
-      }
-    });
+  ngOnDestroy() {
+    this.calc.destroy();
   }
 
   swapUnits() {

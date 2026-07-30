@@ -1,4 +1,4 @@
-import { Component, OnInit, PLATFORM_ID, inject, ChangeDetectorRef, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, PLATFORM_ID, inject, ChangeDetectorRef, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -7,6 +7,7 @@ import { VATCalculationRequest, VATCalculationResponse } from '../../models/calc
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
   selector: 'app-vat-calculator',
@@ -15,7 +16,7 @@ import { getCountryParams } from '../../i18n/country-params';
   templateUrl: './vat-calculator.component.html',
   styleUrl: './vat-calculator.component.css'
 })
-export class VatCalculatorComponent implements OnInit {
+export class VatCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   private locale = inject(LocaleService);
@@ -73,34 +74,38 @@ export class VatCalculatorComponent implements OnInit {
     }
   }
 
+  // Debounced + cancellable calc pipeline (fixes per-keystroke API storm + race).
+  private calc = new DebouncedCalc<VATCalculationResponse>(
+    () => this.calculatorService.calculateVAT({
+      amount: this.amount,
+      vat_rate: this.vatRate,
+      calculation_type: this.calculation_type,
+    } as VATCalculationRequest),
+    (response) => {
+      this.result = response;
+      this.isLoading = false;
+      this.cdr.detectChanges();
+    },
+    (err) => {
+      console.error('VAT Calculation error:', err);
+      this.error = 'Chyba pri výpočte. Skúste to znova.';
+      this.isLoading = false;
+      this.cdr.detectChanges();
+    },
+  );
+
   calculate() {
     if (this.amount <= 0) {
       this.error = 'Čiastka musí byť väčšia ako 0';
       return;
     }
-
     this.isLoading = true;
     this.error = null;
+    this.calc.trigger();
+  }
 
-    const request: VATCalculationRequest = {
-      amount: this.amount,
-      vat_rate: this.vatRate,
-      calculation_type: this.calculation_type
-    };
-
-    this.calculatorService.calculateVAT(request).subscribe({
-      next: (response) => {
-        this.result = response;
-        this.isLoading = false;
-        this.cdr.detectChanges(); // Force change detection
-      },
-      error: (err) => {
-        console.error('VAT Calculation error:', err);
-        this.error = 'Chyba pri výpočte. Skúste to znova.';
-        this.isLoading = false;
-        this.cdr.detectChanges(); // Force change detection
-      }
-    });
+  ngOnDestroy() {
+    this.calc.destroy();
   }
 
   applyScenario(amount: number) {

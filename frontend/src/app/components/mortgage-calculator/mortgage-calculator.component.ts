@@ -1,4 +1,4 @@
-import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit, effect } from '@angular/core';
+import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit, OnDestroy, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -13,6 +13,7 @@ import { SaveCalculationComponent } from '../shared/save-calculation/save-calcul
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
   selector: 'app-mortgage-calculator',
@@ -21,7 +22,7 @@ import { getCountryParams } from '../../i18n/country-params';
   templateUrl: './mortgage-calculator.component.html',
   styleUrls: ['./mortgage-calculator.component.css']
 })
-export class MortgageCalculatorComponent implements OnInit {
+export class MortgageCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   private seo = inject(SeoService);
@@ -117,6 +118,25 @@ export class MortgageCalculatorComponent implements OnInit {
     return `Hypotéka ${this.loanAmount?.toLocaleString('sk-SK')} € · ${this.loanTerm} r`;
   }
 
+  private calc = new DebouncedCalc<MortgageCalculationResponse>(
+    () => this.calculatorService.calculateMortgage({
+      loan_amount: this.loanAmount,
+      annual_interest_rate: this.interestRate,
+      loan_term_years: this.loanTerm
+    }),
+    (data) => {
+      this.result = data;
+      this.loading = false;
+      this.cdr.detectChanges(); // Force change detection
+    },
+    (err) => {
+      this.error = 'Chyba pri výpočte. Skúste znova.';
+      this.loading = false;
+      this.cdr.detectChanges(); // Force change detection
+      console.error(err);
+    },
+  );
+
   calculate(): void {
     if (!this.loanAmount || this.loanAmount <= 0) {
       this.error = 'Zadajte platnú výšku úveru';
@@ -136,23 +156,11 @@ export class MortgageCalculatorComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.calculatorService.calculateMortgage({
-      loan_amount: this.loanAmount,
-      annual_interest_rate: this.interestRate,
-      loan_term_years: this.loanTerm
-    }).subscribe({
-      next: (data) => {
-        this.result = data;
-        this.loading = false;
-        this.cdr.detectChanges(); // Force change detection
-      },
-      error: (err) => {
-        this.error = 'Chyba pri výpočte. Skúste znova.';
-        this.loading = false;
-        this.cdr.detectChanges(); // Force change detection
-        console.error(err);
-      }
-    });
+    this.calc.trigger();
+  }
+
+  ngOnDestroy(): void {
+    this.calc.destroy();
   }
 
   setScenario(scenario: any): void {

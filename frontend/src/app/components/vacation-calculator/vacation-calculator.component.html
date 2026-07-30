@@ -140,13 +140,13 @@
       <h2>{{ 'vacation.entitlementTitle' | t }}</h2>
 
       <!-- Loading State -->
-      <div *ngIf="loading" class="loading">
+      <div *ngIf="loading" class="loading" role="status" aria-live="polite">
         <div class="spinner"></div>
         <p>{{ 'common.loading' | t }}</p>
       </div>
 
       <!-- Error State -->
-      <div *ngIf="error && !loading" class="error-message">
+      <div *ngIf="error && !loading" class="error-message" role="alert">
         {{ error }}
       </div>
 

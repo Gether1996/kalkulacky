@@ -99,7 +99,7 @@
     </p>
   </section>
 
-  <div class="error-state" *ngIf="error">{{ error }}</div>
+  <div class="error-state" role="alert" *ngIf="error">{{ error }}</div>
 
   <!-- Monetization: installer lead capture + partner offers -->
   <div class="monetization-zone" *ngIf="result && !loading">

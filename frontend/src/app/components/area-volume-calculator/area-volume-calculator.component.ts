@@ -1,9 +1,10 @@
-import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
 import { AreaVolumeCalculationResponse, ShapeInfo, AvailableShapes } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
   selector: 'app-area-volume-calculator',
@@ -12,9 +13,28 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
   templateUrl: './area-volume-calculator.component.html',
   styleUrls: ['./area-volume-calculator.component.css']
 })
-export class AreaVolumeCalculatorComponent implements OnInit {
+export class AreaVolumeCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
+
+  private calc = new DebouncedCalc<AreaVolumeCalculationResponse | null>(
+    () =>
+      this.calculatorService.calculateAreaVolume({
+        shape: this.selectedShape,
+        dimensions: this.dimensions,
+      }),
+    (data) => {
+      this.result = data;
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+    (err) => {
+      console.error('❌ Area/volume calculation error:', err);
+      this.error = 'Chyba pri výpočte. Skúste znova.';
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+  );
   
   shapes: AvailableShapes | null = null;
   selectedShape: string = 'rectangle';
@@ -97,24 +117,11 @@ export class AreaVolumeCalculatorComponent implements OnInit {
 
     this.loading = true;
     this.error = null;
+    this.calc.trigger();
+  }
 
-    this.calculatorService.calculateAreaVolume({
-      shape: this.selectedShape,
-      dimensions: this.dimensions
-    })
-      .subscribe({
-        next: (data) => {
-          this.result = data;
-          this.loading = false;
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          console.error('❌ Area/volume calculation error:', err);
-          this.error = 'Chyba pri výpočte. Skúste znova.';
-          this.loading = false;
-          this.cdr.detectChanges();
-        }
-      });
+  ngOnDestroy(): void {
+    this.calc.destroy();
   }
 
   getDimensionLabel(dimension: string): string {

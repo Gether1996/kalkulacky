@@ -46,7 +46,7 @@
       </div>
     </div>
 
-    <div class="loading-state" *ngIf="loading">{{ 'common.loadingData' | t }}…</div>
+    <div class="loading-state" role="status" aria-live="polite" *ngIf="loading">{{ 'common.loadingData' | t }}…</div>
 
     <div class="action-error" *ngIf="actionError" role="alert">{{ actionError }}</div>
 

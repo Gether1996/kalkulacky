@@ -10,7 +10,7 @@
   </header>
 
   <!-- Loading State -->
-  <div *ngIf="shapesLoading" class="loading-state">
+  <div *ngIf="shapesLoading" class="loading-state" role="status" aria-live="polite">
     <div class="spinner"></div>
     <p>Načítavam tvary...</p>
   </div>
@@ -102,8 +102,8 @@
       <h2 class="section-title">Výsledok</h2>
 
       <!-- Error State -->
-      <div *ngIf="error" class="error-state">
-        <p class="error-message">{{ error }}</p>
+      <div *ngIf="error" class="error-state" role="alert">
+        <p class="error-message" role="alert">{{ error }}</p>
       </div>
 
       <!-- Main Result -->
@@ -187,7 +187,7 @@
 
     <!-- Loading Result -->
     <div class="result-section" *ngIf="loading">
-      <div class="loading-state">
+      <div class="loading-state" role="status" aria-live="polite">
         <div class="spinner"></div>
         <p>Počítam...</p>
       </div>

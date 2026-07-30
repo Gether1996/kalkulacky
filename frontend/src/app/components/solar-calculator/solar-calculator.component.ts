@@ -1,8 +1,9 @@
-import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit, effect } from '@angular/core';
+import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit, OnDestroy, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
 import { SolarSubsidyCalculationResponse } from '../../models/calculator.models';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 import { SeoService } from '../../services/seo.service';
 import { LeadFormComponent } from '../shared/lead-form/lead-form.component';
 import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.component';
@@ -19,7 +20,7 @@ import { getCountryParams } from '../../i18n/country-params';
   templateUrl: './solar-calculator.component.html',
   styleUrls: ['./solar-calculator.component.css'],
 })
-export class SolarCalculatorComponent implements OnInit {
+export class SolarCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   private seo = inject(SeoService);
@@ -98,6 +99,27 @@ export class SolarCalculatorComponent implements OnInit {
     this.calculate();
   }
 
+  private calc = new DebouncedCalc<SolarSubsidyCalculationResponse>(
+    () =>
+      this.calculatorService.calculateSolarSubsidy({
+        annual_consumption_kwh: this.annualConsumption,
+        country: this.country,
+        electricity_rate: this.electricityRate,
+        include_battery: this.includeBattery,
+      }),
+    (data) => {
+      this.result = data;
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+    (err) => {
+      this.error = 'Chyba pri výpočte. Skúste znova.';
+      this.loading = false;
+      this.cdr.detectChanges();
+      console.error(err);
+    },
+  );
+
   calculate(): void {
     if (!this.annualConsumption || this.annualConsumption <= 0) {
       this.error = 'Zadajte ročnú spotrebu elektriny';
@@ -105,26 +127,11 @@ export class SolarCalculatorComponent implements OnInit {
     }
     this.loading = true;
     this.error = null;
-    this.calculatorService
-      .calculateSolarSubsidy({
-        annual_consumption_kwh: this.annualConsumption,
-        country: this.country,
-        electricity_rate: this.electricityRate,
-        include_battery: this.includeBattery,
-      })
-      .subscribe({
-        next: (data) => {
-          this.result = data;
-          this.loading = false;
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          this.error = 'Chyba pri výpočte. Skúste znova.';
-          this.loading = false;
-          this.cdr.detectChanges();
-          console.error(err);
-        },
-      });
+    this.calc.trigger();
+  }
+
+  ngOnDestroy(): void {
+    this.calc.destroy();
   }
 
   /** Snapshot attached to the installer lead. */

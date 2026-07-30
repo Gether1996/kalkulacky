@@ -152,13 +152,13 @@
     </div>
 
     <!-- Loading State -->
-    <div *ngIf="loading" class="loading-state">
+    <div *ngIf="loading" class="loading-state" role="status" aria-live="polite">
       <div class="spinner"></div>
       <p>{{ 'common.loading' | t }}</p>
     </div>
 
     <!-- Error State -->
-    <div *ngIf="error && !loading" class="error-state">
+    <div *ngIf="error && !loading" class="error-state" role="alert">
       <p>{{ error }}</p>
     </div>
 

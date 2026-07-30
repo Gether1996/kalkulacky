@@ -106,13 +106,13 @@
     </div>
 
     <!-- Loading State -->
-    <div *ngIf="isLoading" class="loading-state">
+    <div *ngIf="isLoading" class="loading-state" role="status" aria-live="polite">
       <div class="spinner"></div>
       <p>Počítam...</p>
     </div>
 
     <!-- Error State -->
-    <div *ngIf="error && !isLoading" class="error-state">
+    <div *ngIf="error && !isLoading" class="error-state" role="alert">
       {{ error }}
     </div>
 

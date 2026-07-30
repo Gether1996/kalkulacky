@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, PLATFORM_ID, inject, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -8,6 +8,7 @@ import { DatePickerComponent } from '../date-picker/date-picker.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
   selector: 'app-parental-benefit-calculator',
@@ -16,7 +17,7 @@ import { getCountryParams } from '../../i18n/country-params';
   templateUrl: './parental-benefit-calculator.component.html',
   styleUrls: ['./parental-benefit-calculator.component.css']
 })
-export class ParentalBenefitCalculatorComponent implements OnInit {
+export class ParentalBenefitCalculatorComponent implements OnInit, OnDestroy {
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
@@ -104,8 +105,12 @@ export class ParentalBenefitCalculatorComponent implements OnInit {
     this.error = '';
     this.loading = true;
     this.result = null;
+    this.calc.trigger();
+  }
 
-    const request: ParentalBenefitCalculationRequest = {
+  // Debounced + cancellable calc pipeline (fixes per-keystroke API storm + race).
+  private calc = new DebouncedCalc<ParentalBenefitCalculationResponse>(
+    () => this.calculatorService.calculateParentalBenefit({
       birth_date: this.birthDate,
       country: this.country,
       gross_salary: this.grossSalary || undefined,
@@ -115,21 +120,22 @@ export class ParentalBenefitCalculatorComponent implements OnInit {
       planned_monthly_income: this.plannedMonthlyIncome,
       second_child_birth_date: this.secondChildBirthDate || undefined,
       current_date: this.currentDate || this.formatDateForInput(this.today)
-    };
+    } as ParentalBenefitCalculationRequest),
+    (response) => {
+      this.result = response;
+      this.error = '';
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+    (err: any) => {
+      this.error = err.error?.error || 'Chyba pri výpočte rodičovského príspevku';
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+  );
 
-    this.calculatorService.calculateParentalBenefit(request).subscribe({
-      next: (response) => {
-        this.result = response;
-        this.error = '';
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.error = err.error?.error || 'Chyba pri výpočte rodičovského príspevku';
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
+  ngOnDestroy() {
+    this.calc.destroy();
   }
 
   formatDate(dateString: string | null): string {

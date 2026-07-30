@@ -1,10 +1,11 @@
-import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, PLATFORM_ID, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SeoService } from '../../services/seo.service';
 import { AuthService } from '../../services/auth.service';
 import { DashboardService, SavingsGoalProjection } from '../../services/dashboard.service';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
@@ -30,7 +31,7 @@ type Mode = 'time' | 'monthly';
   templateUrl: './savings-goal-calculator.component.html',
   styleUrls: ['./savings-goal-calculator.component.css'],
 })
-export class SavingsGoalCalculatorComponent implements OnInit {
+export class SavingsGoalCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private seo = inject(SeoService);
   private auth = inject(AuthService);
@@ -91,22 +92,30 @@ export class SavingsGoalCalculatorComponent implements OnInit {
     this.calculate();
   }
 
+  private calc = new DebouncedCalc<{ result: SavingsGoalProjection }>(
+    () =>
+      this.dashboard.calcSavingsGoal({
+        mode: this.mode,
+        target_amount: this.targetAmount,
+        initial_amount: this.initialAmount,
+        monthly_contribution: this.monthlyContribution,
+        months: this.months,
+        annual_rate: this.annualRate,
+        currency: this.currency,
+      }),
+    (res) => { this.result = res.result; this.loading = false; },
+    () => { this.loading = false; this.error = this.locale.t('save.error'); },
+  );
+
   calculate(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     this.loading = true;
     this.error = null;
-    this.dashboard.calcSavingsGoal({
-      mode: this.mode,
-      target_amount: this.targetAmount,
-      initial_amount: this.initialAmount,
-      monthly_contribution: this.monthlyContribution,
-      months: this.months,
-      annual_rate: this.annualRate,
-      currency: this.currency,
-    }).subscribe({
-      next: (res) => { this.result = res.result; this.loading = false; },
-      error: () => { this.loading = false; this.error = this.locale.t('save.error'); },
-    });
+    this.calc.trigger();
+  }
+
+  ngOnDestroy(): void {
+    this.calc.destroy();
   }
 
   // ---- Track as a goal (logged-in) ----

@@ -1,4 +1,4 @@
-import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -9,6 +9,7 @@ import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.com
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
 import { SaveCalculationComponent } from '../shared/save-calculation/save-calculation.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
   selector: 'app-loan-calculator',
@@ -17,7 +18,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
   templateUrl: './loan-calculator.component.html',
   styleUrls: ['./loan-calculator.component.css']
 })
-export class LoanCalculatorComponent implements OnInit {
+export class LoanCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   
@@ -56,28 +57,35 @@ export class LoanCalculatorComponent implements OnInit {
     }
   }
 
-  calculate(): void {
-    this.loading = true;
-    this.error = null;
-
-    this.calculatorService.calculateLoan({
+  private calc = new DebouncedCalc<LoanCalculationResponse>(
+    () => this.calculatorService.calculateLoan({
       loan_amount: this.loanAmount,
       interest_rate: this.interestRate,
       loan_years: this.loanYears,
       include_schedule: this.includeSchedule
-    }).subscribe({
-      next: (response) => {
-        this.result = response;
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Loan calculation error:', err);
-        this.error = err.error?.error || 'Chyba pri výpočte úveru';
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
+    }),
+    (response) => {
+      this.result = response;
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+    (err: any) => {
+      console.error('Loan calculation error:', err);
+      this.error = err.error?.error || 'Chyba pri výpočte úveru';
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+  );
+
+  calculate(): void {
+    this.loading = true;
+    this.error = null;
+
+    this.calc.trigger();
+  }
+
+  ngOnDestroy(): void {
+    this.calc.destroy();
   }
 
   selectBenchmark(value: number): void {

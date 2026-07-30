@@ -1,10 +1,11 @@
-import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { PercentageCalculationResponse } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 
 interface CalculationType {
   id: string;
@@ -20,9 +21,39 @@ interface CalculationType {
   templateUrl: './percentage-calculator.component.html',
   styleUrls: ['./percentage-calculator.component.css']
 })
-export class PercentageCalculatorComponent implements OnInit {
+export class PercentageCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
+
+  private calc = new DebouncedCalc<PercentageCalculationResponse | null>(
+    () => {
+      const data: any = {
+        calculation_type: this.selectedType,
+      };
+
+      // Add required fields based on calculation type
+      if (['percent_of', 'add_percent', 'subtract_percent'].includes(this.selectedType)) {
+        data.percent = this.percent;
+        data.value2 = this.value2;
+      } else if (['is_what_percent', 'percentage_change'].includes(this.selectedType)) {
+        data.value1 = this.value1;
+        data.value2 = this.value2;
+      }
+
+      return this.calculatorService.calculatePercentage(data);
+    },
+    (response) => {
+      this.result = response;
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+    (err: any) => {
+      console.error('Percentage calculation error:', err);
+      this.error = err.error?.error || 'Chyba pri výpočte';
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+  );
   
   calculationTypes: CalculationType[] = [
     {
@@ -82,33 +113,11 @@ export class PercentageCalculatorComponent implements OnInit {
   calculate(): void {
     this.loading = true;
     this.error = null;
+    this.calc.trigger();
+  }
 
-    const data: any = {
-      calculation_type: this.selectedType
-    };
-
-    // Add required fields based on calculation type
-    if (['percent_of', 'add_percent', 'subtract_percent'].includes(this.selectedType)) {
-      data.percent = this.percent;
-      data.value2 = this.value2;
-    } else if (['is_what_percent', 'percentage_change'].includes(this.selectedType)) {
-      data.value1 = this.value1;
-      data.value2 = this.value2;
-    }
-
-    this.calculatorService.calculatePercentage(data).subscribe({
-      next: (response) => {
-        this.result = response;
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Percentage calculation error:', err);
-        this.error = err.error?.error || 'Chyba pri výpočte';
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
+  ngOnDestroy(): void {
+    this.calc.destroy();
   }
 
   needsValue1(): boolean {

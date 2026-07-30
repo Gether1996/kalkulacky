@@ -1,12 +1,13 @@
-import { Component, ChangeDetectorRef, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, ChangeDetectorRef, inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
-import { 
-  HoursWorkedCalculationRequest, 
-  HoursWorkedCalculationResponse 
+import {
+  HoursWorkedCalculationRequest,
+  HoursWorkedCalculationResponse
 } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
   selector: 'app-hours-worked-calculator',
@@ -15,10 +16,31 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
   templateUrl: './hours-worked-calculator.component.html',
   styleUrl: './hours-worked-calculator.component.css'
 })
-export class HoursWorkedCalculatorComponent implements OnInit {
+export class HoursWorkedCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
+
+  private calc = new DebouncedCalc<HoursWorkedCalculationResponse | null>(
+    () =>
+      this.calculatorService.calculateHoursWorked({
+        hours_worked: this.hoursWorked,
+        hourly_rate: this.hourlyRate,
+        period_type: this.periodType,
+        weekend_hours: this.weekendHours,
+        holiday_hours: this.holidayHours,
+      } as HoursWorkedCalculationRequest),
+    (response) => {
+      this.result = response;
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+    (err) => {
+      this.error = 'Chyba pri výpočte. Skontrolujte zadané údaje.';
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+  );
 
   // Input values
   hoursWorked: number = 48;
@@ -48,27 +70,11 @@ export class HoursWorkedCalculatorComponent implements OnInit {
   calculate() {
     this.loading = true;
     this.error = null;
+    this.calc.trigger();
+  }
 
-    const request: HoursWorkedCalculationRequest = {
-      hours_worked: this.hoursWorked,
-      hourly_rate: this.hourlyRate,
-      period_type: this.periodType,
-      weekend_hours: this.weekendHours,
-      holiday_hours: this.holidayHours
-    };
-
-    this.calculatorService.calculateHoursWorked(request).subscribe({
-      next: (response) => {
-        this.result = response;
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.error = 'Chyba pri výpočte. Skontrolujte zadané údaje.';
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
+  ngOnDestroy() {
+    this.calc.destroy();
   }
 
   formatNumber(value: number | string, decimals: number = 2): string {

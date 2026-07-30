@@ -140,12 +140,12 @@
     <div class="results-section card">
       <h2>📈 Výsledky výpočtu</h2>
 
-      <div *ngIf="loading" class="loading">
+      <div *ngIf="loading" class="loading" role="status" aria-live="polite">
         <div class="spinner"></div>
         <p>Počítam...</p>
       </div>
 
-      <div *ngIf="error" class="error-message">
+      <div *ngIf="error" class="error-message" role="alert">
         ❌ {{ error }}
       </div>
 

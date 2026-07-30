@@ -1,9 +1,10 @@
-import { Component, inject, ChangeDetectorRef, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
 import { BMRCalculationResponse } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
   selector: 'app-bmr-calculator',
@@ -12,7 +13,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
   templateUrl: './bmr-calculator.component.html',
   styleUrl: './bmr-calculator.component.css'
 })
-export class BmrCalculatorComponent implements OnInit {
+export class BmrCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
@@ -56,33 +57,38 @@ export class BmrCalculatorComponent implements OnInit {
     }
   }
 
-  calculate(): void {
-    this.isLoading = true;
-    this.error = null;
-    this.result = null;
-
-    const requestData = {
+  private calc = new DebouncedCalc<BMRCalculationResponse>(
+    () => this.calculatorService.calculateBMR({
       weight: this.weight,
       height: this.height,
       age: this.age,
       gender: this.gender,
       activity_level: this.activityLevel,
       weight_goal: this.weightGoal
-    };
+    }),
+    (data) => {
+      this.result = data;
+      this.isLoading = false;
+      this.cdr.detectChanges();
+    },
+    (err) => {
+      this.error = 'Chyba pri výpočte BMR. Skontrolujte zadané údaje.';
+      this.isLoading = false;
+      this.cdr.detectChanges();
+      console.error('BMR calculation error:', err);
+    },
+  );
 
-    this.calculatorService.calculateBMR(requestData).subscribe({
-      next: (data) => {
-        this.result = data;
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.error = 'Chyba pri výpočte BMR. Skontrolujte zadané údaje.';
-        this.isLoading = false;
-        this.cdr.detectChanges();
-        console.error('BMR calculation error:', err);
-      }
-    });
+  calculate(): void {
+    this.isLoading = true;
+    this.error = null;
+    this.result = null;
+
+    this.calc.trigger();
+  }
+
+  ngOnDestroy(): void {
+    this.calc.destroy();
   }
 
   formatNumber(value: number | null | undefined, decimals: number = 0): string {

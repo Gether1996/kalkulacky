@@ -1,8 +1,9 @@
-import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
 import { CarLeasingCalculationResponse, CarLeasingOption } from '../../models/calculator.models';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 import { SeoService } from '../../services/seo.service';
 import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.component';
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
@@ -15,7 +16,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
   templateUrl: './car-leasing-calculator.component.html',
   styleUrls: ['./car-leasing-calculator.component.css']
 })
-export class CarLeasingCalculatorComponent implements OnInit {
+export class CarLeasingCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   private seo = inject(SeoService);
@@ -83,29 +84,35 @@ export class CarLeasingCalculatorComponent implements OnInit {
 
     this.loading = true;
     this.error = null;
+    this.calc.trigger();
+  }
 
-    this.calculatorService.calculateCarLeasing({
-      car_price: this.carPrice,
-      down_payment: this.downPayment,
-      term_months: this.termMonths,
-      leasing_rate: this.leasingRate,
-      loan_rate: this.loanRate,
-      residual_value_percent: this.residualValuePercent,
-      include_vat: this.includeVat
-    })
-      .subscribe({
-        next: (data) => {
-          this.result = data;
-          this.loading = false;
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          console.error('❌ Car leasing calculation error:', err);
-          this.error = 'Chyba pri výpočte. Skúste znova.';
-          this.loading = false;
-          this.cdr.detectChanges();
-        }
-      });
+  private calc = new DebouncedCalc<CarLeasingCalculationResponse>(
+    () =>
+      this.calculatorService.calculateCarLeasing({
+        car_price: this.carPrice,
+        down_payment: this.downPayment,
+        term_months: this.termMonths,
+        leasing_rate: this.leasingRate,
+        loan_rate: this.loanRate,
+        residual_value_percent: this.residualValuePercent,
+        include_vat: this.includeVat
+      }),
+    (data) => {
+      this.result = data;
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+    (err) => {
+      console.error('❌ Car leasing calculation error:', err);
+      this.error = 'Chyba pri výpočte. Skúste znova.';
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+  );
+
+  ngOnDestroy(): void {
+    this.calc.destroy();
   }
 
   setCarPreset(value: number): void {

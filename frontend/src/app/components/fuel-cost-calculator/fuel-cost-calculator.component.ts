@@ -1,10 +1,11 @@
-import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { FuelCostCalculationResponse } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
   selector: 'app-fuel-cost-calculator',
@@ -13,7 +14,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
   templateUrl: './fuel-cost-calculator.component.html',
   styleUrls: ['./fuel-cost-calculator.component.css']
 })
-export class FuelCostCalculatorComponent implements OnInit {
+export class FuelCostCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   
@@ -45,27 +46,34 @@ export class FuelCostCalculatorComponent implements OnInit {
     this.calculate();
   }
 
+  private calc = new DebouncedCalc<FuelCostCalculationResponse>(
+    () => this.calculatorService.calculateFuelCost({
+      distance: this.distance,
+      consumption: this.consumption,
+      fuel_price: this.fuelPrice
+    }),
+    (response) => {
+      this.result = response;
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+    (err: any) => {
+      console.error('Fuel cost calculation error:', err);
+      this.error = err.error?.error || 'Chyba pri výpočte nákladov na palivo';
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+  );
+
   calculate(): void {
     this.loading = true;
     this.error = null;
 
-    this.calculatorService.calculateFuelCost({
-      distance: this.distance,
-      consumption: this.consumption,
-      fuel_price: this.fuelPrice
-    }).subscribe({
-      next: (response) => {
-        this.result = response;
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Fuel cost calculation error:', err);
-        this.error = err.error?.error || 'Chyba pri výpočte nákladov na palivo';
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
+    this.calc.trigger();
+  }
+
+  ngOnDestroy(): void {
+    this.calc.destroy();
   }
 
   selectRoute(distance: number): void {

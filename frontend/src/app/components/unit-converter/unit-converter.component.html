@@ -77,12 +77,12 @@
   </div>
 
   <!-- Error Message -->
-  <div *ngIf="error" class="error-message">
+  <div *ngIf="error" class="error-message" role="alert">
     ⚠️ {{ error }}
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="isLoading" class="loading">
+  <div *ngIf="isLoading" class="loading" role="status" aria-live="polite">
     <div class="spinner"></div>
     <p>Vypočítavam...</p>
   </div>

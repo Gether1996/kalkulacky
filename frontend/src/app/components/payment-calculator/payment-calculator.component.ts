@@ -1,9 +1,10 @@
-import { Component, inject, ChangeDetectorRef, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
 import { PaymentCalculationResponse } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
   selector: 'app-payment-calculator',
@@ -12,10 +13,32 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
   templateUrl: './payment-calculator.component.html',
   styleUrl: './payment-calculator.component.css'
 })
-export class PaymentCalculatorComponent implements OnInit {
+export class PaymentCalculatorComponent implements OnInit, OnDestroy {
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
+
+  private calc = new DebouncedCalc<PaymentCalculationResponse | null>(
+    () =>
+      this.calculatorService.calculatePayment({
+        loan_amount: this.loanAmount,
+        annual_interest_rate: this.annualInterestRate,
+        loan_term_years: this.loanTermYears,
+        payment_frequency: this.paymentFrequency,
+        include_schedule: this.includeSchedule,
+      }),
+    (data) => {
+      this.result = data;
+      this.isLoading = false;
+      this.cdr.detectChanges();
+    },
+    (err) => {
+      this.error = 'Chyba pri výpočte splátky. Skontrolujte zadané údaje.';
+      this.isLoading = false;
+      this.cdr.detectChanges();
+      console.error('Payment calculation error:', err);
+    },
+  );
 
   // Input values
   loanAmount: number = 50000;
@@ -46,28 +69,11 @@ export class PaymentCalculatorComponent implements OnInit {
     this.isLoading = true;
     this.error = null;
     this.result = null;
+    this.calc.trigger();
+  }
 
-    const requestData = {
-      loan_amount: this.loanAmount,
-      annual_interest_rate: this.annualInterestRate,
-      loan_term_years: this.loanTermYears,
-      payment_frequency: this.paymentFrequency,
-      include_schedule: this.includeSchedule
-    };
-
-    this.calculatorService.calculatePayment(requestData).subscribe({
-      next: (data) => {
-        this.result = data;
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.error = 'Chyba pri výpočte splátky. Skontrolujte zadané údaje.';
-        this.isLoading = false;
-        this.cdr.detectChanges();
-        console.error('Payment calculation error:', err);
-      }
-    });
+  ngOnDestroy(): void {
+    this.calc.destroy();
   }
 
   formatNumber(value: number | null | undefined, decimals: number = 2): string {

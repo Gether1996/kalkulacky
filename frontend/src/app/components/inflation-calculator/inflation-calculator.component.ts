@@ -1,12 +1,13 @@
-import { Component, ChangeDetectorRef, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, ChangeDetectorRef, inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
-import { 
-  InflationCalculationRequest, 
-  InflationCalculationResponse 
+import {
+  InflationCalculationRequest,
+  InflationCalculationResponse
 } from '../../models/calculator.models';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
   selector: 'app-inflation-calculator',
@@ -15,7 +16,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
   templateUrl: './inflation-calculator.component.html',
   styleUrl: './inflation-calculator.component.css'
 })
-export class InflationCalculatorComponent implements OnInit {
+export class InflationCalculatorComponent implements OnInit, OnDestroy {
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
@@ -37,29 +38,34 @@ export class InflationCalculatorComponent implements OnInit {
     }
   }
 
-  calculate() {
-    this.loading = true;
-    this.error = null;
-
-    const request: InflationCalculationRequest = {
+  private calc = new DebouncedCalc<InflationCalculationResponse>(
+    () => this.calculatorService.calculateInflation({
       present_value: this.presentValue,
       years: this.years,
       inflation_rate: this.inflationRate,
       calculate_reverse: this.calculateReverse
-    };
+    } as InflationCalculationRequest),
+    (response) => {
+      this.result = response;
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+    (err) => {
+      this.error = 'Chyba pri výpočte. Skontrolujte zadané údaje.';
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+  );
 
-    this.calculatorService.calculateInflation(request).subscribe({
-      next: (response) => {
-        this.result = response;
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.error = 'Chyba pri výpočte. Skontrolujte zadané údaje.';
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
+  calculate() {
+    this.loading = true;
+    this.error = null;
+
+    this.calc.trigger();
+  }
+
+  ngOnDestroy(): void {
+    this.calc.destroy();
   }
 
   formatNumber(value: number | string, decimals: number = 2): string {
