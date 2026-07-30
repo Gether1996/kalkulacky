@@ -30,7 +30,8 @@ class ParentalBenefitCalculator(BaseCalculator):
     
     # Slovak parental benefit rates (2026) - imported from config_variables
     MATERNITY_RATE = cfg.MATERNITY_BENEFIT_RATE  # 75% of daily assessment base
-    MATERNITY_WEEKS = cfg.MATERNITY_BENEFIT_WEEKS  # 34 weeks (43 for twins+)
+    MATERNITY_WEEKS = cfg.MATERNITY_BENEFIT_WEEKS  # 34 weeks
+    MATERNITY_WEEKS_TWINS = cfg.MATERNITY_BENEFIT_WEEKS_TWINS  # 43 weeks for twins+
     
     PARENTAL_BASIC_MONTHLY = cfg.PARENTAL_BENEFIT_BASIC_MONTHLY  # €381.90/month
     PARENTAL_BASIC_YEARS = cfg.PARENTAL_BENEFIT_BASIC_YEARS  # 3 years (until child is 3)
@@ -91,7 +92,7 @@ class ParentalBenefitCalculator(BaseCalculator):
             raise ValueError("Typ príspevku musí byť 'basic' alebo 'alternative'")
         
         # --- MATERNITY BENEFIT (Materské) ---
-        maternity_weeks = self.MATERNITY_WEEKS if not twins_or_more else 43
+        maternity_weeks = self.MATERNITY_WEEKS if not twins_or_more else self.MATERNITY_WEEKS_TWINS
         maternity_end_date = birth_date + timedelta(weeks=maternity_weeks)
         
         maternity_benefit = None

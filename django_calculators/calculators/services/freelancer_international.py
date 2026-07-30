@@ -86,9 +86,12 @@ def calculate_cz_freelancer(
         return {'monthly': _r(monthly), 'annual': _r(monthly * months_active),
                 'rate': rate, 'included': included}
 
+    _meta = get_rates('CZ').get('meta', {})
     return {
         'country': 'CZ',
         'currency': 'CZK',
+        'year': _meta.get('year'),
+        'source': (_meta.get('sources') or [None])[0],
         'income': {
             'annual_revenue': _r(annual_revenue),
             'annual_expenses': _r(expenses),

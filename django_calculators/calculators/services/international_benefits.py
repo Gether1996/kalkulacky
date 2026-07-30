@@ -118,6 +118,7 @@ def calculate_cz_sick_leave(gross_salary, days_sick, leave_type='illness', **kwa
 
     return {
         'country': 'CZ', 'currency': 'CZK',
+        'year': _CZ['meta'].get('year'), 'source': (_CZ['meta'].get('sources') or [None])[0],
         'gross_salary': _r(gross_salary), 'days_sick': days_sick,
         'leave_type': leave_type,
         'leave_type_label': 'Nemoc' if leave_type == 'illness' else 'Ošetřovné člena rodiny',
@@ -175,6 +176,7 @@ def calculate_cz_vacation(age, employment_start_date, current_date=None,
 
     return {
         'country': 'CZ', 'currency': 'CZK',
+        'year': _CZ['meta'].get('year'), 'source': (_CZ['meta'].get('sources') or [None])[0],
         'age': age,
         'employment_start_date': start.strftime('%Y-%m-%d'),
         'is_first_year': is_first_year,
@@ -249,6 +251,7 @@ def calculate_cz_pension(current_age, gross_salary, years_worked, gender='male',
 
     return {
         'country': 'CZ', 'currency': 'CZK',
+        'year': _CZ['meta'].get('year'), 'source': (_CZ['meta'].get('sources') or [None])[0],
         'current_age': current_age, 'retirement_age': RETIREMENT_AGE,
         'years_to_retirement': years_to_ret, 'already_retired': already_retired,
         'years_worked': years_worked, 'total_years_at_retirement': total_years,
@@ -323,6 +326,7 @@ def calculate_cz_parental(birth_date, gross_salary=None, twins_or_more=False,
 
     return {
         'country': 'CZ', 'currency': 'CZK',
+        'year': _CZ['meta'].get('year'), 'source': (_CZ['meta'].get('sources') or [None])[0],
         'birth_date': bd.strftime('%Y-%m-%d'),
         'child_age_days': age_days, 'child_age_months': age_days // 30,
         'child_age_years': age_days // 365,

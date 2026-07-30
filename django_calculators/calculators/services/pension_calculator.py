@@ -58,7 +58,7 @@ class PensionCalculator(BaseCalculator):
         years_worked = kwargs.get('years_worked')
         gender = kwargs.get('gender', 'male')
         include_second_pillar = kwargs.get('include_second_pillar', True)
-        second_pillar_rate = kwargs.get('second_pillar_rate', 6.0)
+        second_pillar_rate = kwargs.get('second_pillar_rate', cfg.SECOND_PILLAR_DEFAULT_RATE)
         
         # Convert to appropriate types
         current_age = int(current_age)

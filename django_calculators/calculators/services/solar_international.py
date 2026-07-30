@@ -73,8 +73,10 @@ def calculate_cz_solar(annual_consumption_kwh, electricity_rate=None,
     payback = (net_cost / annual_savings) if annual_savings > 0 else None
     coverage = (self_consumed / annual_consumption * 100) if annual_consumption else 0
 
+    _meta = get_rates('CZ').get('meta', {})
     return {
         'country': 'CZ', 'currency': 'CZK',
+        'year': _meta.get('year'), 'source': (_meta.get('sources') or [None])[0],
         'inputs': {
             'annual_consumption_kwh': _r(annual_consumption),
             'electricity_rate': round(rate, 4),

@@ -26,9 +26,13 @@ def _result(*, country, currency, gross, social, health, income_tax,
             child_bonus, net, employer_cost=0.0, extra=None) -> Dict[str, Any]:
     total_deductions = social + health + income_tax
     eff = (total_deductions / gross * 100) if gross > 0 else 0
+    _meta = get_rates(country).get('meta', {})
     out = {
         'country': country,
         'currency': currency,
+        # Tax-year provenance so clients know which ruleset produced the numbers.
+        'year': _meta.get('year'),
+        'source': (_meta.get('sources') or [None])[0],
         'gross_salary': _round(gross),
         'social_insurance': _round(social),
         'health_insurance': _round(health),
