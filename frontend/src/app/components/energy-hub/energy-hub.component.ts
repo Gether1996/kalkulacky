@@ -4,6 +4,8 @@ import { RouterLink } from '@angular/router';
 import { SeoService } from '../../services/seo.service';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
+import { LocaleService } from '../../i18n/locale.service';
+import { getSeoContent } from '../../i18n/seo';
 
 /**
  * Home-energy hub landing page (V4 report Part 5 strategy: bundle solar #1 +
@@ -19,6 +21,7 @@ import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
 })
 export class EnergyHubComponent implements OnInit {
   private seo = inject(SeoService);
+  private locale = inject(LocaleService);
 
   pillars = [
     { id: 'solar', icon: '☀️', route: '/calculator/solar', accent: 'amber' },
@@ -28,21 +31,13 @@ export class EnergyHubComponent implements OnInit {
   ];
 
   ngOnInit(): void {
+    const s = getSeoContent('energy-hub', this.locale.locale());
     this.seo.apply({
-      title: 'Úspory energie v dome 2026 – fotovoltika, tepelné čerpadlo, dotácie',
-      description: 'Jedno miesto pre úsporu energie v dome: kalkulačka fotovoltiky, tepelného čerpadla a dotácie Obnov dom. Zistite dotácie, náklady, úsporu a návratnosť a získajte nezáväzné ponuky od overených firiem.',
+      title: s.title,
+      description: s.description,
+      keywords: s.keywords,
+      faq: s.faq,
       path: '/energia',
-      keywords: 'úspora energie dom, fotovoltika dotácia, tepelné čerpadlo dotácia, Obnov dom, zelená domácnostiam, zníženie nákladov na vykurovanie',
-      faq: [
-        {
-          question: 'Aké dotácie na úsporu energie môžem získať?',
-          answer: 'Na Slovensku bežia dva hlavné programy: Zelená domácnostiam (fotovoltika, tepelné čerpadlá, solárne kolektory) a Obnov dom (komplexná obnova rodinných domov – zateplenie, okná, zdroj tepla). Naše kalkulačky odhadnú výšku dotácie aj návratnosť.',
-        },
-        {
-          question: 'Čo sa oplatí riešiť ako prvé – fotovoltiku, tepelné čerpadlo alebo zateplenie?',
-          answer: 'Najlepší pomer cena/úspora má zvyčajne zateplenie a výmena zdroja tepla. Fotovoltika potom pokryje spotrebu (vrátane tepelného čerpadla a ohrevu vody). Ideálne je riešiť ich spolu – kombinácia opatrení zvyšuje aj dosiahnutú dotáciu z Obnov dom.',
-        },
-      ],
     });
   }
 }

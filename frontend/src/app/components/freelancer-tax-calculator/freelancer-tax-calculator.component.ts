@@ -15,6 +15,7 @@ import { SaveCalculationComponent } from '../shared/save-calculation/save-calcul
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
+import { getSeoContent } from '../../i18n/seo';
 import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
@@ -70,22 +71,14 @@ export class FreelancerTaxCalculatorComponent implements OnInit, OnDestroy {
   private get numberLocale(): string { return this.isSK ? 'sk-SK' : 'cs-CZ'; }
 
   ngOnInit() {
+    const s = getSeoContent('freelancer', this.locale.locale());
     this.seo.apply({
-      title: 'Kalkulačka daní a odvodov SZČO 2026 (živnostník)',
-      description: 'Vypočítajte daň z príjmu, zdravotné a sociálne odvody pre SZČO/živnostníka v roku 2026. Paušálne vs. skutočné výdavky a čistý príjem.',
+      title: s.title,
+      description: s.description,
+      keywords: s.keywords,
+      faq: s.faq,
       path: '/calculator/freelancer-tax',
-      keywords: 'odvody SZČO 2026 kalkulačka, daň živnostník, paušálne výdavky, čistý príjem živnostník',
       isCalculator: true,
-      faq: [
-        {
-          question: 'Aké sú minimálne odvody SZČO v roku 2026?',
-          answer: 'Živnostník platí minimálne zdravotné aj sociálne odvody odvodené od minimálneho vymeriavacieho základu. Kalkulačka zohľadní aktuálne sadzby pre rok 2026.',
-        },
-        {
-          question: 'Kedy sa oplatia paušálne výdavky 60 %?',
-          answer: 'Paušálne výdavky (60 % z príjmu, do zákonného limitu) sa oplatia, ak sú vaše skutočné náklady nižšie. Pri vysokých reálnych nákladoch je výhodnejšie účtovať skutočné výdavky.',
-        },
-      ],
     });
     // Initial calculation is driven by the locale effect (constructor).
   }

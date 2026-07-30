@@ -10,6 +10,7 @@ import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.com
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
 import { SaveCalculationComponent } from '../shared/save-calculation/save-calculation.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { getSeoContent } from '../../i18n/seo';
 import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
@@ -46,11 +47,13 @@ export class LoanCalculatorComponent implements OnInit, OnDestroy {
   constructor(private calculatorService: CalculatorService) {}
 
   ngOnInit(): void {
+    const s = getSeoContent('loan', this.locale.locale());
     this.seo.apply({
-      title: 'Kalkulačka úveru 2026 – výpočet splátky a úrokov',
-      description: 'Vypočítajte mesačnú splátku úveru, celkové úroky a splátkový kalendár. Porovnajte spotrebné úvery a nájdite najnižšiu sadzbu.',
+      title: s.title,
+      description: s.description,
+      keywords: s.keywords,
+      faq: s.faq,
       path: '/calculator/loan',
-      keywords: 'kalkulačka úveru, výpočet splátky úveru, spotrebný úver, úrok z úveru',
       isCalculator: true,
     });
     // Auto-calculate on component init (browser only) for immediate results

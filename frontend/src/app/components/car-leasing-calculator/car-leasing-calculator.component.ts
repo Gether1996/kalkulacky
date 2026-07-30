@@ -9,6 +9,7 @@ import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.com
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
+import { getSeoContent } from '../../i18n/seo';
 
 @Component({
   selector: 'app-car-leasing-calculator',
@@ -56,11 +57,13 @@ export class CarLeasingCalculatorComponent implements OnInit, OnDestroy {
   constructor(private calculatorService: CalculatorService) {}
 
   ngOnInit(): void {
+    const s = getSeoContent('car-leasing', this.locale.locale());
     this.seo.apply({
-      title: 'Kalkulačka lízingu auta 2026 – lízing vs úver vs hotovosť',
-      description: 'Porovnajte finančný lízing, operatívny lízing, úver a kúpu auta na hotovosť. Zistite najvýhodnejší spôsob financovania auta.',
+      title: s.title,
+      description: s.description,
+      keywords: s.keywords,
+      faq: s.faq,
       path: '/calculator/car-leasing',
-      keywords: 'lízing auta kalkulačka, operatívny lízing, financovanie auta, lízing vs úver',
       isCalculator: true,
     });
     if (isPlatformBrowser(this.platformId)) {

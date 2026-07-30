@@ -9,6 +9,7 @@ import { DebouncedCalc } from '../../utils/debounced-calc';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
+import { getSeoContent } from '../../i18n/seo';
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
 
 type Mode = 'time' | 'monthly';
@@ -61,22 +62,14 @@ export class SavingsGoalCalculatorComponent implements OnInit, OnDestroy {
   goalName = '';
 
   ngOnInit(): void {
+    const s = getSeoContent('savings-goal', this.locale.locale());
     this.seo.apply({
-      title: 'Kalkulačka sporenia a sporiaceho cieľa 2026 – koľko sporiť mesačne',
-      description: 'Zistite, kedy dosiahnete svoj sporiaci cieľ alebo koľko musíte mesačne odkladať. Výpočet so zloženým úročením. Prihlásení používatelia môžu sledovať pokrok a zaznamenávať vklady.',
+      title: s.title,
+      description: s.description,
+      keywords: s.keywords,
+      faq: s.faq,
       path: '/calculator/savings-goal',
-      keywords: 'kalkulačka sporenia, sporiaci cieľ, koľko sporiť mesačne, zložené úročenie, finančná rezerva, sporenie kalkulačka',
       isCalculator: true,
-      faq: [
-        {
-          question: 'Ako funguje zložené úročenie?',
-          answer: 'Úrok sa pripisuje k zostatku a v ďalšom období sa úročí už aj tento úrok. Čím dlhšie a skôr sporíte, tým väčší podiel na výsledku má práve úrok.',
-        },
-        {
-          question: 'Koľko mám mesačne odkladať?',
-          answer: 'Zadajte cieľovú sumu a termín a kalkulačka vypočíta potrebný mesačný vklad. Bežné odporúčanie je odkladať si aspoň 10–20 % z príjmu.',
-        },
-      ],
     });
     if (isPlatformBrowser(this.platformId)) {
       this.calculate();

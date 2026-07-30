@@ -13,6 +13,7 @@ import { SaveCalculationComponent } from '../shared/save-calculation/save-calcul
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
+import { getSeoContent } from '../../i18n/seo';
 
 @Component({
   selector: 'app-salary-calculator',
@@ -86,22 +87,14 @@ export class SalaryCalculatorComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    const s = getSeoContent('salary', this.locale.locale());
     this.seo.apply({
-      title: 'Čistá mzda 2026 – kalkulačka výplaty (hrubá → čistá)',
-      description: 'Vypočítajte si čistú mzdu z hrubej mzdy pre rok 2026. Kalkulačka zohľadňuje odvody, daň, nezdaniteľnú časť a daňový bonus na deti.',
+      title: s.title,
+      description: s.description,
+      keywords: s.keywords,
+      faq: s.faq,
       path: '/calculator/salary',
-      keywords: 'čistá mzda kalkulačka, výpočet čistej mzdy 2026, hrubá mzda na čistú, výplata kalkulačka',
       isCalculator: true,
-      faq: [
-        {
-          question: 'Ako sa počíta čistá mzda z hrubej?',
-          answer: 'Od hrubej mzdy sa odpočítajú odvody do Sociálnej a zdravotnej poisťovne (9,4 % + 5 %), uplatní sa nezdaniteľná časť základu dane a vypočíta sa daň z príjmu. Výsledok znížený o daň je čistá mzda, ku ktorej sa pripočíta daňový bonus na deti.',
-        },
-        {
-          question: 'Aký je daňový bonus na dieťa v roku 2026?',
-          answer: 'Daňový bonus závisí od veku dieťaťa a výšky príjmu. Kalkulačka ho automaticky zohľadní podľa počtu detí do 15 rokov a od 15 do 18 rokov.',
-        },
-      ],
     });
 
     // Debounced + cancellable calculation stream. Built here (before the

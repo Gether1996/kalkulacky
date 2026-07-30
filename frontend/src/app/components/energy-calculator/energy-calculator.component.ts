@@ -11,6 +11,7 @@ import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
 import { SaveCalculationComponent } from '../shared/save-calculation/save-calculation.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
+import { getSeoContent } from '../../i18n/seo';
 
 @Component({
   selector: 'app-energy-calculator',
@@ -52,22 +53,14 @@ export class EnergyCalculatorComponent implements OnInit, OnDestroy {
   get saveName(): string { return 'Náklady na energie'; }
 
   ngOnInit(): void {
+    const s = getSeoContent('energy', this.locale.locale());
     this.seo.apply({
-      title: 'Kalkulačka nákladov na energie 2026 (elektrina a plyn)',
-      description: 'Vypočítajte mesačné a ročné náklady na elektrinu a plyn, porovnajte spotrebu s priemerom a zistite, či sa vám oplatí fotovoltika.',
+      title: s.title,
+      description: s.description,
+      keywords: s.keywords,
+      faq: s.faq,
       path: '/calculator/energy',
-      keywords: 'kalkulačka energie, náklady na elektrinu, cena plynu, fotovoltika návratnosť, dotácia zelená domácnostiam',
       isCalculator: true,
-      faq: [
-        {
-          question: 'Oplatí sa mi fotovoltika?',
-          answer: 'Návratnosť fotovoltiky závisí od spotreby, ceny elektriny a výšky dotácie (Zelená domácnostiam). Pri vyššej spotrebe a samospotrebe je návratnosť rýchlejšia. Pre presný odhad získajte nezáväznú ponuku od montážnej firmy.',
-        },
-        {
-          question: 'Aká je priemerná spotreba elektriny domácnosti?',
-          answer: 'Priemerná domácnosť spotrebuje rádovo 2 000–4 000 kWh ročne podľa počtu osôb a vykurovania. Kalkulačka porovná vašu spotrebu s priemerom.',
-        },
-      ],
     });
     if (isPlatformBrowser(this.platformId)) {
       this.calculate();

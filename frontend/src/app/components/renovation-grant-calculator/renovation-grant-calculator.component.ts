@@ -10,6 +10,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
 import { RENOVATION_PARAMS, RenoConfig } from '../../i18n/energy-params';
+import { getSeoContent } from '../../i18n/seo';
 
 /**
  * Renovation-grant eligibility wizard + grant estimator (V4 report idea #5,
@@ -94,26 +95,14 @@ export class RenovationGrantCalculatorComponent implements OnInit {
   result: RenovationResult | null = null;
 
   ngOnInit(): void {
+    const s = getSeoContent('renovation', this.locale.locale());
     this.seo.apply({
-      title: 'Obnov dom 2026 – kalkulačka dotácie na obnovu rodinného domu',
-      description: 'Zistite, či máte nárok na dotáciu Obnov dom a koľko môžete získať. Sprievodca oprávnenosťou a odhad dotácie podľa opatrení a nákladov. Získajte nezáväznú ponuku od energetického audítora alebo firmy.',
+      title: s.title,
+      description: s.description,
+      keywords: s.keywords,
+      faq: s.faq,
       path: '/calculator/renovation',
-      keywords: 'Obnov dom dotácia, dotácia na zateplenie 2026, dotácia na rekonštrukciu, obnova rodinného domu dotácia, energetický audítor',
       isCalculator: true,
-      faq: [
-        {
-          question: 'Kto má nárok na dotáciu Obnov dom?',
-          answer: 'Dotácia je určená pre vlastníkov starších rodinných domov (postavených spravidla pred rokom 2013), ktorí obnovou dosiahnu úsporu primárnej energie aspoň 30 %. Presné podmienky aktuálneho kola nájdete na obnovdom.sk.',
-        },
-        {
-          question: 'Koľko peňazí môžem z Obnov dom získať?',
-          answer: 'Dotácia pokrýva orientačne do 60 % oprávnených nákladov. Pri úspore energie ≥30 % je strop nižší, pri komplexnej obnove s úsporou ≥60 % je strop vyšší. Kalkulačka uvádza orientačný odhad – výška sa mení podľa aktuálnej výzvy.',
-        },
-        {
-          question: 'Aké opatrenia sa do dotácie počítajú?',
-          answer: 'Najčastejšie zateplenie obvodových stien a strechy, výmena okien a dverí, výmena zdroja tepla (napr. tepelné čerpadlo), fotovoltika, rekuperácia a vonkajšie tienenie. Kombinácia viacerých opatrení zvyšuje dosiahnutú úsporu a tým aj možnú dotáciu.',
-        },
-      ],
     });
     // Initial calculation driven by the locale effect (constructor).
   }

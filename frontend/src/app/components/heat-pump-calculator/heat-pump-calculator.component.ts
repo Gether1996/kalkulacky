@@ -10,6 +10,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
 import { HEAT_PUMP_PARAMS, HEAT_PUMP_SHARED, CountryHeatPumpConfig } from '../../i18n/energy-params';
+import { getSeoContent } from '../../i18n/seo';
 
 /**
  * Heat-pump sizing, cost & savings estimator (V4 report idea #8, score 7.28).
@@ -114,26 +115,14 @@ export class HeatPumpCalculatorComponent implements OnInit {
   ];
 
   ngOnInit(): void {
+    const s = getSeoContent('heat-pump', this.locale.locale());
     this.seo.apply({
-      title: 'Kalkulačka tepelného čerpadla 2026 – výkon, cena, úspora a dotácia',
-      description: 'Vypočítajte odporúčaný výkon tepelného čerpadla, cenu, ročnú úsporu oproti plynu či elektrine, dotáciu Zelená domácnostiam a návratnosť. Získajte nezáväznú ponuku od montážnej firmy.',
+      title: s.title,
+      description: s.description,
+      keywords: s.keywords,
+      faq: s.faq,
       path: '/calculator/heat-pump',
-      keywords: 'kalkulačka tepelného čerpadla, tepelné čerpadlo cena, tepelné čerpadlo dotácia, aké tepelné čerpadlo do domu, úspora tepelné čerpadlo',
       isCalculator: true,
-      faq: [
-        {
-          question: 'Aký výkon tepelného čerpadla potrebujem na môj dom?',
-          answer: 'Výkon závisí od tepelnej straty domu – tá sa odvíja od plochy a zateplenia. Orientačne pri čiastočne zateplenom dome ide o ~0,06 kW na m². Kalkulačka odhadne potrebný výkon, presné dimenzovanie urobí projektant podľa tepelnoizolačných vlastností.',
-        },
-        {
-          question: 'Akú dotáciu môžem získať na tepelné čerpadlo?',
-          answer: 'Cez program Zelená domácnostiam je príspevok orientačne stanovený za kW inštalovaného výkonu s maximálnym stropom a zároveň najviac 50 % oprávnených nákladov. Presná sadzba a podmienky sa menia podľa aktuálneho kola SIEA – overte si ich na zelenadomacnostiam.sk.',
-        },
-        {
-          question: 'Oplatí sa tepelné čerpadlo oproti plynu?',
-          answer: 'Tepelné čerpadlo s ročnou účinnosťou (SCOP) okolo 3,5 vyrobí z 1 kWh elektriny ~3,5 kWh tepla, čím môže výrazne znížiť náklady oproti plynovému kotlu. Návratnosť býva orientačne 7–12 rokov v závislosti od spotreby, cien a dotácie.',
-        },
-      ],
     });
     // Initial calculation driven by the locale effect (constructor).
   }

@@ -6,6 +6,8 @@ import { LeadFormComponent } from '../shared/lead-form/lead-form.component';
 import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.component';
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { LocaleService } from '../../i18n/locale.service';
+import { getSeoContent } from '../../i18n/seo';
 
 /**
  * Car-insurance (PZP / povinné ručenie) niche lead page — V4 report idea #9.
@@ -25,6 +27,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
 export class CarInsuranceCalculatorComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private seo = inject(SeoService);
+  private locale = inject(LocaleService);
 
   power = 85;       // engine power in kW
   driverAge = 35;
@@ -34,22 +37,14 @@ export class CarInsuranceCalculatorComponent implements OnInit {
   estHigh = 0;
 
   ngOnInit(): void {
+    const s = getSeoContent('car-insurance', this.locale.locale());
     this.seo.apply({
-      title: 'PZP kalkulačka 2026 – porovnanie povinného zmluvného poistenia',
-      description: 'Orientačný výpočet ceny povinného zmluvného poistenia (PZP) podľa výkonu vozidla, veku vodiča a regiónu. Porovnajte ponuky a získajte nezáväznú cenu PZP.',
+      title: s.title,
+      description: s.description,
+      keywords: s.keywords,
+      faq: s.faq,
       path: '/calculator/car-insurance',
-      keywords: 'PZP kalkulačka, najlacnejšie PZP, porovnanie PZP, povinné zmluvné poistenie 2026, PZP pre mladých vodičov',
       isCalculator: true,
-      faq: [
-        {
-          question: 'Od čoho závisí cena PZP?',
-          answer: 'Cena PZP závisí najmä od výkonu a typu vozidla, veku a bydliska vodiča, jeho histórie škôd (bonus/malus) a zvoleného krytia. Mladší vodiči a silnejšie autá majú spravidla vyššie poistné.',
-        },
-        {
-          question: 'Ako získať najlacnejšie PZP?',
-          answer: 'Porovnajte ponuky viacerých poisťovní – ceny za rovnaké krytie sa výrazne líšia. Cez tento formulár vám pripravíme nezáväzné porovnanie na mieru.',
-        },
-      ],
     });
     if (isPlatformBrowser(this.platformId)) {
       this.calculate();

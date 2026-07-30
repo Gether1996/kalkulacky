@@ -11,6 +11,7 @@ import { SaveCalculationComponent } from '../shared/save-calculation/save-calcul
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
+import { getSeoContent } from '../../i18n/seo';
 import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
@@ -82,11 +83,13 @@ export class PensionCalculatorComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    const s = getSeoContent('pension', this.locale.locale());
     this.seo.apply({
-      title: 'Kalkulačka dôchodku 2026 – odhad penzie a II. pilier',
-      description: 'Vypočítajte odhad starobného dôchodku, dôchodkové odvody a náhradový pomer podľa slovenskej legislatívy vrátane II. piliera.',
+      title: s.title,
+      description: s.description,
+      keywords: s.keywords,
+      faq: s.faq,
       path: '/calculator/pension',
-      keywords: 'kalkulačka dôchodku, výpočet dôchodku, II. pilier, starobný dôchodok, náhradový pomer',
       isCalculator: true,
     });
     // Initial calculation driven by the locale effect (constructor).

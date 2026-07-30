@@ -13,6 +13,7 @@ import { SaveCalculationComponent } from '../shared/save-calculation/save-calcul
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
+import { getSeoContent } from '../../i18n/seo';
 import { DebouncedCalc } from '../../utils/debounced-calc';
 
 @Component({
@@ -74,22 +75,14 @@ export class MortgageCalculatorComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    const s = getSeoContent('mortgage', this.locale.locale());
     this.seo.apply({
-      title: 'Hypotekárna kalkulačka 2026 – výpočet splátky hypotéky',
-      description: 'Vypočítajte si mesačnú splátku hypotéky, celkové úroky a amortizačnú tabuľku. Porovnajte scenáre a získajte nezáväznú ponuku od hypotekárneho špecialistu.',
+      title: s.title,
+      description: s.description,
+      keywords: s.keywords,
+      faq: s.faq,
       path: '/calculator/mortgage',
-      keywords: 'hypotéka kalkulačka, výpočet splátky hypotéky, refinancovanie hypotéky, hypotekárna kalkulačka 2026',
       isCalculator: true,
-      faq: [
-        {
-          question: 'Ako sa počíta mesačná splátka hypotéky?',
-          answer: 'Mesačná splátka sa počíta anuitne z výšky úveru, ročnej úrokovej sadzby a doby splácania. Kalkulačka zohľadňuje istinu aj úroky a zobrazí celkové preplatenie.',
-        },
-        {
-          question: 'Oplatí sa refinancovať hypotéku?',
-          answer: 'Refinancovanie sa zvyčajne oplatí, ak je nová sadzba výrazne nižšia alebo končí fixácia. Porovnajte súčasnú splátku s ponukou a zohľadnite poplatky za predčasné splatenie.',
-        },
-      ],
     });
 
     // Initial calculation is driven by the locale effect (constructor).
