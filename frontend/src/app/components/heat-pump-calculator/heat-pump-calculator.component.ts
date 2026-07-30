@@ -9,6 +9,7 @@ import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
+import { HEAT_PUMP_PARAMS, HEAT_PUMP_SHARED, CountryHeatPumpConfig } from '../../i18n/energy-params';
 
 /**
  * Heat-pump sizing, cost & savings estimator (V4 report idea #8, score 7.28).
@@ -17,38 +18,16 @@ import { getCountryParams } from '../../i18n/country-params';
  *
  * The calculation is INDICATIVE and runs client-side (like the solar tool's
  * browser-side calculate()); the SEO shell (title/meta/JSON-LD/intro) is still
- * server-rendered. All constants are centralised here for easy yearly updates.
+ * server-rendered. The yearly-changing per-country numbers live in the editable
+ * `i18n/energy-params.ts` (aliased below so the methods read the same names).
  */
 
-// --- Tunable indicative constants per country (update per subsidy round) ------
-const DHW_KWH_PER_YEAR = 1800;        // hot-water demand (indicative)
-const SCOP = 3.5;                      // seasonal COP for a modern air-water HP
-const CO2_KG_PER_KWH_GRID = 0.20;      // grid CO2 intensity
-
-interface CountryHeatPumpConfig {
-  electricityPrice: number;   // per kWh for the HP's electricity
-  costBase: number;           // min turnkey cost
-  costPerKw: number;          // turnkey cost per kW of output
-  subsidyPerKw: number;       // subsidy per kW
-  subsidyMax: number;         // subsidy cap
-  fuel: Record<string, number>; // cost per kWh of delivered heat by fuel
-}
-
-const HP_CONFIG: Record<'SK' | 'CZ', CountryHeatPumpConfig> = {
-  // SK — Zelená domácnostiam (INDICATIVE).
-  SK: {
-    electricityPrice: 0.18, costBase: 9000, costPerKw: 1400,
-    subsidyPerKw: 380, subsidyMax: 3400,
-    fuel: { gas: 0.10, electric: 0.18, coal: 0.08, oil: 0.13, wood: 0.06 },
-  },
-  // CZ — Nová zelená úsporám (INDICATIVE, CZK). Flat ~80 000 Kč air-water grant.
-  CZ: {
-    electricityPrice: 5.0, costBase: 220000, costPerKw: 30000,
-    subsidyPerKw: 8000, subsidyMax: 80000,
-    fuel: { gas: 2.0, electric: 5.0, coal: 1.5, oil: 3.0, wood: 1.2 },
-  },
-};
-const SUBSIDY_RATE_OF_COST = 0.5;      // ≤ 50 % of eligible cost (both countries)
+// --- Per-country/shared indicative constants (from i18n/energy-params.ts) ------
+const HP_CONFIG = HEAT_PUMP_PARAMS;
+const DHW_KWH_PER_YEAR = HEAT_PUMP_SHARED.dhwKwhPerYear;
+const SCOP = HEAT_PUMP_SHARED.scop;
+const CO2_KG_PER_KWH_GRID = HEAT_PUMP_SHARED.co2KgPerKwhGrid;
+const SUBSIDY_RATE_OF_COST = HEAT_PUMP_SHARED.subsidyRateOfCost;
 
 interface InsulationOption {
   key: string;

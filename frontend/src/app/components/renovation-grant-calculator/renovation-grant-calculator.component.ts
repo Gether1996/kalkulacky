@@ -9,6 +9,7 @@ import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { LocaleService } from '../../i18n/locale.service';
 import { getCountryParams } from '../../i18n/country-params';
+import { RENOVATION_PARAMS, RenoConfig } from '../../i18n/energy-params';
 
 /**
  * Renovation-grant eligibility wizard + grant estimator (V4 report idea #5,
@@ -17,23 +18,11 @@ import { getCountryParams } from '../../i18n/country-params';
  * (lead vertical `renovation`, already defined in the backend Lead model).
  *
  * INDICATIVE estimate, computed client-side. Verify current round parameters on
- * the official obnovdom.sk portal. Constants centralised for easy updates.
+ * the official obnovdom.sk portal. The yearly-changing per-country caps live in
+ * the editable `i18n/energy-params.ts`.
  */
 
-// --- Tunable indicative constants per country (verify per current round) ------
-interface RenoConfig {
-  rate: number;            // share of eligible cost covered
-  maxBasic: number;        // cap, ≥30 % savings tier
-  maxComprehensive: number;// cap, ≥60 % savings tier
-  defaultCost: number;     // default project-cost input
-  requiresOldHouse: boolean; // SK Obnov dom requires a pre-2013 house
-}
-const RENO_CONFIG: Record<'SK' | 'CZ', RenoConfig> = {
-  // SK — Obnov dom (Plán obnovy), INDICATIVE.
-  SK: { rate: 0.60, maxBasic: 14000, maxComprehensive: 19000, defaultCost: 25000, requiresOldHouse: true },
-  // CZ — Nová zelená úsporám, INDICATIVE (CZK). Broader eligibility, higher caps.
-  CZ: { rate: 0.50, maxBasic: 150000, maxComprehensive: 500000, defaultCost: 600000, requiresOldHouse: false },
-};
+const RENO_CONFIG = RENOVATION_PARAMS;
 
 interface Measure {
   key: string;
