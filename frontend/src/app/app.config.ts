@@ -1,4 +1,5 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 
@@ -17,7 +18,11 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withFetch(),
       withInterceptors([authInterceptor])
-    )
-    // Note: Hydration disabled for development (no SSR)
+    ),
+    // SSR IS enabled (see app.config.server.ts + app.routes.server.ts). Hydrate
+    // the server-rendered DOM instead of throwing it away and re-bootstrapping
+    // (destructive re-render). withEventReplay() captures clicks fired before
+    // hydration completes and replays them once the app is interactive.
+    provideClientHydration(withEventReplay())
   ]
 };

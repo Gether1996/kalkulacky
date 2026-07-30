@@ -93,6 +93,29 @@ class OwnershipIsolationTests(BaseAPITestCase):
         resp = self.client.delete(f'{C}/saved-calculations/{self.calc_id}/')
         self.assertEqual(resp.status_code, 403)
 
+    # --- Positive owner-access (regression guard for the .id-vs-email-PK bug) ---
+    # The custom User model uses `email` as its primary key, so `request.user.id`
+    # was always None and `check_calculation_access` denied owners their OWN
+    # records (403). These tests assert the owner CAN reach them — the case the
+    # attacker-only tests above never exercised.
+    def test_owner_can_read_own_calc(self):
+        self.login_as(self.alice)
+        resp = self.client.get(f'{C}/saved-calculations/{self.calc_id}/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()['data']['name'], 'Alice salary')
+
+    def test_owner_can_modify_own_calc(self):
+        self.login_as(self.alice)
+        resp = self.client.put(f'{C}/saved-calculations/{self.calc_id}/',
+                               {'calculator_type': 'salary', 'name': 'Alice renamed',
+                                'params': {'gross_salary': 1500}}, format='json')
+        self.assertEqual(resp.status_code, 200)
+
+    def test_owner_can_delete_own_calc(self):
+        self.login_as(self.alice)
+        resp = self.client.delete(f'{C}/saved-calculations/{self.calc_id}/')
+        self.assertIn(resp.status_code, (200, 204))
+
     def test_bob_dashboard_excludes_alice_data(self):
         body = self.client.get(f'{C}/my/dashboard/').json()
         self.assertEqual(body['calculations'], [])

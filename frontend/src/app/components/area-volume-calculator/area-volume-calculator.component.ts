@@ -42,7 +42,6 @@ export class AreaVolumeCalculatorComponent implements OnInit {
     this.calculatorService.getAvailableShapes()
       .subscribe({
         next: (data) => {
-          console.log('✅ Shapes loaded:', data);
           this.shapes = data;
           this.shapesLoading = false;
           this.selectShape('rectangle');
@@ -96,7 +95,6 @@ export class AreaVolumeCalculatorComponent implements OnInit {
       return;
     }
 
-    console.log('📐 Calculating area/volume for:', this.selectedShape, this.dimensions);
     this.loading = true;
     this.error = null;
 
@@ -106,7 +104,6 @@ export class AreaVolumeCalculatorComponent implements OnInit {
     })
       .subscribe({
         next: (data) => {
-          console.log('✅ Area/volume calculated:', data);
           this.result = data;
           this.loading = false;
           this.cdr.detectChanges();

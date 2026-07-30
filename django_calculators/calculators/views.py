@@ -68,6 +68,10 @@ import logging
 
 logger = logging.getLogger('calculators')
 
+# Generic message returned to clients on an unexpected 500. Never leak str(e):
+# the real exception is logged server-side, the client sees only this.
+GENERIC_SERVER_ERROR = 'Nastala neočakávaná chyba pri spracovaní požiadavky. Skúste to prosím znova.'
+
 
 def check_calculation_access(request, calculation):
     """
@@ -80,7 +84,10 @@ def check_calculation_access(request, calculation):
       This closes the IDOR where any anonymous saved calculation could be read,
       modified or deleted by enumerating integer primary keys.
     """
-    user_id = getattr(request.user, 'id', None) if getattr(request, 'user', None) and request.user.is_authenticated else None
+    # NOTE: the custom User model uses ``email`` as its primary key, so there is
+    # no ``.id`` attribute — ``request.user.pk`` is the email string. Comparing
+    # against ``.id`` (always None) locked owners out of their own records (403).
+    user_id = request.user.pk if getattr(request, 'user', None) and request.user.is_authenticated else None
 
     if calculation.user_id:
         if calculation.user_id != user_id:
@@ -400,8 +407,9 @@ class SalaryCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': str(e)},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -444,8 +452,9 @@ class MortgageCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': str(e)},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -486,8 +495,9 @@ class VATCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': str(e)},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -529,8 +539,9 @@ class LoanCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': str(e)},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -571,8 +582,9 @@ class FuelCostCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': str(e)},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -612,8 +624,9 @@ class BMICalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': str(e)},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -654,8 +667,9 @@ class PercentageCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': str(e)},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -701,8 +715,9 @@ class PregnancyCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': str(e)},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -753,8 +768,9 @@ class PensionCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': str(e)},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -804,8 +820,9 @@ class VacationCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': str(e)},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -847,8 +864,9 @@ class EnergyCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': str(e)},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -892,8 +910,9 @@ class BMRCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': str(e)},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -935,8 +954,9 @@ class PaymentCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': str(e)},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -991,8 +1011,9 @@ class FreelancerTaxCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': str(e)},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -1034,8 +1055,9 @@ class InflationCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': str(e)},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -1077,8 +1099,9 @@ class ROICalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': str(e)},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -1119,8 +1142,9 @@ class HoursWorkedCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': str(e)},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -1284,8 +1308,9 @@ class UnitConverterView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': f'Chyba pri výpočte: {str(e)}'},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -1386,8 +1411,9 @@ class SickLeaveCalculatorView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
+            logger.error('Unhandled sick-leave error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': f'Chyba pri výpočte nemocenskej: {str(e)}'},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -1456,8 +1482,9 @@ class CarLeasingCalculatorView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
+            logger.error('Unhandled leasing error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': f'Chyba pri výpočte lízingu: {str(e)}'},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -1499,8 +1526,9 @@ class AreaVolumeCalculatorView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': f'Chyba pri výpočte: {str(e)}'},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -1582,8 +1610,9 @@ class SplitBillCalculatorView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': f'Chyba pri výpočte: {str(e)}'},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -1673,8 +1702,9 @@ class ParentalBenefitCalculatorView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
+            logger.error('Unhandled parental-benefit error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': f'Chyba pri výpočte rodičovského príspevku: {str(e)}'},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -1694,6 +1724,15 @@ class SavedCalculationViewSet(APIView):
     DELETE /api/saved-calculations/{id}/
     """
     
+    def get_throttles(self):
+        # Only the create path can schedule reminder emails, so rate-limit POST
+        # tighter than reads (which are cheap and dashboard-driven).
+        if self.request.method == 'POST':
+            from rest_framework.throttling import ScopedRateThrottle
+            self.throttle_scope = 'saved_calculation'
+            return [ScopedRateThrottle()]
+        return super().get_throttles()
+
     def get(self, request):
         """List saved calculations — for the logged-in user, or by session_key."""
         from calculators.models import SavedCalculation
@@ -1730,10 +1769,17 @@ class SavedCalculationViewSet(APIView):
             # Attach the owner when the request is authenticated so it shows in
             # their dashboard; anonymous saves fall back to session_key.
             owner = request.user if (request.user and request.user.is_authenticated) else None
-            calculation = serializer.save(user=owner)
-            
-            # Generate notifications if tracking is enabled
-            if calculation.is_tracking:
+
+            # Anti-spam: reminder emails may ONLY ever be sent to an
+            # authenticated owner's own, already-verified address. Previously a
+            # fully anonymous caller could set an arbitrary `email` + is_tracking
+            # and have the sender deliver reminder emails to any victim address.
+            # Ignore any client-supplied email; use the trusted owner email only.
+            notify_email = owner.email if owner else None
+            calculation = serializer.save(user=owner, email=notify_email)
+
+            # Only schedule notifications when we have a trusted recipient.
+            if calculation.is_tracking and notify_email:
                 self._generate_notifications(calculation)
             
             return Response({
@@ -1742,8 +1788,9 @@ class SavedCalculationViewSet(APIView):
             }, status=status.HTTP_201_CREATED)
         
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': str(e)},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
     
@@ -1829,8 +1876,9 @@ class SavedCalculationDetailView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
         except Exception as e:
+            logger.error('Unhandled calculator error: %s', e, exc_info=True)
             return Response(
-                {'success': False, 'error': str(e)},
+                {'success': False, 'error': GENERIC_SERVER_ERROR},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
     
@@ -2364,6 +2412,7 @@ class AffiliateClickView(APIView):
     """
     permission_classes = [AllowAny]
     authentication_classes = []  # anonymous, public — avoid session/CSRF enforcement
+    throttle_scope = 'affiliate_click'  # backstop against anonymous row-insert flooding
 
     def post(self, request):
         serializer = AffiliateClickSerializer(data=request.data)
@@ -2496,7 +2545,8 @@ class SolarSubsidyCalculatorView(APIView):
             return Response({'success': False, 'error': str(e)},
                             status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({'success': False, 'error': str(e)},
+            logger.error('Unhandled solar error: %s', e, exc_info=True)
+            return Response({'success': False, 'error': GENERIC_SERVER_ERROR},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

@@ -98,7 +98,6 @@ export class PercentageCalculatorComponent implements OnInit {
 
     this.calculatorService.calculatePercentage(data).subscribe({
       next: (response) => {
-        console.log('Percentage calculation response:', response);
         this.result = response;
         this.loading = false;
         this.cdr.detectChanges();

@@ -21,6 +21,7 @@ from .serializers import (
 )
 
 audit_logger = logging.getLogger('audit')
+logger = logging.getLogger('users')
 
 
 def _auth_client_ip(request):
@@ -153,8 +154,9 @@ class LogoutView(APIView):
                 'message': 'Logout successful'
             }, status=status.HTTP_200_OK)
         except Exception as e:
+            logger.error('Logout error: %s', e, exc_info=True)
             return Response({
-                'error': str(e)
+                'error': 'Odhlásenie zlyhalo. Skúste to prosím znova.'
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -286,6 +288,7 @@ class ResetPasswordView(APIView):
     Body: { "uid", "token", "new_password", "new_password_confirm" }
     """
     permission_classes = [permissions.AllowAny]
+    throttle_scope = 'reset_password'  # defense-in-depth against token guessing
 
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
@@ -400,8 +403,9 @@ class GoogleAuthView(APIView):
                 'error': 'Invalid Google token'
             }, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            logger.error('Google auth error: %s', e, exc_info=True)
             return Response({
-                'error': str(e)
+                'error': 'Prihlásenie cez Google zlyhalo. Skúste to prosím znova.'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

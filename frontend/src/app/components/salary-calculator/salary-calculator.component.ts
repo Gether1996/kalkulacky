@@ -1,6 +1,8 @@
-import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit, effect } from '@angular/core';
+import { Component, PLATFORM_ID, inject, ChangeDetectorRef, OnInit, OnDestroy, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, of } from 'rxjs';
+import { debounceTime, switchMap, catchError, takeUntil } from 'rxjs/operators';
 import { CalculatorService } from '../../services/calculator.service';
 import { SalaryCalculationResponse } from '../../models/calculator.models';
 import { SeoService } from '../../services/seo.service';
@@ -19,11 +21,17 @@ import { getCountryParams } from '../../i18n/country-params';
   templateUrl: './salary-calculator.component.html',
   styleUrls: ['./salary-calculator.component.css']
 })
-export class SalaryCalculatorComponent implements OnInit {
+export class SalaryCalculatorComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   private seo = inject(SeoService);
   private locale = inject(LocaleService);
+  // Debounced, cancellable calculation pipeline. Every input/slider change calls
+  // calculate(), which only pushes to this Subject — the actual HTTP call is
+  // debounced (coalesces keystrokes) and switchMapped (a newer request cancels
+  // the in-flight one, so a slow earlier response can't overwrite a newer result).
+  private calcTrigger$ = new Subject<void>();
+  private destroy$ = new Subject<void>();
   grossSalary: number = 1500;
   childrenUnder15: number = 0;
   children15To18: number = 0;
@@ -96,41 +104,63 @@ export class SalaryCalculatorComponent implements OnInit {
       ],
     });
 
+    // Debounced + cancellable calculation stream. Built here (before the
+    // constructor's locale effect flushes on first change detection) so the
+    // initial calculate() has a live subscriber.
+    this.calcTrigger$
+      .pipe(
+        debounceTime(300),
+        switchMap(() =>
+          this.calculatorService
+            .calculateSalary({
+              gross_salary: this.grossSalary,
+              country: this.country,
+              children_under_15: this.childrenUnder15,
+              children_15_to_18: this.children15To18,
+              apply_nontaxable_amount: this.applyNontaxableAmount,
+              has_disability: this.hasDisability,
+            })
+            .pipe(
+              catchError((err) => {
+                console.error('❌ Salary calculation error:', err);
+                this.error = 'Chyba pri výpočte. Skúste znova.';
+                this.loading = false;
+                this.cdr.detectChanges();
+                return of(null);
+              })
+            )
+        ),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((data) => {
+        if (data) {
+          this.result = data;
+          this.error = null;
+        }
+        this.loading = false;
+        this.cdr.detectChanges();
+      });
+
     // Initial calculation is driven by the locale effect (constructor), which
     // runs on init and whenever the country/language changes.
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   calculate(): void {
     if (!this.grossSalary || this.grossSalary <= 0) {
       this.error = 'Zadajte platnú hrubú mzdu';
+      this.result = null;
       return;
     }
 
     this.loading = true;
     this.error = null;
-
-    this.calculatorService.calculateSalary({
-      gross_salary: this.grossSalary,
-      country: this.country,
-      children_under_15: this.childrenUnder15,
-      children_15_to_18: this.children15To18,
-      apply_nontaxable_amount: this.applyNontaxableAmount,
-      has_disability: this.hasDisability
-    })
-      .subscribe({
-        next: (data) => {
-          console.log('✅ Salary calculated:', data);
-          this.result = data;
-          this.loading = false;
-          this.cdr.detectChanges(); // Force change detection
-        },
-        error: (err) => {
-          console.error('❌ Salary calculation error:', err);
-          this.error = 'Chyba pri výpočte. Skúste znova.';
-          this.loading = false;
-          this.cdr.detectChanges(); // Force change detection
-        }
-      });
+    // Actual HTTP call is debounced + switchMapped in the ngOnInit pipeline.
+    this.calcTrigger$.next();
   }
 
   setBenchmark(value: number): void {

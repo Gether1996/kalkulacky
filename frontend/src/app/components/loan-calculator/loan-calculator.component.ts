@@ -67,7 +67,6 @@ export class LoanCalculatorComponent implements OnInit {
       include_schedule: this.includeSchedule
     }).subscribe({
       next: (response) => {
-        console.log('Loan calculation response:', response);
         this.result = response;
         this.loading = false;
         this.cdr.detectChanges();

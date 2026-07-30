@@ -81,7 +81,6 @@ export class CarLeasingCalculatorComponent implements OnInit {
       return;
     }
 
-    console.log('🚗 Calculating car leasing for:', this.carPrice, 'EUR, down:', this.downPayment, 'term:', this.termMonths);
     this.loading = true;
     this.error = null;
 
@@ -96,7 +95,6 @@ export class CarLeasingCalculatorComponent implements OnInit {
     })
       .subscribe({
         next: (data) => {
-          console.log('✅ Car leasing calculated:', data);
           this.result = data;
           this.loading = false;
           this.cdr.detectChanges();

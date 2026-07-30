@@ -78,7 +78,6 @@ export class CalculatorService {
 
   // Salary Calculator
   calculateSalary(data: SalaryCalculationRequest): Observable<SalaryCalculationResponse> {
-    console.log('📤 API Request to:', `${this.apiUrl}/calculators/salary/`, data);
     return this.http.post<{success: boolean, data: SalaryCalculationResponse}>(
       `${this.apiUrl}/calculators/salary/`, data
     ).pipe(map(response => response.data));

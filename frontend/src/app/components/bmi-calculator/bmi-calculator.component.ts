@@ -40,7 +40,6 @@ export class BmiCalculatorComponent implements OnInit {
       height: this.height
     }).subscribe({
       next: (response) => {
-        console.log('BMI calculation response:', response);
         this.result = response;
         this.loading = false;
         this.cdr.detectChanges();

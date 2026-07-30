@@ -55,7 +55,6 @@ export class FuelCostCalculatorComponent implements OnInit {
       fuel_price: this.fuelPrice
     }).subscribe({
       next: (response) => {
-        console.log('Fuel cost calculation response:', response);
         this.result = response;
         this.loading = false;
         this.cdr.detectChanges();

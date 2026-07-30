@@ -103,9 +103,7 @@ export class Login implements OnInit {
     // @ts-ignore
     google.accounts.id.prompt((notification: any) => {
       if (notification.isNotDisplayed()) {
-        console.log('Google One Tap not displayed');
       } else if (notification.isSkippedMoment()) {
-        console.log('Google One Tap skipped');
       }
     });
   }

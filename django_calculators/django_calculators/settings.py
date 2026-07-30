@@ -24,7 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+# Fail-closed: default to production-safe DEBUG=False. Dev (docker-compose,
+# local .env) must set DEBUG=True explicitly. This mirrors SECRET_KEY having no
+# default — a missing/omitted env var must never silently run the site insecure.
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,backend', cast=Csv())
 
@@ -158,6 +161,13 @@ REST_FRAMEWORK = {
         'analytics': config('THROTTLE_ANALYTICS', default='600/hour'),
         'login': config('THROTTLE_LOGIN', default='20/hour'),
         'rating': config('THROTTLE_RATING', default='30/hour'),
+        # Anonymous saved-calculation creates can schedule reminder emails, so
+        # cap them tighter than the global anon rate (email-abuse backstop).
+        'saved_calculation': config('THROTTLE_SAVED_CALC', default='30/hour'),
+        # Public affiliate-click and password-reset endpoints: cheap
+        # defense-in-depth against row-insert / token-guess flooding.
+        'affiliate_click': config('THROTTLE_AFFILIATE', default='60/hour'),
+        'reset_password': config('THROTTLE_RESET_PASSWORD', default='10/hour'),
     },
 }
 
@@ -240,6 +250,10 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# Password-reset link validity. Django's default is 3 days, but the reset email
+# tells users the link "platí 24 hodín" — honour that (shorter window = safer).
+PASSWORD_RESET_TIMEOUT = config('PASSWORD_RESET_TIMEOUT', default=86400, cast=int)  # 24h in seconds
 
 
 # Internationalization

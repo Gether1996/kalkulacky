@@ -54,7 +54,6 @@ export class SplitBillCalculatorComponent implements OnInit {
   }
 
   calculate(): void {
-    console.log('🧾 Calculating split bill, type:', this.splitType);
     this.loading = true;
     this.error = null;
 
@@ -95,7 +94,6 @@ export class SplitBillCalculatorComponent implements OnInit {
     this.calculatorService.calculateSplitBill(requestData)
       .subscribe({
         next: (data) => {
-          console.log('✅ Split bill calculated:', data);
           this.result = data;
           this.loading = false;
           this.cdr.detectChanges();
@@ -116,7 +114,6 @@ export class SplitBillCalculatorComponent implements OnInit {
     this.calculatorService.getTipSuggestions(amount)
       .subscribe({
         next: (data) => {
-          console.log('✅ Tip suggestions loaded:', data);
           this.tipSuggestions = data;
           this.cdr.detectChanges();
         },

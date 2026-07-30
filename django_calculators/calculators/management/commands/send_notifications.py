@@ -108,6 +108,20 @@ class Command(BaseCommand):
                 )
                 sent_count += 1
             else:
+                # Atomic claim: prevent two concurrent senders (e.g. the cron
+                # AND the daemon worker, an overlapping cron, or a multi-worker
+                # deploy) from both seeing sent=False and double-sending. The
+                # conditional UPDATE only succeeds for the first process; a 0
+                # rowcount means someone else already claimed this row.
+                # `--force` intentionally re-sends, so it skips the claim.
+                if not force:
+                    claimed = ScheduledNotification.objects.filter(
+                        pk=notification.pk, sent=False
+                    ).update(sent=True, sent_at=now)
+                    if not claimed:
+                        skipped_count += 1
+                        continue
+
                 # Prepare context for email template
                 context = self._prepare_context(notification, calculation)
 
@@ -120,7 +134,9 @@ class Command(BaseCommand):
                 )
 
                 if success:
-                    notification.mark_sent()
+                    if force:
+                        notification.mark_sent()
+                    # (non-force already marked sent by the atomic claim above)
                     sent_count += 1
                     self.stdout.write(
                         self.style.SUCCESS(
@@ -128,6 +144,11 @@ class Command(BaseCommand):
                         )
                     )
                 else:
+                    # Release the claim so a later run can retry this notification.
+                    if not force:
+                        ScheduledNotification.objects.filter(pk=notification.pk).update(
+                            sent=False, sent_at=None
+                        )
                     notification.mark_failed("Email sending failed")
                     failed_count += 1
                     self.stdout.write(
