@@ -3,7 +3,6 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
 import { EnergyCalculationResponse } from '../../models/calculator.models';
-import { SeoService } from '../../services/seo.service';
 import { LeadFormComponent } from '../shared/lead-form/lead-form.component';
 import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.component';
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
@@ -21,7 +20,6 @@ export class EnergyCalculatorComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
-  private seo = inject(SeoService);
 
   // Input values
   electricityConsumption: number = 300;
@@ -49,23 +47,6 @@ export class EnergyCalculatorComponent implements OnInit {
   get saveName(): string { return 'Náklady na energie'; }
 
   ngOnInit(): void {
-    this.seo.apply({
-      title: 'Kalkulačka nákladov na energie 2026 (elektrina a plyn)',
-      description: 'Vypočítajte mesačné a ročné náklady na elektrinu a plyn, porovnajte spotrebu s priemerom a zistite, či sa vám oplatí fotovoltika.',
-      path: '/calculator/energy',
-      keywords: 'kalkulačka energie, náklady na elektrinu, cena plynu, fotovoltika návratnosť, dotácia zelená domácnostiam',
-      isCalculator: true,
-      faq: [
-        {
-          question: 'Oplatí sa mi fotovoltika?',
-          answer: 'Návratnosť fotovoltiky závisí od spotreby, ceny elektriny a výšky dotácie (Zelená domácnostiam). Pri vyššej spotrebe a samospotrebe je návratnosť rýchlejšia. Pre presný odhad získajte nezáväznú ponuku od montážnej firmy.',
-        },
-        {
-          question: 'Aká je priemerná spotreba elektriny domácnosti?',
-          answer: 'Priemerná domácnosť spotrebuje rádovo 2 000–4 000 kWh ročne podľa počtu osôb a vykurovania. Kalkulačka porovná vašu spotrebu s priemerom.',
-        },
-      ],
-    });
     if (isPlatformBrowser(this.platformId)) {
       this.calculate();
     }

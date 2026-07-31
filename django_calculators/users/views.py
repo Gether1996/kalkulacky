@@ -41,7 +41,10 @@ def log_auth_event(request, event, email='', user=None):
             event=event, email=resolved_email, user=user,
             ip_address=ip, user_agent=request.META.get('HTTP_USER_AGENT', '')[:300],
         )
-        audit_logger.info('auth.%s email=%s ip=%s', event, resolved_email or '-', ip or '-')
+        # Sanitize attacker-controlled email before it reaches the log line —
+        # strip CR/LF so a crafted value can't forge fake audit-log entries.
+        safe_email = (resolved_email or '-').replace('\n', ' ').replace('\r', ' ')[:200]
+        audit_logger.info('auth.%s email=%s ip=%s', event, safe_email, ip or '-')
     except Exception as e:  # never let logging break auth
         audit_logger.error('auth-event log failed (%s): %s', event, e)
 
@@ -67,7 +70,8 @@ class RegisterView(generics.CreateAPIView):
     """
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
-    
+    throttle_scope = 'register'  # cap account-creation flooding (ScopedRateThrottle)
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -153,8 +157,9 @@ class LogoutView(APIView):
                 'message': 'Logout successful'
             }, status=status.HTTP_200_OK)
         except Exception as e:
+            audit_logger.exception('logout error: %s', e)
             return Response({
-                'error': str(e)
+                'error': 'Odhlásenie zlyhalo. Skúste to prosím znova.'
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -194,7 +199,21 @@ class DeleteAccountView(APIView):
 
     def delete(self, request):
         user = request.user
+        user_email = user.email
         log_auth_event(request, 'account_deleted', user=user)
+
+        # GDPR erasure: PII in these tables is keyed by an email/IP string, not a
+        # FK, so it does NOT cascade with user.delete(). Purge/anonymize it here.
+        from calculators.models import Lead, DataReport, AuthEvent, SavedCalculation
+        Lead.objects.filter(email__iexact=user_email).delete()
+        DataReport.objects.filter(reporter_email__iexact=user_email).delete()
+        # Anonymous saves (no FK) that carry the user's email don't cascade — purge them too.
+        SavedCalculation.objects.filter(user__isnull=True, email__iexact=user_email).delete()
+        # Keep the audit trail rows but strip the personal data from them.
+        AuthEvent.objects.filter(email__iexact=user_email).update(
+            email='', ip_address=None, user_agent='',
+        )
+
         user.delete()
         return Response(
             {'message': 'Váš účet a súvisiace údaje boli natrvalo odstránené.'},
@@ -400,8 +419,10 @@ class GoogleAuthView(APIView):
                 'error': 'Invalid Google token'
             }, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            # Log the real error server-side; don't leak internals to the client.
+            audit_logger.exception('google-auth error: %s', e)
             return Response({
-                'error': str(e)
+                'error': 'Prihlásenie cez Google zlyhalo. Skúste to prosím neskôr.'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

@@ -873,6 +873,15 @@ class AreaVolumeCalculatorSerializer(serializers.Serializer):
         return value
 
 
+class SplitBillItemSerializer(serializers.Serializer):
+    """One line item for by_items / custom split. Requires person + amount so
+    malformed input yields a validated 400 instead of a KeyError/500 in the service."""
+    person = serializers.CharField(max_length=100)
+    amount = serializers.DecimalField(
+        max_digits=12, decimal_places=2, min_value=0, max_value=100000000
+    )
+
+
 class SplitBillCalculatorSerializer(serializers.Serializer):
     """Serializer for Split Bill Calculator API"""
     split_type = serializers.ChoiceField(
@@ -902,13 +911,15 @@ class SplitBillCalculatorSerializer(serializers.Serializer):
         help_text="Tip v percentách"
     )
     items = serializers.ListField(
-        child=serializers.DictField(),
+        child=SplitBillItemSerializer(),
         required=False,
+        max_length=100,
         help_text="Položky pre by_items split"
     )
     custom_amounts = serializers.ListField(
-        child=serializers.DictField(),
+        child=SplitBillItemSerializer(),
         required=False,
+        max_length=100,
         help_text="Vlastné sumy pre custom split"
     )
     
@@ -1305,6 +1316,28 @@ class SavingsGoalSerializer(serializers.ModelSerializer):
     progress = serializers.SerializerMethodField()
     contributions = serializers.SerializerMethodField()
 
+    # Explicit bounds — the ModelSerializer fields have none, so without these a
+    # user could store negative/absurd amounts or a year-9999 target_date, which
+    # then drives an ~95k-iteration projection loop on every dashboard/list GET.
+    target_amount = serializers.DecimalField(
+        max_digits=14, decimal_places=2, min_value=0, max_value=100000000)
+    initial_amount = serializers.DecimalField(
+        max_digits=14, decimal_places=2, min_value=0, max_value=100000000,
+        required=False, default=0)
+    monthly_contribution = serializers.DecimalField(
+        max_digits=14, decimal_places=2, min_value=0, max_value=100000000,
+        required=False, default=0)
+    annual_rate = serializers.DecimalField(
+        max_digits=5, decimal_places=2, min_value=0, max_value=100,
+        required=False, default=0)
+
+    def validate_target_date(self, value):
+        if value is not None:
+            from datetime import date
+            if value.year > date.today().year + 100:
+                raise serializers.ValidationError('Cieľový dátum je príliš vzdialený.')
+        return value
+
     class Meta:
         from .models import SavingsGoal
         model = SavingsGoal
@@ -1335,6 +1368,8 @@ class SavingsGoalSerializer(serializers.ModelSerializer):
                 (obj.target_date.year - today.year) * 12
                 + (obj.target_date.month - today.month),
             )
+            # Hard cap the projection horizon (defends rows saved before bounds).
+            months_remaining = min(months_remaining, 1200)
         return status_for_goal(
             obj.target_amount, obj.current_balance,
             obj.monthly_contribution, obj.annual_rate, months_remaining,

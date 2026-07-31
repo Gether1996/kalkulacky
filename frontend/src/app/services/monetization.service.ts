@@ -10,6 +10,7 @@ import {
 } from '../models/monetization.models';
 import { getCalculatorMonetization } from '../config/monetization.config';
 import { environment } from '../../environments/environment';
+import { ssrApiBase } from './ssr-api-base';
 
 interface LeadResponse {
   success: boolean;
@@ -27,7 +28,7 @@ export class MonetizationService {
   constructor() {
     this.apiUrl = isPlatformBrowser(this.platformId)
       ? environment.apiUrl
-      : 'http://backend:8000/api';
+      : ssrApiBase();
   }
 
   /** Returns the monetization config (lead/affiliate/ads) for a calculator. */

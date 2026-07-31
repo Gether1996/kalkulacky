@@ -2,7 +2,6 @@ import { Component, PLATFORM_ID, inject, OnInit, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { SeoService } from '../../services/seo.service';
 import { LeadFormComponent } from '../shared/lead-form/lead-form.component';
 import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.component';
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
@@ -61,7 +60,6 @@ interface RenovationResult {
 })
 export class RenovationGrantCalculatorComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
-  private seo = inject(SeoService);
   private locale = inject(LocaleService);
 
   // Eligibility
@@ -105,27 +103,6 @@ export class RenovationGrantCalculatorComponent implements OnInit {
   result: RenovationResult | null = null;
 
   ngOnInit(): void {
-    this.seo.apply({
-      title: 'Obnov dom 2026 – kalkulačka dotácie na obnovu rodinného domu',
-      description: 'Zistite, či máte nárok na dotáciu Obnov dom a koľko môžete získať. Sprievodca oprávnenosťou a odhad dotácie podľa opatrení a nákladov. Získajte nezáväznú ponuku od energetického audítora alebo firmy.',
-      path: '/calculator/renovation',
-      keywords: 'Obnov dom dotácia, dotácia na zateplenie 2026, dotácia na rekonštrukciu, obnova rodinného domu dotácia, energetický audítor',
-      isCalculator: true,
-      faq: [
-        {
-          question: 'Kto má nárok na dotáciu Obnov dom?',
-          answer: 'Dotácia je určená pre vlastníkov starších rodinných domov (postavených spravidla pred rokom 2013), ktorí obnovou dosiahnu úsporu primárnej energie aspoň 30 %. Presné podmienky aktuálneho kola nájdete na obnovdom.sk.',
-        },
-        {
-          question: 'Koľko peňazí môžem z Obnov dom získať?',
-          answer: 'Dotácia pokrýva orientačne do 60 % oprávnených nákladov. Pri úspore energie ≥30 % je strop nižší, pri komplexnej obnove s úsporou ≥60 % je strop vyšší. Kalkulačka uvádza orientačný odhad – výška sa mení podľa aktuálnej výzvy.',
-        },
-        {
-          question: 'Aké opatrenia sa do dotácie počítajú?',
-          answer: 'Najčastejšie zateplenie obvodových stien a strechy, výmena okien a dverí, výmena zdroja tepla (napr. tepelné čerpadlo), fotovoltika, rekuperácia a vonkajšie tienenie. Kombinácia viacerých opatrení zvyšuje dosiahnutú úsporu a tým aj možnú dotáciu.',
-        },
-      ],
-    });
     // Initial calculation driven by the locale effect (constructor).
   }
 

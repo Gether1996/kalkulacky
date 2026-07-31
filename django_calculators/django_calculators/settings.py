@@ -24,7 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+# Fail safe: default OFF so a deploy that forgets to set DEBUG doesn't expose
+# tracebacks. Dev enables it explicitly via .env / docker-compose (DEBUG=True).
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,backend', cast=Csv())
 
@@ -157,6 +159,7 @@ REST_FRAMEWORK = {
         'forgot_password': config('THROTTLE_FORGOT_PASSWORD', default='5/hour'),
         'analytics': config('THROTTLE_ANALYTICS', default='600/hour'),
         'login': config('THROTTLE_LOGIN', default='20/hour'),
+        'register': config('THROTTLE_REGISTER', default='10/hour'),
         'rating': config('THROTTLE_RATING', default='30/hour'),
     },
 }
@@ -303,8 +306,9 @@ EMAIL_BACKEND = config(
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@kalkulacky.sk')
 SERVER_EMAIL = config('SERVER_EMAIL', default='server@kalkulacky.sk')
 
-# Where user "wrong data" reports are emailed (env-overridable).
-DATA_REPORT_RECIPIENT = config('DATA_REPORT_RECIPIENT', default='pat.kredatus@gmail.com')
+# Where user "wrong data" reports are emailed. Defaults to DEFAULT_FROM_EMAIL so
+# no personal address is baked into source; override with DATA_REPORT_RECIPIENT.
+DATA_REPORT_RECIPIENT = config('DATA_REPORT_RECIPIENT', default=DEFAULT_FROM_EMAIL)
 
 # Public site URL used to build links in emails (e.g. password reset).
 FRONTEND_URL = config('FRONTEND_URL', default='https://kalkulacky.sk')

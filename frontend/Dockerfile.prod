@@ -1,0 +1,22 @@
+# Production image for the Angular SSR (Node/Express) server.
+# (The plain `Dockerfile` is the dev image — ng serve on :4200.)
+
+# --- Stage 1: build the SSR bundle -----------------------------------------
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# --- Stage 2: lean runtime — serve the built SSR server --------------------
+FROM node:20-alpine AS runtime
+WORKDIR /app
+ENV NODE_ENV=production \
+    PORT=4000
+# The Angular SSR build output is self-contained (server.mjs bundles its deps).
+COPY --from=build /app/dist/frontend ./dist/frontend
+EXPOSE 4000
+# SSR fetches the API server-side — set SSR_API_URL in the environment so it can
+# reach the backend (e.g. http://backend:8000/api). Falls back to that alias.
+CMD ["node", "dist/frontend/server/server.mjs"]

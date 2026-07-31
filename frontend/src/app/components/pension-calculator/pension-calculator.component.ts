@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CalculatorService } from '../../services/calculator.service';
 import { PensionCalculationRequest, PensionCalculationResponse } from '../../models/calculator.models';
-import { SeoService } from '../../services/seo.service';
 import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.component';
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
 import { SaveCalculationComponent } from '../shared/save-calculation/save-calculation.component';
@@ -23,7 +22,6 @@ export class PensionCalculatorComponent implements OnInit {
   private calculatorService = inject(CalculatorService);
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
-  private seo = inject(SeoService);
 
   // Input fields
   currentAge: number = 35;
@@ -81,13 +79,6 @@ export class PensionCalculatorComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.seo.apply({
-      title: 'Kalkulačka dôchodku 2026 – odhad penzie a II. pilier',
-      description: 'Vypočítajte odhad starobného dôchodku, dôchodkové odvody a náhradový pomer podľa slovenskej legislatívy vrátane II. piliera.',
-      path: '/calculator/pension',
-      keywords: 'kalkulačka dôchodku, výpočet dôchodku, II. pilier, starobný dôchodok, náhradový pomer',
-      isCalculator: true,
-    });
     // Initial calculation driven by the locale effect (constructor).
   }
 

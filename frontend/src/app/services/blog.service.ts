@@ -10,6 +10,7 @@ import {
   BlogListResponse 
 } from '../models/blog.models';
 import { environment } from '../../environments/environment';
+import { ssrApiBase } from './ssr-api-base';
 
 @Injectable({
   providedIn: 'root'
@@ -21,7 +22,7 @@ export class BlogService {
   constructor(private http: HttpClient) {
     this.apiUrl = isPlatformBrowser(this.platformId)
       ? `${environment.apiUrl}/calculators`
-      : 'http://backend:8000/api/calculators';
+      : `${ssrApiBase()}/calculators`;
   }
 
   // Get all blog categories

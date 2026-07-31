@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { ssrApiBase } from './ssr-api-base';
 
 export interface CalculatorRating {
   id: number;
@@ -41,7 +42,7 @@ export class RatingService {
   constructor() {
     this.apiUrl = isPlatformBrowser(this.platformId)
       ? environment.apiUrl
-      : 'http://backend:8000/api';
+      : ssrApiBase();
   }
 
   getRatings(calculatorId: string): Observable<RatingAggregate> {

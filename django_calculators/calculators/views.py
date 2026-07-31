@@ -68,6 +68,15 @@ import logging
 
 logger = logging.getLogger('calculators')
 
+# Generic 500 response — logs the real exception server-side (with traceback)
+# and returns a safe message so internal error detail never leaks to clients.
+def server_error(exc, message='Nastala neočakávaná chyba pri spracovaní. Skúste to prosím neskôr.'):
+    logger.exception('Unhandled server error: %s', exc)
+    return Response(
+        {'success': False, 'error': message},
+        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    )
+
 
 def check_calculation_access(request, calculation):
     """
@@ -400,10 +409,7 @@ class SalaryCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
-            return Response(
-                {'success': False, 'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class MortgageCalculatorView(APIView):
@@ -444,10 +450,7 @@ class MortgageCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            return Response(
-                {'success': False, 'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class VATCalculatorView(APIView):
@@ -486,10 +489,7 @@ class VATCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            return Response(
-                {'success': False, 'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class LoanCalculatorView(APIView):
@@ -529,10 +529,7 @@ class LoanCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            return Response(
-                {'success': False, 'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class FuelCostCalculatorView(APIView):
@@ -571,10 +568,7 @@ class FuelCostCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            return Response(
-                {'success': False, 'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class BMICalculatorView(APIView):
@@ -612,10 +606,7 @@ class BMICalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            return Response(
-                {'success': False, 'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class PercentageCalculatorView(APIView):
@@ -654,10 +645,7 @@ class PercentageCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            return Response(
-                {'success': False, 'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class PregnancyCalculatorView(APIView):
@@ -701,10 +689,7 @@ class PregnancyCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            return Response(
-                {'success': False, 'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class PensionCalculatorView(APIView):
@@ -753,10 +738,7 @@ class PensionCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            return Response(
-                {'success': False, 'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class VacationCalculatorView(APIView):
@@ -804,10 +786,7 @@ class VacationCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            return Response(
-                {'success': False, 'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class EnergyCalculatorView(APIView):
@@ -847,10 +826,7 @@ class EnergyCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            return Response(
-                {'success': False, 'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class BMRCalculatorView(APIView):
@@ -892,10 +868,7 @@ class BMRCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            return Response(
-                {'success': False, 'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class PaymentCalculatorView(APIView):
@@ -935,10 +908,7 @@ class PaymentCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            return Response(
-                {'success': False, 'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class FreelancerTaxCalculatorView(APIView):
@@ -991,10 +961,7 @@ class FreelancerTaxCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            return Response(
-                {'success': False, 'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class InflationCalculatorView(APIView):
@@ -1034,10 +1001,7 @@ class InflationCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            return Response(
-                {'success': False, 'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class ROICalculatorView(APIView):
@@ -1077,10 +1041,7 @@ class ROICalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            return Response(
-                {'success': False, 'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class HoursWorkedCalculatorView(APIView):
@@ -1119,10 +1080,7 @@ class HoursWorkedCalculatorView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            return Response(
-                {'success': False, 'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class HealthCheckView(APIView):
@@ -1284,10 +1242,7 @@ class UnitConverterView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
-            return Response(
-                {'success': False, 'error': f'Chyba pri výpočte: {str(e)}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class UnitConverterCategoriesView(APIView):
@@ -1386,10 +1341,7 @@ class SickLeaveCalculatorView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
-            return Response(
-                {'success': False, 'error': f'Chyba pri výpočte nemocenskej: {str(e)}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class CarLeasingCalculatorView(APIView):
@@ -1456,10 +1408,7 @@ class CarLeasingCalculatorView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
-            return Response(
-                {'success': False, 'error': f'Chyba pri výpočte lízingu: {str(e)}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class AreaVolumeCalculatorView(APIView):
@@ -1499,10 +1448,7 @@ class AreaVolumeCalculatorView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
-            return Response(
-                {'success': False, 'error': f'Chyba pri výpočte: {str(e)}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class AreaVolumeShapesView(APIView):
@@ -1545,7 +1491,11 @@ class SplitBillCalculatorView(APIView):
             from decimal import Decimal
             
             split_type = serializer.validated_data['split_type']
-            total_amount = Decimal(str(serializer.validated_data['total_amount']))
+            # total_amount is only supplied for 'equal'/'custom'; 'by_items'
+            # derives it from the items, so read it defensively (unconditional
+            # [...] here raised KeyError → 500 on every by_items request).
+            total_amount_raw = serializer.validated_data.get('total_amount')
+            total_amount = Decimal(str(total_amount_raw)) if total_amount_raw is not None else Decimal('0')
             tip_percent = Decimal(str(serializer.validated_data.get('tip_percent', 0)))
             
             if split_type == 'equal':
@@ -1582,10 +1532,7 @@ class SplitBillCalculatorView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
-            return Response(
-                {'success': False, 'error': f'Chyba pri výpočte: {str(e)}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 class TipSuggestionsView(APIView):
@@ -1673,10 +1620,7 @@ class ParentalBenefitCalculatorView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
-            return Response(
-                {'success': False, 'error': f'Chyba pri výpočte rodičovského príspevku: {str(e)}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
 
 
 # ============================================================================
@@ -1731,9 +1675,14 @@ class SavedCalculationViewSet(APIView):
             # their dashboard; anonymous saves fall back to session_key.
             owner = request.user if (request.user and request.user.is_authenticated) else None
             calculation = serializer.save(user=owner)
-            
-            # Generate notifications if tracking is enabled
-            if calculation.is_tracking:
+
+            # Email reminders may ONLY go to a verified account owner — never to an
+            # arbitrary address supplied by an (possibly anonymous) caller. This
+            # closes an unauthenticated "send mail to any address" abuse vector.
+            if calculation.is_tracking and owner is not None:
+                if calculation.email != owner.email:
+                    calculation.email = owner.email
+                    calculation.save(update_fields=['email'])
                 self._generate_notifications(calculation)
             
             return Response({
@@ -1742,10 +1691,7 @@ class SavedCalculationViewSet(APIView):
             }, status=status.HTTP_201_CREATED)
         
         except Exception as e:
-            return Response(
-                {'success': False, 'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
     
     def _generate_notifications(self, calculation):
         """Generate scheduled notifications based on calculator type"""
@@ -1829,10 +1775,7 @@ class SavedCalculationDetailView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
         except Exception as e:
-            return Response(
-                {'success': False, 'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return server_error(e)
     
     def delete(self, request, pk):
         """Delete a saved calculation"""
@@ -2496,8 +2439,7 @@ class SolarSubsidyCalculatorView(APIView):
             return Response({'success': False, 'error': str(e)},
                             status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({'success': False, 'error': str(e)},
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return server_error(e)
 
 
 # ============================================================================

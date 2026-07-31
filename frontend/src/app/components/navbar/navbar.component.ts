@@ -1,4 +1,5 @@
-import { Component, OnInit, ElementRef, HostListener, inject } from '@angular/core';
+import { Component, OnInit, ElementRef, HostListener, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
@@ -44,6 +45,7 @@ export class NavbarComponent implements OnInit {
   private recent = inject(RecentCalculatorsService);
   private locale = inject(LocaleService);
   private el = inject(ElementRef);
+  private destroyRef = inject(DestroyRef);
 
   // Quick search
   searchTerm = '';
@@ -162,9 +164,11 @@ export class NavbarComponent implements OnInit {
 
   ngOnInit() {
     // Subscribe to current user
-    this.authService.currentUser$.subscribe(user => {
-      this.currentUser = user;
-    });
+    this.authService.currentUser$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(user => {
+        this.currentUser = user;
+      });
   }
 
   toggleMenu() {

@@ -1,0 +1,116 @@
+# Production stack — gunicorn API + Angular SSR + PostgreSQL + Redis.
+#
+# This is SEPARATE from docker-compose.yml (which stays dev: runserver + ng serve).
+# Bring it up with:
+#   docker compose -f docker-compose.prod.yml up --build -d
+#
+# Backend config comes from django_calculators/.env (see deploy/PRODUCTION.md for
+# the required keys: SECRET_KEY, DEBUG=False, ALLOWED_HOSTS, DB_*, REDIS_URL, EMAIL_*).
+# Put a reverse proxy (nginx from deploy/nginx.conf.example) + TLS in front of this.
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: calculators_db
+    restart: unless-stopped
+    # DB creds come from a root-level .env (compose interpolation) so the SAME
+    # values reach both this service and the backend. DB_PASSWORD is required —
+    # compose refuses to start if it's unset (no insecure default).
+    environment:
+      POSTGRES_DB: ${DB_NAME:-kalkulacky}
+      POSTGRES_USER: ${DB_USER:-kalkulacky}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set in the root .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-kalkulacky}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - calculators-prod
+
+  redis:
+    image: redis:7-alpine
+    container_name: calculators_redis
+    restart: unless-stopped
+    networks:
+      - calculators-prod
+
+  backend:
+    build:
+      context: ./django_calculators
+      dockerfile: Dockerfile.prod
+    image: kalkulacky-backend-prod
+    container_name: calculators_backend_prod
+    restart: unless-stopped
+    env_file:
+      - ./django_calculators/.env
+    # DB/Redis wiring via compose interpolation (same source as the db service),
+    # so credentials always match and the backend actually uses Postgres+Redis.
+    # These override any values in the env_file.
+    environment:
+      DB_ENGINE: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-kalkulacky}
+      DB_USER: ${DB_USER:-kalkulacky}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set in the root .env}
+      REDIS_URL: redis://redis:6379/1
+    # Bind to loopback only — public traffic must go through nginx (TLS + rate
+    # limiting), not hit gunicorn directly.
+    ports:
+      - '127.0.0.1:8000:8000'
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - calculators-prod
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    image: kalkulacky-frontend-prod
+    container_name: calculators_frontend_prod
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      # SSR renders on the server and fetches the API server-side.
+      SSR_API_URL: http://backend:8000/api
+      # Angular 21 SSR blocks any request whose Host isn't allow-listed here
+      # (empty = every host rejected → permanent client-side-render fallback,
+      # killing SEO). Must list the public domain(s) served through nginx.
+      NG_ALLOWED_HOSTS: ${NG_ALLOWED_HOSTS:-kalkulacky.sk,www.kalkulacky.sk}
+    # Loopback only — nginx proxies the public traffic to the SSR server.
+    ports:
+      - '127.0.0.1:4000:4000'
+    depends_on:
+      - backend
+    networks:
+      - calculators-prod
+
+  # Reminder/notification emails. Run exactly ONE sender (this worker OR an
+  # external cron calling `send_notifications`) — running both double-sends.
+  notifications:
+    image: kalkulacky-backend-prod
+    container_name: calculators_notifications
+    restart: unless-stopped
+    command: python manage.py run_notifications_worker --interval 900
+    env_file:
+      - ./django_calculators/.env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - calculators-prod
+
+volumes:
+  pgdata:
+
+networks:
+  calculators-prod:
+    driver: bridge

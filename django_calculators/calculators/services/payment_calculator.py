@@ -126,9 +126,10 @@ class PaymentCalculator(BaseCalculator):
             'breakdown': {
                 'first_payment': {
                     'payment': self.round_decimal(payment_amount),
-                    'principal': self.round_decimal(loan_amount * period_interest_rate) if period_interest_rate > 0 
-                                else self.round_decimal(payment_amount),
-                    'interest': self.round_decimal(loan_amount * period_interest_rate) if period_interest_rate > 0 
+                    # Month 1: interest = balance × rate; principal = payment − interest.
+                    'principal': self.round_decimal(payment_amount - (loan_amount * period_interest_rate))
+                                if period_interest_rate > 0 else self.round_decimal(payment_amount),
+                    'interest': self.round_decimal(loan_amount * period_interest_rate) if period_interest_rate > 0
                                else Decimal('0')
                 }
             }

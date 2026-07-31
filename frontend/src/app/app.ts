@@ -11,6 +11,8 @@ import { LocaleService } from './i18n/locale.service';
 import { AnalyticsService } from './services/analytics.service';
 import { RecentCalculatorsService } from './services/recent-calculators.service';
 import { calcIdFromPath } from './config/calculator-registry';
+import { SeoService } from './services/seo.service';
+import { buildCalcSeo, buildHomeSeo, defaultSeoFor } from './config/seo-routes';
 
 @Component({
   selector: 'app-root',
@@ -41,6 +43,7 @@ export class App {
   private locale = inject(LocaleService);
   private analytics = inject(AnalyticsService);
   private recent = inject(RecentCalculatorsService);
+  private seo = inject(SeoService);
 
   // Hide site chrome on embeddable widget routes.
   showChrome = signal(true);
@@ -81,6 +84,22 @@ export class App {
       // Track recently-used calculators (client-side only).
       const calcId = calcIdFromPath(path);
       if (calcId) this.recent.record(calcId);
+
+      // Localized SEO, applied centrally so every language is covered. Runs on
+      // NavigationEnd (after a route component's own ngOnInit), so it provides
+      // the correct per-locale title/description/canonical for all calculators
+      // and the home page — built from the i18n `calc.<id>.name/.desc` keys.
+      if (calcId) {
+        const seo = buildCalcSeo(calcId, this.locale.locale(), (k) => this.locale.t(k));
+        if (seo) this.seo.apply(seo);
+      } else if (path === '/') {
+        this.seo.apply(buildHomeSeo(this.locale.locale()));
+      } else {
+        // Account/auth routes with no SEO owner get a generic default so stale
+        // tags from the previous page don't linger in <head>.
+        const def = defaultSeoFor(path, this.locale.locale());
+        if (def) this.seo.apply(def);
+      }
     };
     update(this.router.url);
     this.router.events

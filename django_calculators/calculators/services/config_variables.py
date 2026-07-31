@@ -35,8 +35,10 @@ HEALTH_INSURANCE_RATE_EMPLOYER = Decimal('0.10')   # 10.0% - Zdravotné poisteni
 # Super-gross salary = Gross × 1.362
 
 # --- SOCIAL INSURANCE LIMITS ---
-SOCIAL_INSURANCE_MAX_BASE_MONTHLY = Decimal('8862')  # €8,862/month - Maximum assessment base for social insurance
-SOCIAL_INSURANCE_MAX_BASE_YEARLY = SOCIAL_INSURANCE_MAX_BASE_MONTHLY * 12  # €106,344/year
+# 2026: max monthly assessment base = 11 × average monthly wage of 2024 (€1,524)
+# = €16,764 (raised from the former 7× rule). Source: Sociálna poisťovňa 2026.
+SOCIAL_INSURANCE_MAX_BASE_MONTHLY = Decimal('16764')  # €16,764/month (11 × €1,524)
+SOCIAL_INSURANCE_MAX_BASE_YEARLY = SOCIAL_INSURANCE_MAX_BASE_MONTHLY * 12  # €201,168/year
 
 # --- INCOME TAX - PROGRESSIVE 4-BRACKET SYSTEM (2026) ---
 TAX_RATE_BRACKET_1 = Decimal('0.19')  # 19% - First bracket
@@ -57,6 +59,11 @@ TAX_THRESHOLD_3_MONTHLY = TAX_THRESHOLD_3_YEARLY / 12  # €6,250.86/month
 
 # --- NON-TAXABLE AMOUNT (Nezdaniteľná časť základu dane - NČZD) ---
 NON_TAXABLE_AMOUNT_YEARLY = Decimal('5966.76')    # €5,966.76/year (2026)
+# NČZD taper (2026): full NČZD if annual (partial) tax base ≤ €26,083.13 (91.8× ŽM);
+# above that NČZD = €14,661.11 − ⅓ × base, reaching €0 at base ≥ €43,983.32.
+# Source: Financná správa / životné minimum €284.13 from 1.7.2025.
+NCZD_TAPER_THRESHOLD_ANNUAL = Decimal('26083.13')
+NCZD_TAPER_SUBTRAHEND_ANNUAL = Decimal('14661.11')
 NON_TAXABLE_AMOUNT_MONTHLY = Decimal('497.23')    # €497.23/month (2026)
 
 # Non-taxable amount for persons with severe disability (Ťažké zdravotné postihnutie - TP)
@@ -68,12 +75,21 @@ NON_TAXABLE_AMOUNT_DISABILITY_MONTHLY = Decimal('4985.44')   # €4,985.44/month
 CHILD_TAX_BONUS_UNDER_15 = Decimal('100.00')  # €100/month for children under 15 years
 CHILD_TAX_BONUS_15_TO_18 = Decimal('50.00')   # €50/month for children 15-18 years old
 
+# 2026: the child bonus is capped at a % of the (partial) tax base that grows
+# with the number of children; 6+ children → 64%. The bonus is REFUNDABLE — it
+# may exceed the income tax (the excess is paid out). Source: Financná správa 2026.
+CHILD_BONUS_MAX_BASE_PCT = {
+    1: Decimal('0.29'), 2: Decimal('0.36'), 3: Decimal('0.43'),
+    4: Decimal('0.50'), 5: Decimal('0.57'),
+}
+CHILD_BONUS_MAX_BASE_PCT_6PLUS = Decimal('0.64')
+
 # --- MINIMUM WAGE (Minimálna mzda) - 2026 ---
 MINIMUM_WAGE_MONTHLY = Decimal('915')   # €915/month (2026, verified)
 MINIMUM_WAGE_HOURLY = Decimal('5.259')  # €5.259/hour (2026, verified)
 
 # --- AVERAGE WAGE (Priemerná mzda) - 2026 estimate ---
-AVERAGE_WAGE_MONTHLY = Decimal('1400')  # €1,400/month (estimated for 2026)
+AVERAGE_WAGE_MONTHLY = Decimal('1524')  # €1,524/month — avg monthly wage 2024 (basis for 2026 caps)
 
 
 # ===========================
@@ -172,9 +188,11 @@ SICK_LEAVE_EMPLOYER_RATE = Decimal('0.25')  # 25% of DVZ (days 1-3)
 SICK_LEAVE_INSURANCE_RATE_ILLNESS = Decimal('0.55')  # 55% of DVZ (days 4-10 employer, 11+ insurer)
 SICK_LEAVE_INSURANCE_RATE_CARE = Decimal('0.55')  # 55% for family member care
 
-# Assessment base limits for sick leave (2026)
-SICK_LEAVE_MAX_ASSESSMENT_BASE_YEARLY = Decimal('88200')  # €88,200/year
-SICK_LEAVE_MAX_ASSESSMENT_BASE_DAILY = SICK_LEAVE_MAX_ASSESSMENT_BASE_YEARLY / 365  # €241.64/day
+# Max daily assessment base (DVZ) for sickness benefits, 2026:
+# = 2 × všeobecný vymeriavací základ / 365 = 2 × (12 × €1,524) / 365 = €100.2083/day.
+# Source: Sociálna poisťovňa — maximálne nemocenské dávky 2026.
+SICK_LEAVE_MAX_ASSESSMENT_BASE_DAILY = (Decimal('2') * Decimal('12') * AVERAGE_WAGE_MONTHLY) / Decimal('365')  # €100.21/day
+SICK_LEAVE_MAX_ASSESSMENT_BASE_YEARLY = SICK_LEAVE_MAX_ASSESSMENT_BASE_DAILY * 365  # kept for back-compat
 SICK_LEAVE_MIN_WAGE_MONTHLY = Decimal('915')  # €915/month (2026 minimum wage)
 SICK_LEAVE_MIN_WAGE_DAILY = SICK_LEAVE_MIN_WAGE_MONTHLY * 12 / 365  # Daily minimum
 

@@ -142,18 +142,24 @@ class SalaryCalculator(BaseCalculator):
             bracket_2 = (taxable_base - self.TAX_THRESHOLD_1_MONTHLY) * self.TAX_RATE_2
             income_tax_before_child_bonus = bracket_1 + bracket_2
         
-        # 6. Apply Child Tax Bonus (if applicable) - reduces tax (cannot be negative)
+        # 6. Child Tax Bonus (2026): refundable, capped at a %-of-tax-base that
+        #    grows with the number of children (1→29% … 6+→64%). The bonus may
+        #    exceed the income tax — the excess is PAID OUT (final tax goes
+        #    negative), so low-income families are no longer under-paid.
         child_tax_bonus_total = Decimal('0')
-        if children_under_15 > 0 or children_15_to_18 > 0:
-            # Calculate bonus for each age group
+        if total_children > 0:
             bonus_under_15 = self.CHILD_TAX_BONUS_UNDER_15 * children_under_15
             bonus_15_to_18 = self.CHILD_TAX_BONUS_15_TO_18 * children_15_to_18
             total_bonus = bonus_under_15 + bonus_15_to_18
-            
-            # Bonus cannot exceed the tax amount
-            child_tax_bonus_total = min(income_tax_before_child_bonus, total_bonus)
-        
-        final_tax = max(Decimal('0'), income_tax_before_child_bonus - child_tax_bonus_total)
+
+            pct = config.CHILD_BONUS_MAX_BASE_PCT.get(
+                total_children, config.CHILD_BONUS_MAX_BASE_PCT_6PLUS
+            )
+            max_bonus_by_base = max(Decimal('0'), tax_base) * pct
+            child_tax_bonus_total = min(total_bonus, max_bonus_by_base)
+
+        # Refundable: final tax may be negative (bonus paid out beyond the tax).
+        final_tax = income_tax_before_child_bonus - child_tax_bonus_total
         
         # 7. Calculate Net Salary
         net_salary = gross - social_insurance - health_insurance - final_tax

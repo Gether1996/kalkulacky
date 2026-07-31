@@ -30,7 +30,7 @@ class VATCalculator(BaseCalculator):
     def validate_inputs(self, **kwargs) -> bool:
         """Validate VAT calculator inputs"""
         amount = kwargs.get('amount')
-        vat_rate = kwargs.get('vat_rate', 20)
+        vat_rate = kwargs.get('vat_rate', float(config.VAT_RATE_STANDARD))
         calculation_type = kwargs.get('calculation_type', 'add_vat')
         
         # Validate amount

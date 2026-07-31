@@ -1,4 +1,4 @@
-import { Injectable, PLATFORM_ID, inject, signal, computed } from '@angular/core';
+import { Injectable, PLATFORM_ID, REQUEST, inject, signal, computed } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import {
   DEFAULT_LOCALE,
@@ -36,6 +36,9 @@ const STORAGE_KEY = 'kalk_locale';
 @Injectable({ providedIn: 'root' })
 export class LocaleService {
   private platformId = inject(PLATFORM_ID);
+  // The incoming HTTP request during SSR (null in the browser). Lets the server
+  // render in the requested language instead of always defaulting to Slovak.
+  private request = inject(REQUEST, { optional: true });
 
   readonly locale = signal<Locale>(DEFAULT_LOCALE);
   readonly supported = SUPPORTED_LOCALES;
@@ -46,7 +49,22 @@ export class LocaleService {
       const initial = this.detectInitialLocale();
       this.locale.set(initial);
       this.syncDocumentLang(initial);
+    } else {
+      // SSR: pick the locale from the request's ?lang= so server-rendered HTML
+      // (content + SEO meta + <html lang>) matches the language crawlers ask for.
+      this.locale.set(this.detectServerLocale());
     }
+  }
+
+  private detectServerLocale(): Locale {
+    try {
+      const url = this.request?.url;
+      if (url) {
+        const lang = new URL(url, 'http://localhost').searchParams.get('lang');
+        if (isLocale(lang)) return lang;
+      }
+    } catch { /* fall through to default */ }
+    return DEFAULT_LOCALE;
   }
 
   setLocale(locale: Locale): void {

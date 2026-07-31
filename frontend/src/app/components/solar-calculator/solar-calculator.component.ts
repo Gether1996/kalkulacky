@@ -3,7 +3,6 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalculatorService } from '../../services/calculator.service';
 import { SolarSubsidyCalculationResponse } from '../../models/calculator.models';
-import { SeoService } from '../../services/seo.service';
 import { LeadFormComponent } from '../shared/lead-form/lead-form.component';
 import { AffiliateCtaComponent } from '../shared/affiliate-cta/affiliate-cta.component';
 import { AdSlotComponent } from '../shared/ad-slot/ad-slot.component';
@@ -22,7 +21,6 @@ import { getCountryParams } from '../../i18n/country-params';
 export class SolarCalculatorComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
-  private seo = inject(SeoService);
   private calculatorService = inject(CalculatorService);
   private locale = inject(LocaleService);
 
@@ -69,27 +67,6 @@ export class SolarCalculatorComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.seo.apply({
-      title: 'Kalkulačka fotovoltiky 2026 – dotácia a návratnosť',
-      description: 'Vypočítajte odporúčaný výkon fotovoltiky, dotáciu Zelená domácnostiam, náklady, ročnú úsporu a návratnosť. Získajte nezáväznú ponuku od montážnej firmy.',
-      path: '/calculator/solar',
-      keywords: 'kalkulačka fotovoltiky, dotácia na fotovoltiku 2026, zelená domácnostiam, návratnosť fotovoltiky, cena fotovoltiky',
-      isCalculator: true,
-      faq: [
-        {
-          question: 'Akú dotáciu môžem získať na fotovoltiku?',
-          answer: 'Cez program Zelená domácnostiam je príspevok 500 €/kW inštalovaného výkonu, oprávnené sú 3 kW (po preukázaní spotreby až 7 kW). Maximálna dotácia je 3 500 € (so zvýhodnením +15 % až 4 025 €) a zároveň najviac 50 % oprávnených nákladov. Výška a podmienky sa menia podľa aktuálneho kola SIEA.',
-        },
-        {
-          question: 'Aká je návratnosť fotovoltiky na Slovensku?',
-          answer: 'Návratnosť závisí od spotreby, ceny elektriny, samospotreby a dotácie. Pri bežnej domácnosti býva orientačne 7–11 rokov, pričom panely vydržia 25+ rokov.',
-        },
-        {
-          question: 'Oplatí sa k fotovoltike batéria?',
-          answer: 'Batéria zvyšuje podiel vlastnej spotreby (z ~40 % na ~75 %), čím rastie úspora, no predlžuje návratnosť kvôli vyššej cene. Vyplatí sa pri vyššej večernej spotrebe.',
-        },
-      ],
-    });
     // Initial calculation driven by the locale effect (constructor).
   }
 

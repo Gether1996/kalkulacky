@@ -1,4 +1,5 @@
-import { Component, OnInit, PLATFORM_ID, inject, signal } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
@@ -117,6 +118,7 @@ export class CalculatorRatingComponent implements OnInit {
   private ratingApi = inject(RatingService);
   auth = inject(AuthService);
   private locale = inject(LocaleService);
+  private destroyRef = inject(DestroyRef);
 
   calcId = signal<string | null>(null);
   agg = signal<RatingAggregate | null>(null);
@@ -134,7 +136,10 @@ export class CalculatorRatingComponent implements OnInit {
   ngOnInit(): void {
     this.apply(this.router.url);
     this.router.events
-      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe(e => this.apply(e.urlAfterRedirects));
   }
 

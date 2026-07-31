@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { ssrApiBase } from './ssr-api-base';
 import { AuthService } from './auth.service';
 
 export interface FavoriteCalculator {
@@ -31,7 +32,7 @@ export class FavoritesService {
   constructor() {
     this.apiUrl = isPlatformBrowser(this.platformId)
       ? environment.apiUrl
-      : 'http://backend:8000/api';
+      : ssrApiBase();
 
     if (isPlatformBrowser(this.platformId)) {
       // (Re)load on auth state changes.

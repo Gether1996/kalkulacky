@@ -2,7 +2,6 @@ import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { SeoService } from '../../services/seo.service';
 import { AuthService } from '../../services/auth.service';
 import { DashboardService, SavingsGoalProjection } from '../../services/dashboard.service';
 import { TranslatePipe } from '../../i18n/translate.pipe';
@@ -32,7 +31,6 @@ type Mode = 'time' | 'monthly';
 })
 export class SavingsGoalCalculatorComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
-  private seo = inject(SeoService);
   private auth = inject(AuthService);
   private dashboard = inject(DashboardService);
   private router = inject(Router);
@@ -60,23 +58,6 @@ export class SavingsGoalCalculatorComponent implements OnInit {
   goalName = '';
 
   ngOnInit(): void {
-    this.seo.apply({
-      title: 'Kalkulačka sporenia a sporiaceho cieľa 2026 – koľko sporiť mesačne',
-      description: 'Zistite, kedy dosiahnete svoj sporiaci cieľ alebo koľko musíte mesačne odkladať. Výpočet so zloženým úročením. Prihlásení používatelia môžu sledovať pokrok a zaznamenávať vklady.',
-      path: '/calculator/savings-goal',
-      keywords: 'kalkulačka sporenia, sporiaci cieľ, koľko sporiť mesačne, zložené úročenie, finančná rezerva, sporenie kalkulačka',
-      isCalculator: true,
-      faq: [
-        {
-          question: 'Ako funguje zložené úročenie?',
-          answer: 'Úrok sa pripisuje k zostatku a v ďalšom období sa úročí už aj tento úrok. Čím dlhšie a skôr sporíte, tým väčší podiel na výsledku má práve úrok.',
-        },
-        {
-          question: 'Koľko mám mesačne odkladať?',
-          answer: 'Zadajte cieľovú sumu a termín a kalkulačka vypočíta potrebný mesačný vklad. Bežné odporúčanie je odkladať si aspoň 10–20 % z príjmu.',
-        },
-      ],
-    });
     if (isPlatformBrowser(this.platformId)) {
       this.calculate();
     }

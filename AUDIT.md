@@ -8,6 +8,110 @@ Legenda stavu: ✅ opravené v tejto session · 🔜 odporúčané (nezmenené) 
 
 ---
 
+## Pass 4 — 2026-07-31 (6-agentový audit + opravy Set A/B/C)
+
+6 paralelných read-only agentov (kalkulačná správnosť, backend bezpečnosť, FE↔BE kontrakt, FE runtime, build/a11y/i18n, config/deploy/GDPR). Najzávažnejšie nálezy **overené proti kódu aj proti oficiálnym zdrojom 2026** (nemenil som daňové hodnoty naslepo — a dobre tak: jeden agent nesprávne označil SZČO min. základ €914,40 za bug, pritom je pre 2026 správny, lebo sa pravidlo zmenilo z 50 % na 60 % priemernej mzdy).
+
+**Opravené a otestované (105 backend testov · FE build + unit · deploy check 0 · SSR overené):**
+
+*Set A — jasné bugy/config:*
+- **i18n KRITICKÉ:** `calc/*.ts` (495 kľúčov, 5 jazykov) neboli importované → vacation/freelancer/hours-worked zobrazovali surové kľúče aj v SK. Zapojené do `translations.calc.ts`.
+- **Payment:** `first_payment.principal` = úrok → opravené na `splátka − úrok`.
+- **FE leaky:** rating widget (`router.events`) + navbar/dashboard (`currentUser$`) → `takeUntilDestroyed`.
+- **Docker prod:** Postgres heslo split-brain (interpolácia vs env_file) → jednotný zdroj + `:?` guard; porty na loopback; DB/Redis wiring; `redis` do requirements.
+- Stale `<head>` SEO na account routách → default; VAT default 20→23; mŕtve `SeoService` importy (12); date-picker `aria-label`.
+- **Bezpečnosť:** neautentifikované odosielanie e-mailu na ľubovoľnú adresu (tracking) → e-maily len overenému majiteľovi účtu; register throttle; LogoutView generická hláška; split-bill list `max_length=100`; anonymné saved-calc podľa e-mailu sa mažú pri delete účtu.
+
+*Set B — daňová logika (overené oficiálne 2026 hodnoty, zdroje nižšie):*
+- **Priemerná mzda** 1400 → **1524** €; **max. vymeriavací základ** 8862 → **16764** € (11× pre 2026); **nemocenská max. DVZ** €241,64 → **€100,21/deň** (2×VŠVZ/365).
+- **Freelancer:** doplnený **max. vymeriavací základ** (predtým chýbal → prepočet vysokopríjmových SZČO); **NČZD taper** (nad €26 083 klesá, €0 pri €43 983).
+- **Daňový bonus:** teraz **refundovateľný** + strop **% zo základu** (1 dieťa 29 % … 6+ 64 %). Príklad: hrubá €900, 1 dieťa → čistá €770,40 → **€818,50** (bonus €100 vyplatený). SZČO min. základ €914,40 **ponechaný** (správny pre 2026).
+
+*Set C — SEO:* obnovené **FAQ rich-results + keywords** pre 12 kalkulačiek (SK), lokalizovane cez centrálny builder (`seo-faq.ts`); ostatné jazyky čisté kým nie sú preložené FAQ.
+
+**Zdroje 2026:** [Sociálna poisťovňa — vymeriavacie základy](https://www.socpoist.sk/news/nove-vymeriavacie-zaklady-pre-platenie-poistneho-od-1-januara-2026) · [Podnikajte — max. nemocenské dávky 2026](https://www.podnikajte.sk/socialne-a-zdravotne-odvody/maximalne-nemocenske-davky-2026-pn-ocr-materske-tehotenske) · [Financná správa — daňový bonus 2026](https://podpora.financnasprava.sk/215354) · [Podnikajte — NČZD 2026](https://www.podnikajte.sk/dan-z-prijmov/nezdanitelne-casti-zakladu-dane-2026)
+
+**Zostáva (nižšia priorita / dáta):** child-bonus sumy €100/€50 + prípadný high-income strop dodatočne overiť; NČZD taper aj do mesačnej mzdy (teraz plná mesačná NČZD = payroll preddavky, taper v ročnom zúčtovaní); non-SK mzda vynecháva polia o deťoch; ~17 kalkulačiek má telo hardkódované po SK (kľúče už čakajú v `calc/*.ts`); og:image; PWA ikony; legal `[DOPLŇTE]`.
+
+---
+
+## Pass 2 — 2026-07-31 (dynamický audit: testy + build + živý Docker)
+
+Na rozdiel od Pass 1 (statická revízia) boli Python 3.11 + Node 24 + Docker dostupné, takže sa **reálne spustilo**:
+
+- ✅ **Backend testy: 101/101 OK** (`python manage.py test calculators users`) — pribudlo 7 nových regresných testov (`calculators/tests/test_hardening.py`).
+- ✅ **Frontend build OK** (`npm run build`, SSR bundle) · **FE unit testy 2/2 OK** (predtým padal scaffold `app.spec.ts` — opravené).
+- ✅ **`manage.py check --deploy` = 0 issues** pri prod-env (DEBUG=False). Bezpečnostné nastavenia sú správne env-gated.
+- ✅ **Živý stack cez `docker compose up`** — backend aj SSR frontend vracajú HTTP 200; mzda 1500 € → net 1134,51 € (2026 sadzby OK).
+- ✅ **Žiadne chýbajúce migrácie** (`makemigrations --check`).
+
+### Opravené v tomto passe (✅)
+| # | Oblasť | Nález | Fix |
+|---|--------|-------|-----|
+| P1 | GDPR | Zrušenie účtu nemazalo PII bez FK (`Lead`, `DataReport`, `AuthEvent` podľa e-mailu/IP) | `DeleteAccountView` teraz maže Lead/DataReport a anonymizuje AuthEvent |
+| P2 | Bezpečnosť | Log injection — e-mail útočníka logovaný bez orezania CR/LF | `log_auth_event` striháva CR/LF, limit 200 zn. |
+| P3 | Backend | **Split-bill `by_items` 500-oval na KAŽDOM requeste** (`validated_data['total_amount']` KeyError) | číta sa cez `.get()`; overené živé (200 + korektný breakdown) |
+| P4 | Validácia | Split-bill položky bez schémy (KeyError→500 na `[{}]`) | `SplitBillItemSerializer` (person+amount) → 400 |
+| P5 | DoS | Savings-goal tracker: neohraničené vstupy + `target_date` rok 9999 → ~95k-iteračná projekcia na každý dashboard GET | min/max validátory + cap horizontu 1200 mes. |
+| P6 | Hygiena | `.env` (reálna cesta `django_calculators/.env`) **nebol v .gitignore**; 47 `.pyc` + `django.log` verzionované | `.gitignore` rozšírený na `.env`/`*.env`; junk `git rm --cached` |
+| P7 | SSR | 6 služieb natvrdo `http://backend:8000` (compose alias) → SSR fetch zlyhá mimo Dockera | `ssrApiBase()` číta `SSR_API_URL`, fallback = compose alias |
+
+### Implementácia „urob, čo je najlepšie" (druhá vlna, ✅ + overené živým Dockerom)
+| # | Oblasť | Nález | Fix / overenie |
+|---|--------|-------|-----|
+| P8 | **KRITICKÉ — FE** | `angular.json` **nemal `fileReplacements`** → prod build zapiekol `environment.ts` (`apiUrl: http://localhost:8000/api`); `environment.prod.ts` sa NIKDY nepoužil. V prode by zlyhali VŠETKY API volania z prehliadača. | pridané `fileReplacements` → bundle teraz obsahuje `https://kalkulacky.sk/api` (overené `grep` v dist) |
+| P9 | **KRITICKÉ — SSR/SEO** | Angular 21 SSR blokuje request, ktorého Host nie je v `NG_ALLOWED_HOSTS` (prázdne = VŠETKO padá na client-side render → žiadne SSR, žiadne SEO). | `NG_ALLOWED_HOSTS` v prod compose; overené živo: `/calculator/salary` 3 158 B (CSR shell) → **67 KB server-rendered** (`ng-server-context`), 0 fallbackov |
+| P10 | Bezpečnosť | `str(e)` v 26 (calculators) + 1 (users, Google auth) 500-handleroch → leak interných chýb | `server_error()` helper: loguje traceback server-side, klientovi generická hláška; 400 `ValueError` hlášky ponechané (kontrolované) |
+| P11 | Deploy | Docker/compose boli len dev (`runserver`, `ng serve`, `DEBUG=True`) | **prod stack**: `Dockerfile.prod` (gunicorn + collectstatic), `frontend/Dockerfile.prod` (multi-stage → SSR bundle), `docker-compose.prod.yml` (gunicorn + SSR + Postgres + Redis + notif. worker) + gunicorn v requirements + `.dockerignore`/`.gitattributes`. Overené: `docker compose -f docker-compose.prod.yml up` beží, gunicorn 22 servíruje, SSR renderuje |
+| P12 | Hardening | `DEBUG` default `True` (fail-open) · `DATA_REPORT_RECIPIENT` osobný Gmail | `DEBUG` default `False`; recipient default = `DEFAULT_FROM_EMAIL` |
+
+**Test suite po druhej vlne: backend 101/101 OK · FE build OK · FE unit 2/2 OK.**
+
+### Zostáva pred go-live (vyžaduje rozhodnutie / dáta prevádzkovateľa)
+- ⚠️ **Legal placeholders** `[DOPLŇTE: obchodné meno, IČO, sídlo, e-mail]` v `privacy-policy.component.ts` a `terms.component.ts` — reálna identita prevádzkovateľa. **Jediný tvrdý právny blocker.**
+- 🔜 **`environment.prod.ts`**: `googleClientId` prázdny (OAuth login mŕtvy), `adsensePublisherId` prázdny (ads off) — doplniť reálne ID.
+- 🔜 **Affiliate URL** `example.com` v `monetization.config.ts` — reálne partnerské linky (inak „affiliate" vedie na example.com).
+- 🔜 **PWA ikony** 192/512/maskable chýbajú (len favicon) · **sitemap.xml** statický (bez blog URL a bez cs/en/pl/hu).
+- 🔜 Menšie: savings-goal peňažná matematika vo `float` (doménová zmena, treba upraviť testy) · XFF dôvera pri IP (nastavenie proxy).
+
+---
+
+## Pass 3 — 2026-07-31 (SEO audit + implementácia, overené SSR/živým Dockerom)
+
+Stav pred: SSR funguje (P9), ale per-page SEO malo len ~20 z ~37 indexovateľných stránok.
+
+| # | Oblasť | Nález | Fix / overenie |
+|---|--------|-------|-----|
+| S1 | **SEO pokrytie** | Domovská stránka + 17 kalkulačiek nemali žiadne per-page SEO (generický `<title>`, bez canonical/OG/JSON-LD) | centrálny `ROUTE_SEO` register + aplikácia v `App` na `NavigationEnd`; overené SSR: `/calculator/vat` má teraz vlastný title, canonical, description, WebApplication + BreadcrumbList |
+| S2 | **Domovská SEO** | `/` bez štruktúrovaných dát | `WebSite` + `Organization` + `SearchAction` (sitelinks searchbox) JSON-LD; overené v SSR výstupe |
+| S3 | i18n SEO | `og:locale` natvrdo `sk_SK`, `inLanguage` natvrdo `sk` | čítajú sa z `LocaleService` (locale-aware); `<html lang>` sa nastavuje podľa jazyka |
+| S4 | Štruktúra | Chýbal BreadcrumbList a `publisher` prepojenie | pridané pre kalkulačky (breadcrumbs + Organization publisher) |
+| S5 | **Sitemap** | Statický `sitemap.xml` — bez blog článkov, bez `lastmod`, ručná údržba | **dynamický** `/sitemap.xml` route v SSR serveri: generuje sa z registra kalkulačiek + živých blog článkov; overené živo (36 URL vrátane blog článku); statický súbor odstránený |
+| S6 | **BEZPEČNOSŤ** | Vnorený `django_calculators/django_calculators/.env` (číta ho decouple ako prvý) obsahuje **reálny Google OAuth secret** + placeholder `SECRET_KEY` + `ALLOWED_HOSTS` bez `backend` → (a) secret sa **zapiekol do Docker image**, (b) SSR→backend fetch padal na `DisallowedHost` 400. Súbor NIE JE v git histórii (nikdy necommitnutý). | `.dockerignore` (backend aj FE) rozšírený na `**/.env` → image už secret neobsahuje; kód-default `ALLOWED_HOSTS` (obsahuje `backend`) sa uplatní → SSR→backend teraz 200. **⚠️ ODPORÚČANIE: rotovať Google OAuth client secret** (bol v dev súbore + v lokálnom image). |
+
+**Overené:** FE build OK · FE unit 2/2 OK · SSR renderuje SEO tagy server-side · dynamický sitemap 36 URL (kalkulačky + blog) · SSR→backend 200. Sebe-spravujúce stránky (salary/mortgage/…) SEO neprepísané.
+
+### Pass 3b — Viacjazyčné SEO (SEO pre všetkých 5 jazykov)
+
+Analýza odhalila, že hoci obsah je preložený (i18n, 5 jazykov), **SSR bol locale-slepý** — server renderoval SK pre KAŽDÝ jazyk, takže hreflang alternatívy (`?lang=en/cs/pl/hu`) servírovali SK HTML. Meta boli SK-only. Reálne viacjazyčné SEO teda NEEXISTOVALO.
+
+| # | Nález | Fix / overenie |
+|---|-------|-----|
+| M1 | **SSR locale-slepé** — `LocaleService` čítal jazyk len v prehliadači; SSR vždy `sk` | SSR číta `?lang=` z `REQUEST` tokenu → server renderuje v požadovanom jazyku (obsah + meta + `<html lang>`); overené: `?lang=en` → `lang="en"`, `?lang=cs` → `lang="cs"` |
+| M2 | **Meta SK-only** pre všetky kalkulačky (12 komponentov malo natvrdo SK title/description) | odstránené natvrdo-SK `seo.apply` z 12 komponentov; centrálny lokalizovaný builder stavia title/description z existujúcich `calc.<id>.name`/`.desc` (5 jazykov) → overené: salary = Čistá mzda / Net salary / Wynagrodzenie netto / Nettó bér |
+| M3 | **Canonical mieril na SK URL** aj pre `?lang=en` → Google by zahodil cudzojazyčné verzie | každá jazyková verzia je self-canonical (`…?lang=xx`); `sk` hreflang aj canonical bez parametra (konzistentné) |
+| M4 | `og:locale`/`inLanguage`/`<html lang>` natvrdo SK | čítajú sa z locale (5 jazykov) |
+
+**Overené SSR pre všetkých 5 jazykov** (salary + mortgage + home): lokalizovaný title, description, canonical, og:locale, hreflang, `<html lang>`. FE build + unit testy zelené.
+
+### SEO — čo ešte zlepšiť (nižšia priorita / vyžaduje asset alebo väčšiu zmenu)
+- 🔜 **`og:image`** — chýba (zdieľania na sociálnych sieťach bez náhľadu). Treba 1200×630 PNG asset.
+- 🔜 **Bespoke meta / FAQ rich-results per jazyk** — meta sa teraz stavajú z `calc.name/.desc` (dobré, jednotné). Pôvodné bohaté SK titulky + FAQ JSON-LD boli odstránené kvôli konzistentnej lokalizácii; dajú sa vrátiť ako per-lokálne override + preložené FAQ.
+- 🔜 **Locale-prefixované URL** (`/en/...`) namiesto `?lang=` — čistejšie oddelené SEO povrchy (väčšia zmena: routing).
+- 🔜 **PWA ikony** 192/512/maskable (viac nižšie).
+
+---
+
 ## 0. Zhrnutie — kritické (HIGH) nálezy
 
 | # | Oblasť | Nález | Stav |

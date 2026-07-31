@@ -23,7 +23,11 @@ Notes:
 ```
 SECRET_KEY=<50+ random chars>          # required; dev key triggers a check --deploy warning
 DEBUG=False                            # turns on HSTS/SSL-redirect/secure cookies
-ALLOWED_HOSTS=kalkulacky.sk,www.kalkulacky.sk
+# MUST also include the host the SSR server uses to reach the API, or every
+# server-side data fetch 400s (DisallowedHost) and SSR silently degrades:
+#   • docker compose prod → add `backend`
+#   • bare metal (SSR_API_URL=http://127.0.0.1:8000/api) → add `127.0.0.1`
+ALLOWED_HOSTS=kalkulacky.sk,www.kalkulacky.sk,backend
 CORS_ALLOWED_ORIGINS=https://kalkulacky.sk,https://www.kalkulacky.sk
 CSRF_TRUSTED_ORIGINS=https://kalkulacky.sk,https://www.kalkulacky.sk
 FRONTEND_URL=https://kalkulacky.sk
@@ -37,14 +41,44 @@ REDIS_URL=redis://127.0.0.1:6379/1     # then: pip install redis
 
 # Email (reminders, password reset, data reports)
 EMAIL_HOST=... EMAIL_HOST_USER=... EMAIL_HOST_PASSWORD=... DEFAULT_FROM_EMAIL=noreply@kalkulacky.sk
-DATA_REPORT_RECIPIENT=pat.kredatus@gmail.com
+DATA_REPORT_RECIPIENT=reports@kalkulacky.sk   # where "wrong data" reports go; defaults to DEFAULT_FROM_EMAIL
+
+# SSR (set these in the FRONTEND/SSR process environment, not the Django .env):
+# - SSR_API_URL: the Angular server renders on Node and fetches the API
+#   server-side, so it needs a host it can reach (NOT the public URL). In the
+#   prod compose the backend alias works; on a bare host use the internal API URL.
+# - NG_ALLOWED_HOSTS: Angular 21 SSR rejects any request whose Host isn't listed
+#   here — if unset, EVERY request falls back to client-side rendering (no SSR,
+#   no SEO). Must include the public domain(s).
+SSR_API_URL=http://127.0.0.1:8000/api
+NG_ALLOWED_HOSTS=kalkulacky.sk,www.kalkulacky.sk
 
 # Optional throttle overrides: THROTTLE_ANON, THROTTLE_USER, THROTTLE_LOGIN, ...
 ```
 
-## Deploy steps
+## Deploy with Docker (recommended)
 
-1. `pip install -r requirements.txt` (+ `redis` if using `REDIS_URL`).
+A production stack is defined in `docker-compose.prod.yml` (separate from the dev
+`docker-compose.yml`): gunicorn API + Angular SSR + PostgreSQL + Redis + a
+notifications worker. It uses `django_calculators/Dockerfile.prod` (gunicorn,
+`collectstatic` baked in) and `frontend/Dockerfile.prod` (multi-stage → SSR bundle).
+
+```bash
+# 1. Fill django_calculators/.env per the checklist above (DEBUG=False, DB_*, REDIS_URL, EMAIL_*).
+# 2. Build + start:
+docker compose -f docker-compose.prod.yml up --build -d
+# 3. Create an admin user (for analytics/admin):
+docker compose -f docker-compose.prod.yml exec backend python manage.py createsuperuser
+```
+
+Then put nginx (`deploy/nginx.conf.example`) + TLS in front, proxying `/api` +
+`/admin` → backend:8000 and everything else → frontend:4000. Migrations run
+automatically on backend start; the notifications worker is the single sender
+(don't also run an external cron — that double-sends).
+
+## Manual deploy steps (non-Docker)
+
+1. `pip install -r requirements.txt` (+ `redis` if using `REDIS_URL`). gunicorn is now included.
 2. `python manage.py migrate`
 3. `python manage.py collectstatic --noinput`  (WhiteNoise serves them)
 4. `python manage.py createsuperuser`  (to view analytics / admin)

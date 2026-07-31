@@ -1,4 +1,7 @@
-# Environment variables
+# Environment variables — ignore .env anywhere (the app reads django_calculators/.env)
+.env
+*.env
+!.env.example
 django_calculators/django_calculators/.env
 
 # Python
@@ -22,6 +25,7 @@ build/
 db.sqlite3
 db.sqlite3-journal
 media/
+staticfiles/
 
 # Node
 node_modules/

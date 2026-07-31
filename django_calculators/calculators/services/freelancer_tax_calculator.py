@@ -104,10 +104,12 @@ class FreelancerTaxCalculator(BaseCalculator):
         if tax_base < 0:
             tax_base = Decimal('0')
         
-        # Apply non-taxable amount
-        taxable_income = tax_base - self.NON_TAXABLE_AMOUNT_ANNUAL
-        if taxable_income < 0:
-            taxable_income = Decimal('0')
+        # Apply non-taxable amount (NČZD) with the 2026 high-income taper: above
+        # €26,083.13 the NČZD shrinks by ⅓ of the base and hits €0 at €43,983.32.
+        nczd = self.NON_TAXABLE_AMOUNT_ANNUAL
+        if tax_base > cfg.NCZD_TAPER_THRESHOLD_ANNUAL:
+            nczd = max(Decimal('0'), cfg.NCZD_TAPER_SUBTRAHEND_ANNUAL - (tax_base / Decimal('3')))
+        taxable_income = max(Decimal('0'), tax_base - nczd)
         
         # Income tax for a sole trader (SZČO):
         #  • 15% if annual taxable income (turnover) ≤ €100,000,
@@ -144,8 +146,13 @@ class FreelancerTaxCalculator(BaseCalculator):
         health_insurance_monthly = health_base_monthly * self.HEALTH_INSURANCE_RATE
         health_insurance_annual = health_insurance_monthly * Decimal(str(months_active))
         
-        # Social insurance
-        social_base_monthly = max(monthly_assessment_base, self.MIN_SOCIAL_BASE_MONTHLY)
+        # Social insurance — clamped to [MIN, MAX] monthly assessment base.
+        # 2026 max = €16,764/mo (11 × avg wage); without this cap high-income SZČO
+        # were overcharged on the full uncapped base.
+        social_base_monthly = min(
+            max(monthly_assessment_base, self.MIN_SOCIAL_BASE_MONTHLY),
+            cfg.SOCIAL_INSURANCE_MAX_BASE_MONTHLY,
+        )
         
         # Calculate individual social contributions
         sickness_monthly = social_base_monthly * self.SOCIAL_SICKNESS_RATE if include_sickness else Decimal('0')

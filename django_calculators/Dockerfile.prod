@@ -1,0 +1,29 @@
+# Production image for the Django API — gunicorn + WhiteNoise-served static.
+# (The plain `Dockerfile` is the dev image used by docker-compose.yml / runserver.)
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt /app/
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+COPY . /app/
+
+# Collect static at build time so the image is self-contained (WhiteNoise serves
+# them). Importing settings needs a SECRET_KEY — a throwaway build-only value is
+# fine; the real key is injected at runtime via the environment.
+RUN SECRET_KEY=build-only-collectstatic DEBUG=False \
+    python manage.py collectstatic --noinput
+
+EXPOSE 8000
+
+COPY entrypoint.prod.sh /entrypoint.prod.sh
+RUN chmod +x /entrypoint.prod.sh
+ENTRYPOINT ["/entrypoint.prod.sh"]

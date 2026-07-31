@@ -1,4 +1,5 @@
-import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -24,6 +25,7 @@ export class UserDashboard implements OnInit {
   private locale = inject(LocaleService);
   private dashboard = inject(DashboardService);
   favorites = inject(FavoritesService);
+  private destroyRef = inject(DestroyRef);
 
   currentUser: User | null = null;
   accountCreatedDate: Date | null = null;
@@ -95,7 +97,9 @@ export class UserDashboard implements OnInit {
   constructor(private authService: AuthService) {}
 
   ngOnInit() {
-    this.authService.currentUser$.subscribe(user => {
+    this.authService.currentUser$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(user => {
       this.currentUser = user;
       if (user && (user as any).date_joined) {
         this.accountCreatedDate = new Date((user as any).date_joined);

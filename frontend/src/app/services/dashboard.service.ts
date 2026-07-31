@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { ssrApiBase } from './ssr-api-base';
 
 export interface SavedCalculation {
   id: number;
@@ -143,7 +144,7 @@ export class DashboardService {
   constructor(private http: HttpClient) {
     this.apiUrl = isPlatformBrowser(this.platformId)
       ? environment.apiUrl
-      : 'http://backend:8000/api';
+      : ssrApiBase();
   }
 
   getDashboard(): Observable<DashboardData> {

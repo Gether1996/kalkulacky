@@ -1,5 +1,24 @@
 import { Locale, SUPPORTED_LOCALES } from './locales';
 import { TranslationDict } from './translations';
+// Per-calculator UI dictionaries (were authored but never wired in — without
+// these the vacation/freelancer/hours-worked templates render raw i18n keys).
+import { ENTRIES as energyEntries } from './calc/energy';
+import { ENTRIES as freelancerEntries } from './calc/freelancer';
+import { ENTRIES as fuelcostEntries } from './calc/fuelcost';
+import { ENTRIES as hoursworkedEntries } from './calc/hoursworked';
+import { ENTRIES as inflationEntries } from './calc/inflation';
+import { ENTRIES as loanEntries } from './calc/loan';
+import { ENTRIES as paymentEntries } from './calc/payment';
+import { ENTRIES as pregnancyEntries } from './calc/pregnancy';
+import { ENTRIES as sickleaveEntries } from './calc/sickleave';
+import { ENTRIES as splitbillEntries } from './calc/splitbill';
+import { ENTRIES as vacationEntries } from './calc/vacation';
+
+const CALC_FILE_ENTRIES: Record<string, Record<Locale, string>> = {
+  ...energyEntries, ...freelancerEntries, ...fuelcostEntries, ...hoursworkedEntries,
+  ...inflationEntries, ...loanEntries, ...paymentEntries, ...pregnancyEntries,
+  ...sickleaveEntries, ...splitbillEntries, ...vacationEntries,
+};
 
 /**
  * Calculator-body UI translations (input labels, result labels, buttons,
@@ -415,7 +434,8 @@ const ENTRIES: Record<string, LangMap> = {
 function pivot(): Record<Locale, TranslationDict> {
   const out = {} as Record<Locale, TranslationDict>;
   for (const loc of SUPPORTED_LOCALES) out[loc] = {};
-  for (const [key, map] of Object.entries(ENTRIES)) {
+  // calc/*.ts first, local ENTRIES last so any shared key (e.g. *.title) wins here.
+  for (const [key, map] of Object.entries({ ...CALC_FILE_ENTRIES, ...ENTRIES })) {
     for (const loc of SUPPORTED_LOCALES) out[loc][key] = map[loc];
   }
   return out;

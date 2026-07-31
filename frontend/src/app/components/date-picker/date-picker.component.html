@@ -10,6 +10,7 @@
       class="date-picker-input"
       [value]="displayValue"
       [placeholder]="placeholder"
+      [attr.aria-label]="label || placeholder"
       readonly
     />
     <span class="date-picker-icon">📅</span>

@@ -58,6 +58,7 @@ import {
   SolarSubsidyCalculationResponse
 } from '../models/calculator.models';
 import { environment } from '../../environments/environment';
+import { ssrApiBase } from './ssr-api-base';
 
 @Injectable({
   providedIn: 'root'
@@ -72,7 +73,7 @@ export class CalculatorService {
     if (isPlatformBrowser(this.platformId)) {
       this.apiUrl = environment.apiUrl;
     } else {
-      this.apiUrl = 'http://backend:8000/api';
+      this.apiUrl = ssrApiBase();
     }
   }
 
